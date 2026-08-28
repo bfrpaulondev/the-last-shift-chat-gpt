@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { audioEngine } from '../audio/AudioEngine'
+import { suspenseCue } from '../audio/SuspenseCue'
 import { useGameStore } from '../state/gameStore'
 
 const RAT_START = new THREE.Vector3(2.72, 0.1, -1.02)
@@ -15,9 +16,11 @@ export function RatScare() {
   const messageTimer = useRef<number | null>(null)
   const [running, setRunning] = useState(false)
   const showered = useGameStore((state) => Boolean(state.flags.showered))
+  const subtitleActive = useGameStore((state) => Boolean(state.subtitle))
+  const noteOpen = useGameStore((state) => Boolean(state.note))
 
   useEffect(() => {
-    if (!showered || scheduled.current) {
+    if (!showered || subtitleActive || noteOpen || scheduled.current) {
       return
     }
 
@@ -30,7 +33,12 @@ export function RatScare() {
     let fired = false
     const startTimer = window.setTimeout(() => {
       const state = useGameStore.getState()
-      if (state.flags.rat_scare_seen || state.demoEnded) {
+      if (
+        state.flags.rat_scare_seen ||
+        state.demoEnded ||
+        state.subtitle ||
+        state.note
+      ) {
         scheduled.current = false
         return
       }
@@ -41,6 +49,7 @@ export function RatScare() {
       audioEngine.playRatScurry()
       state.setFlag('rat_scare_seen')
       state.triggerScare(1700)
+      suspenseCue.play()
 
       messageTimer.current = window.setTimeout(() => {
         const latest = useGameStore.getState()
@@ -48,7 +57,7 @@ export function RatScare() {
           latest.say('Um rato... ótimo. Agora eu acordei de vez.')
         }
         messageTimer.current = null
-      }, 950)
+      }, 1050)
     }, 850)
 
     return () => {
@@ -57,12 +66,13 @@ export function RatScare() {
         scheduled.current = false
       }
     }
-  }, [showered])
+  }, [noteOpen, showered, subtitleActive])
 
   useEffect(() => () => {
     if (messageTimer.current !== null) {
       window.clearTimeout(messageTimer.current)
     }
+    suspenseCue.stop()
   }, [])
 
   useFrame(() => {
