@@ -95,7 +95,7 @@ if (
 if (
   !files.hands.includes('LEFT_BASE = new THREE.Vector3(-0.19, -0.34, -0.62)') ||
   !files.hands.includes('scale={[0.82, 0.82, 0.82]}') ||
-  !files.hands.includes('<capsuleGeometry')
+  !files.hands.includes('<cylinderGeometry args={[0.0095, 0.0115')
 ) {
   throw new Error('Proportional M10 hand model contract is missing')
 }
