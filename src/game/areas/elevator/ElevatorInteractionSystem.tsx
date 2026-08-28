@@ -18,8 +18,9 @@ function findElevatorInteractable(object: THREE.Object3D | null): string | null 
 
 function promptFor(id: string): string | null {
   if (id === 'floor-22-button') return '[E] Selecionar 22.º andar'
+  if (id === 'floor-30-button') return '[E] Selecionar 30.º andar'
   if (id === 'service-notice') return '[E] Ler aviso do elevador'
-  if (id === 'doors') return '[E] Sair no 22.º andar'
+  if (id === 'doors') return '[E] Sair do elevador'
   return null
 }
 
@@ -62,6 +63,10 @@ export function ElevatorInteractionSystem() {
           game.say('Sem uniforme e rota confirmada eu nem devia estar aqui.')
           return
         }
+        if (game.flags.floor22_routine_complete) {
+          game.say('22.º concluído. Próximo é o 30.º.')
+          return
+        }
         if (game.flags.elevator_arrived_22) {
           game.say('22.º. Já chegamos.')
           return
@@ -76,6 +81,27 @@ export function ElevatorInteractionSystem() {
         return
       }
 
+      if (id === 'floor-30-button') {
+        game.triggerHandAction('press', 760, target, id)
+        if (!game.flags.floor22_routine_complete) {
+          game.say('30.º só depois de terminar o 22.º.')
+          return
+        }
+        if (game.flags.elevator_arrived_30) {
+          game.say('30.º. Já chegamos.')
+          return
+        }
+        if (!game.flags.elevator_ride_to_30_started) {
+          game.setFlag('elevator_ride_to_30_started')
+          game.setCheckpoint('elevator-ascending-30', game.location.spawn)
+          game.setObjective('Siga para o 30.º andar.')
+          game.say('30.º andar.')
+        } else {
+          game.say('Subindo para o 30.º.')
+        }
+        return
+      }
+
       if (id === 'service-notice') {
         game.triggerHandAction('reach', 650, target, id)
         game.openNote(
@@ -86,6 +112,25 @@ export function ElevatorInteractionSystem() {
       }
 
       if (id === 'doors') {
+        if (game.flags.floor22_routine_complete) {
+          if (!game.flags.elevator_arrived_30) {
+            game.triggerHandAction('brace', 520, target, id)
+            game.say(game.flags.elevator_ride_to_30_started ? 'Ainda não.' : 'Primeiro seleciono o 30.º.')
+            return
+          }
+
+          busy.current = true
+          game.setFlag('elevator_left_for_floor_30')
+          game.triggerHandAction('door', 820, target, id, 'door-handle')
+          game.requestAreaTransition(
+            'work-floor-30',
+            'floor-30-arrival',
+            { x: 0, y: 1.65, z: 4.6, yaw: Math.PI },
+            1200,
+          )
+          return
+        }
+
         if (!game.flags.elevator_arrived_22) {
           game.triggerHandAction('brace', 520, target, id)
           game.say(game.flags.elevator_ride_started ? 'Ainda não.' : 'Primeiro tenho que selecionar o andar.')
