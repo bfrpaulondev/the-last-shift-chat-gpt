@@ -12,7 +12,7 @@ const HOLD_SECONDS = 0.8
 
 const TRIAGE_CANDIDATES = new Set([
   'passenger-book',
-  'passenger-sleeper',
+  'passenger-paulo',
   'passenger-executive',
   'passenger-cap',
 ])
@@ -46,8 +46,10 @@ export function BusInteractionSystem() {
   const raycaster = useRef(new THREE.Raycaster())
   const currentId = useRef<string | null>(null)
   const interactionPoint = useRef(new THREE.Vector3())
+  const gossipWorld = useRef(new THREE.Vector3())
   const holding = useRef(false)
   const gossipObject = useRef<THREE.Object3D | null>(null)
+  const lastGossipDistance = useRef(Number.POSITIVE_INFINITY)
 
   const classifyCandidate = (id: string) => {
     const bus = useBusTriageStore.getState()
@@ -81,6 +83,7 @@ export function BusInteractionSystem() {
     })
 
     const onKeyDown = (event: KeyboardEvent) => {
+      if (event.defaultPrevented) return
       const game = useGameStore.getState()
       const bus = useBusTriageStore.getState()
 
@@ -187,9 +190,12 @@ export function BusInteractionSystem() {
       })
     }
     if (gossipObject.current) {
-      const world = new THREE.Vector3()
-      gossipObject.current.getWorldPosition(world)
-      bus.setGossipDistance(camera.position.distanceTo(world))
+      gossipObject.current.getWorldPosition(gossipWorld.current)
+      const distance = camera.position.distanceTo(gossipWorld.current)
+      if (Math.abs(distance - lastGossipDistance.current) > 0.04) {
+        lastGossipDistance.current = distance
+        bus.setGossipDistance(distance)
+      }
     }
 
     if (
@@ -203,7 +209,7 @@ export function BusInteractionSystem() {
     ) {
       currentId.current = null
       holding.current = false
-      bus.setMarkProgress(0)
+      if (bus.markProgress > 0) bus.setMarkProgress(0)
       game.setPrompt(null)
       return
     }
@@ -229,7 +235,8 @@ export function BusInteractionSystem() {
     currentId.current = next
 
     if (bus.triagePhase === 'alert') {
-      bus.setFocusedCandidate(next && TRIAGE_CANDIDATES.has(next) ? next : null)
+      const focused = next && TRIAGE_CANDIDATES.has(next) ? next : null
+      if (focused !== bus.focusedCandidate) bus.setFocusedCandidate(focused)
       if (holding.current && next && TRIAGE_CANDIDATES.has(next)) {
         const progress = bus.markProgress + Math.min(delta, 0.05) / HOLD_SECONDS
         bus.setMarkProgress(progress)
