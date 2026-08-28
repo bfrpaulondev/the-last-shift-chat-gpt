@@ -12,11 +12,7 @@ const spawnSchema = new mongoose.Schema(
 
 const locationSchema = new mongoose.Schema(
   {
-    part: {
-      type: String,
-      required: true,
-      enum: ['part-1', 'part-2'],
-    },
+    part: { type: String, required: true, enum: ['part-1', 'part-2'] },
     area: {
       type: String,
       required: true,
@@ -35,54 +31,29 @@ const locationSchema = new mongoose.Schema(
         'blackout',
       ],
     },
-    checkpoint: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    spawn: {
-      type: spawnSchema,
-      required: false,
-    },
+    checkpoint: { type: String, required: true, trim: true },
+    spawn: { type: spawnSchema, required: false },
+  },
+  { _id: false },
+)
+
+const shiftTimeSchema = new mongoose.Schema(
+  {
+    worldMinute: { type: Number, required: true, min: 0 },
+    lastRoutineMinute: { type: Number, required: false, min: 0, default: null },
   },
   { _id: false },
 )
 
 const saveSchema = new mongoose.Schema(
   {
-    playerId: {
-      type: String,
-      required: true,
-      unique: true,
-      index: true,
-      trim: true,
-    },
-    flags: {
-      type: mongoose.Schema.Types.Mixed,
-      required: true,
-      default: {},
-    },
-    chapter: {
-      type: String,
-      required: true,
-      default: 'part-1-apartment',
-    },
-    location: {
-      type: locationSchema,
-      required: false,
-    },
-    schemaVersion: {
-      type: Number,
-      required: true,
-      min: 1,
-      default: 1,
-    },
-    playtimeSeconds: {
-      type: Number,
-      required: true,
-      min: 0,
-      default: 0,
-    },
+    playerId: { type: String, required: true, unique: true, index: true, trim: true },
+    flags: { type: mongoose.Schema.Types.Mixed, required: true, default: {} },
+    chapter: { type: String, required: true, default: 'part-1-apartment' },
+    location: { type: locationSchema, required: false },
+    shiftTime: { type: shiftTimeSchema, required: false },
+    schemaVersion: { type: Number, required: true, min: 1, default: 1 },
+    playtimeSeconds: { type: Number, required: true, min: 0, default: 0 },
   },
   {
     timestamps: true,
