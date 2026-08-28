@@ -44,15 +44,22 @@ export function BusAudio() {
   const masterFilterRef = useRef<BiquadFilterNode | null>(null)
   const gossipGainRef = useRef<GainNode | null>(null)
   const bumpTimerRef = useRef<number | null>(null)
+  const firstBumpTimerRef = useRef<number | null>(null)
 
   useEffect(() => {
     const sources: AudioBufferSourceNode[] = []
     const oscillators: OscillatorNode[] = []
+    let cancelled = false
 
     const start = async () => {
       const context = new window.AudioContext()
-      contextRef.current = context
       if (context.state === 'suspended') await context.resume().catch(() => undefined)
+      if (cancelled) {
+        void context.close().catch(() => undefined)
+        return
+      }
+
+      contextRef.current = context
 
       const masterFilter = context.createBiquadFilter()
       masterFilter.type = 'lowpass'
@@ -116,13 +123,15 @@ export function BusAudio() {
       }
 
       bumpTimerRef.current = window.setInterval(playBump, 22000)
-      window.setTimeout(playBump, 13500)
+      firstBumpTimerRef.current = window.setTimeout(playBump, 13500)
     }
 
     void start()
 
     return () => {
+      cancelled = true
       if (bumpTimerRef.current !== null) window.clearInterval(bumpTimerRef.current)
+      if (firstBumpTimerRef.current !== null) window.clearTimeout(firstBumpTimerRef.current)
       sources.forEach((source) => {
         try { source.stop() } catch { /* already stopped */ }
       })
@@ -134,6 +143,8 @@ export function BusAudio() {
       masterRef.current = null
       masterFilterRef.current = null
       gossipGainRef.current = null
+      bumpTimerRef.current = null
+      firstBumpTimerRef.current = null
     }
   }, [])
 
@@ -149,7 +160,7 @@ export function BusAudio() {
 
     if (gossipGainRef.current) {
       const distance = state.gossipDistance
-      const target = distance < 2.5 ? 0.008 : distance < 3.5 ? 0.022 : 0.006
+      const target = distance < 2.5 ? 0.028 : distance < 3.5 ? 0.014 : 0.003
       gossipGainRef.current.gain.setTargetAtTime(target, context.currentTime, 0.18)
     }
   })
