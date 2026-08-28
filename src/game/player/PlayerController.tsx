@@ -93,7 +93,6 @@ export function PlayerController({ colliders, enabled }: PlayerControllerProps) 
 
     if (!enabled) {
       currentBob.current = THREE.MathUtils.damp(currentBob.current, 0, 14, safeDelta)
-      camera.position.y = feetY.current + EYE_HEIGHT + currentBob.current
       return
     }
 

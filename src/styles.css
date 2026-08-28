@@ -34,6 +34,8 @@ body {
   width: 100% !important;
   height: 100% !important;
   outline: none;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
 }
 
 .game-hud {
@@ -95,6 +97,7 @@ body {
 .note-overlay {
   position: absolute;
   inset: 0;
+  z-index: 20;
   display: grid;
   place-items: center;
   padding: 24px;
@@ -129,6 +132,95 @@ body {
   margin-top: 42px;
   color: #4b473d;
   font-size: 12px;
+}
+
+.badge-note {
+  width: min(520px, 100%);
+  min-height: 250px;
+  border: 8px solid #243128;
+  background: #c9d1bd;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.62);
+}
+
+.badge-note h2 {
+  border-bottom: 2px solid #243128;
+  padding-bottom: 16px;
+  color: #142018;
+}
+
+.badge-note p {
+  color: #142018;
+  font-weight: 700;
+  letter-spacing: 0.035em;
+}
+
+.scene-blackout {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  background: #000;
+}
+
+.demo-ending {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: 28px;
+  background: #020403;
+  color: #8fff9b;
+  text-align: center;
+  pointer-events: auto;
+}
+
+.demo-ending-copy {
+  width: min(820px, 100%);
+  text-shadow: 0 0 12px rgba(100, 255, 120, 0.24);
+}
+
+.demo-ending-copy p {
+  margin: 8px 0;
+  font-size: clamp(16px, 2vw, 23px);
+  letter-spacing: 0.08em;
+}
+
+.demo-ending-copy h1 {
+  margin: 48px 0 12px;
+  font-size: clamp(32px, 5vw, 62px);
+  letter-spacing: 0.12em;
+}
+
+.demo-ending-copy h2 {
+  margin: 0 0 18px;
+  color: #c1eec5;
+  font-size: clamp(14px, 1.8vw, 20px);
+  font-weight: 400;
+}
+
+.demo-ending-copy span {
+  display: block;
+  color: #6e9c73;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+}
+
+.demo-ending-copy button {
+  margin-top: 42px;
+  padding: 12px 18px;
+  border: 1px solid #79d985;
+  background: transparent;
+  color: #8fff9b;
+  font: inherit;
+  font-size: 16px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+}
+
+.demo-ending-copy button:hover,
+.demo-ending-copy button:focus-visible {
+  background: rgba(112, 255, 130, 0.1);
+  outline: none;
 }
 
 .pointer-lock-hint {

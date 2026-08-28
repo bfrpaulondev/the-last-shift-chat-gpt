@@ -32,9 +32,27 @@ Jogo 3D de terror/investigação em primeira pessoa para navegador, desenvolvido
 - Notas fullscreen que bloqueiam movimento
 - Objetivo no HUD
 - Telemetria local de interações com `wasFirstTime`
-- Objetos de prova do sistema: cama, relógio e quadro
 
-A geometria final e os 12 interactables completos entram no M4.
+### Cena 1 — M4 Apartamento completo
+
+- Planta completa: quarto, banheiro, copa/cozinha e corredor de entrada
+- Colisores AABB para paredes internas e móveis principais
+- Piso de madeira, reboco, azulejo e teto gerados proceduralmente em Canvas 2D
+- Renderização interna reduzida com upscale pixelado
+- Iluminação fria da janela, luz amarelada no banheiro e névoa
+- Cidade procedural visível da janela
+- Torre Meridian no horizonte com janelas emissivas
+- 12 interactables completos com textos em PT-BR conforme o briefing
+- Fluxo obrigatório de levantar da cama antes de caminhar
+- Banho com blackout de 2 segundos
+- Janela com movimento de câmera para a Torre Meridian
+- Crachá físico nº 4471 e remoção após ser coletado
+- Checklist: torneira, café, crachá e celular
+- Porta bloqueada enquanto o checklist estiver incompleto
+- Objetivo muda automaticamente para sair de casa quando o checklist termina
+- Tela final da demo com reinício
+
+Áudio ambiente completo, intro/tela de título e sons específicos entram no M5. Backend de save/telemetria persistente entra no M6.
 
 ## Executar
 

@@ -2,21 +2,25 @@ import { useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import * as THREE from 'three'
 import { ApartmentSkeleton } from './game/ApartmentSkeleton'
+import { useGameStore } from './game/state/gameStore'
 import { GameHud } from './game/ui/GameHud'
 
 export default function App() {
   const [isPointerLocked, setIsPointerLocked] = useState(false)
+  const demoEnded = useGameStore((state) => state.demoEnded)
 
   return (
     <main className="game-shell">
       <Canvas
         id="game-canvas"
         shadows
+        dpr={1 / 3}
         camera={{
-          position: [0, 1.65, 2.25],
+          position: [-1.52, 1.35, -0.45],
+          rotation: [-0.087, Math.PI, 0],
           fov: 70,
           near: 0.1,
-          far: 100,
+          far: 160,
         }}
         gl={{
           antialias: false,
@@ -36,7 +40,7 @@ export default function App() {
 
       <GameHud isPointerLocked={isPointerLocked} />
 
-      {!isPointerLocked && (
+      {!isPointerLocked && !demoEnded && (
         <div className="pointer-lock-hint" aria-hidden="true">
           <strong>CLIQUE PARA ENTRAR</strong>
           <span>WASD para mover · Shift para correr · E para interagir · ESC para soltar</span>
