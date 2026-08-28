@@ -1,9 +1,9 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { audioEngine } from '../../audio/AudioEngine'
 
 export function StairwellAudio() {
-  let masterGain: GainNode | null = null
+  const masterGain = useRef<GainNode | null>(null)
 
   useEffect(() => {
     const AudioContextCtor = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
@@ -13,7 +13,7 @@ export function StairwellAudio() {
     const master = context.createGain()
     master.gain.value = audioEngine.isMuted() ? 0 : 0.035
     master.connect(context.destination)
-    masterGain = master
+    masterGain.current = master
 
     const hum = context.createOscillator()
     const humGain = context.createGain()
@@ -51,14 +51,15 @@ export function StairwellAudio() {
       window.clearInterval(creakTimer)
       hum.stop()
       metal.stop()
-      masterGain = null
+      masterGain.current = null
       void context.close()
     }
   }, [])
 
   useFrame(() => {
-    if (!masterGain) return
-    masterGain.gain.value = audioEngine.isMuted() ? 0 : 0.035
+    const master = masterGain.current
+    if (!master) return
+    master.gain.value = audioEngine.isMuted() ? 0 : 0.035
   })
 
   return null
