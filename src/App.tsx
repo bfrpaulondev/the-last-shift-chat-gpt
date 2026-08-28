@@ -88,7 +88,7 @@ export default function App() {
       {gameStarted && !isPointerLocked && !demoEnded && (
         <div className="pointer-lock-hint" aria-hidden="true">
           <strong>CLIQUE PARA ENTRAR</strong>
-          <span>WASD para mover · Shift para correr · E para interagir · M para mutar · ESC para soltar</span>
+          <span>WASD mover · Shift correr · E interagir · RMB inspecionar · M áudio · ESC soltar</span>
         </div>
       )}
     </main>
