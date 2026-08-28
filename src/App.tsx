@@ -51,27 +51,32 @@ export default function App() {
       <Canvas
         id="game-canvas"
         shadows
-        dpr={[1.25, 2]}
+        dpr={[1.5, 2]}
         camera={{
           position: [-1.52, 1.35, -0.45],
           rotation: [-0.087, Math.PI, 0],
           fov: 70,
-          near: 0.1,
+          near: 0.08,
           far: 160,
         }}
         gl={{
           antialias: true,
+          alpha: false,
+          stencil: false,
+          depth: true,
           powerPreference: 'high-performance',
         }}
         onCreated={({ gl }) => {
           gl.shadowMap.enabled = true
+          gl.shadowMap.autoUpdate = true
           gl.shadowMap.type = THREE.PCFSoftShadowMap
           gl.toneMapping = THREE.ACESFilmicToneMapping
-          gl.toneMappingExposure = 0.96
+          gl.toneMappingExposure = 0.86
           gl.outputColorSpace = THREE.SRGBColorSpace
+          gl.setClearColor('#080b0f', 1)
         }}
       >
-        <color attach="background" args={['#0b0f14']} />
+        <color attach="background" args={['#080b0f']} />
         <ApartmentSkeleton
           gameStarted={gameStarted}
           isPointerLocked={isPointerLocked}

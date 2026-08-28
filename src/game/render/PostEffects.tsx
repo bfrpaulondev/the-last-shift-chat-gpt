@@ -4,6 +4,7 @@ import * as THREE from 'three'
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js'
+import { SSAOPass } from 'three/examples/jsm/postprocessing/SSAOPass.js'
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js'
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js'
 import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader.js'
@@ -15,22 +16,30 @@ export function PostEffects() {
     const nextComposer = new EffectComposer(gl)
     nextComposer.addPass(new RenderPass(scene, camera))
 
+    const ssao = new SSAOPass(scene, camera, size.width, size.height)
+    ssao.kernelRadius = 10
+    ssao.minDistance = 0.004
+    ssao.maxDistance = 0.075
+    nextComposer.addPass(ssao)
+
     const bloom = new UnrealBloomPass(
       new THREE.Vector2(size.width, size.height),
-      0.16,
-      0.28,
-      0.88,
+      0.085,
+      0.34,
+      0.94,
     )
     nextComposer.addPass(bloom)
 
     const fxaa = new ShaderPass(FXAAShader)
     nextComposer.addPass(fxaa)
     nextComposer.addPass(new OutputPass())
+
     return nextComposer
   }, [camera, gl, scene])
 
   useEffect(() => {
-    const pixelRatio = gl.getPixelRatio()
+    const pixelRatio = Math.min(gl.getPixelRatio(), 2)
+    composer.setPixelRatio(pixelRatio)
     composer.setSize(size.width, size.height)
 
     const fxaa = composer.passes.find(

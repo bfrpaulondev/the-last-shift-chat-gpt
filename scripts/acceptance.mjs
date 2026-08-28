@@ -20,6 +20,7 @@ const files = {
   drip: await readFile('src/game/effects/FaucetDrip.tsx', 'utf8'),
   rain: await readFile('src/game/weather/ExteriorRain.tsx', 'utf8'),
   post: await readFile('src/game/render/PostEffects.tsx', 'utf8'),
+  environment: await readFile('src/game/render/PbrEnvironment.tsx', 'utf8'),
   textures: await readFile('src/game/materials/proceduralTextures.ts', 'utf8'),
   styles: await readFile('src/styles.css', 'utf8'),
   immersionStyles: await readFile('src/immersion.css', 'utf8'),
@@ -132,15 +133,15 @@ if (!files.clock.includes('START_MINUTES = 320') || !files.clock.includes('SECON
 }
 
 if (
-  !files.app.includes('dpr={[1.25, 2]}') ||
-  !files.app.includes('gl.toneMappingExposure = 0.96') ||
+  !files.app.includes('dpr={[1.5, 2]}') ||
+  !files.app.includes('gl.toneMappingExposure = 0.86') ||
   !files.textures.includes('size = 512') ||
   !files.textures.includes('texture.anisotropy = 8') ||
   !files.details.includes('function BathroomDetails()') ||
   !files.details.includes('function KitchenDetails()') ||
-  !files.lighting.includes('intensity={0.11}')
+  !files.lighting.includes('<rectAreaLight')
 ) {
-  throw new Error('M10 realism and environment detail contract is missing')
+  throw new Error('Realistic renderer and environment detail contract is missing')
 }
 
 if (
@@ -178,13 +179,27 @@ if (
 }
 
 if (
+  !files.skeleton.includes('<PbrEnvironment />') ||
+  !files.environment.includes('RoomEnvironment') ||
+  !files.environment.includes('PMREMGenerator') ||
+  !files.environment.includes('scene.environmentIntensity = 0.34') ||
+  !files.post.includes('SSAOPass') ||
+  !files.post.includes('ssao.kernelRadius = 10') ||
+  !files.post.includes('0.085') ||
+  !files.app.includes("gl.setClearColor('#080b0f', 1)") ||
+  !files.app.includes('alpha: false') ||
+  !files.immersionStyles.includes('filter: none') ||
+  !files.immersionStyles.includes('opacity: 0.002')
+) {
+  throw new Error('M12 realistic rendering foundation contract is missing')
+}
+
+if (
   !files.immersionStyles.includes('image-rendering: auto') ||
-  !files.immersionStyles.includes('opacity: 0.008') ||
-  !files.immersionStyles.includes('filter: contrast(1.04)') ||
   !files.immersionStyles.includes('.scare-flash') ||
   !files.styles.includes('radial-gradient')
 ) {
-  throw new Error('Cleaner screen treatment contract is missing')
+  throw new Error('Screen treatment contract is missing')
 }
 
 const playerRadiusMatch = files.player.match(/PLAYER_RADIUS = ([0-9.]+)/)
