@@ -1,94 +1,91 @@
 # O Último Turno / The Last Shift
 
-Jogo 3D de terror/investigação em primeira pessoa para navegador, desenvolvido com React, TypeScript, Three.js e React Three Fiber.
+Demo técnica 0.1 de um jogo 3D de terror e investigação em primeira pessoa para navegador. A Cena 1 acompanha Bruno Paulon durante os minutos anteriores ao último turno na Meridian Tower.
 
-## Estado atual
+## Stack
 
-### Cena 1 — M1 Skeleton
-
+- Node.js 20+
 - Vite + React 18 + TypeScript estrito
-- React Three Fiber + Three.js
-- Canvas 3D fullscreen
-- Ambiente inicial do apartamento em escala aproximada de 7m × 6m
-- Pointer Lock
+- Three.js + React Three Fiber + Drei
+- Zustand
+- Web Audio API
+- Express + Mongoose + MongoDB
+- Geometria, texturas e áudio gerados em runtime; nenhum asset binário é obrigatório
 
-### Cena 1 — M2 Player
+## Cena 1 completa — M1 a M7
 
-- Movimento WASD relativo à câmera
-- Caminhada 2.2 m/s e sprint 3.6 m/s
-- Aceleração/desaceleração suaves
-- Gravidade simples sem pulo
-- Colisão AABB manual por eixo
-- Head bob
-- Passos sintetizados via Web Audio API
+### Renderização e apartamento
 
-### Cena 1 — M3 Interação
+- Canvas 3D fullscreen com resolução interna reduzida e upscale pixelado
+- apartamento de aproximadamente 7m × 6m com quarto, banheiro, copa/cozinha e corredor
+- piso de madeira, reboco, azulejo e teto gerados por `CanvasTexture`
+- iluminação fria, banheiro amarelado, fog e cidade noturna
+- Torre Meridian procedural visível pela janela
+- vinheta radial e grain animado com opacidade aproximada de 0.04
 
-- Zustand para flags, objetivo, legendas, notas, prompt e telemetria
-- Raycast central com alcance de 2.2m
-- Prompt contextual `[E]`
-- Interações acionadas pela tecla E
-- Legendas temporizadas
-- Notas fullscreen que bloqueiam movimento
-- Objetivo no HUD
-- Telemetria local de interações com `wasFirstTime`
+### Player
 
-### Cena 1 — M4 Apartamento completo
+- WASD relativo à câmera
+- caminhada 2.2 m/s e sprint 3.6 m/s
+- aceleração e desaceleração suaves
+- gravidade sem pulo
+- colisão AABB manual separada por eixo
+- altura dos olhos 1.65m
+- head bob e passos sintetizados
+- botão direito do mouse faz inspeção com FOV suavizado de 70° para 35°
+- ESC libera o Pointer Lock
 
-- Planta completa: quarto, banheiro, copa/cozinha e corredor de entrada
-- Colisores AABB para paredes internas e móveis principais
-- Piso de madeira, reboco, azulejo e teto gerados proceduralmente em Canvas 2D
-- Renderização interna reduzida com upscale pixelado
-- Iluminação fria da janela, luz amarelada no banheiro e névoa
-- Cidade procedural visível da janela
-- Torre Meridian no horizonte com janelas emissivas
-- 12 interactables completos com textos em PT-BR conforme o briefing
-- Fluxo obrigatório de levantar da cama antes de caminhar
-- Banho com blackout de 2 segundos
-- Janela com movimento de câmera para a Torre Meridian
-- Crachá físico nº 4471 e remoção após ser coletado
-- Checklist: torneira, café, crachá e celular
-- Porta bloqueada enquanto o checklist estiver incompleto
-- Objetivo muda automaticamente para sair de casa quando o checklist termina
-- Tela final da demo com reinício
+### Interação e narrativa
 
-### Cena 1 — M5 Áudio + intro
+- raycast central com alcance de 2.2m
+- prompt contextual `[E]`
+- notas fullscreen bloqueiam movimento
+- objetivos, legendas e flags em Zustand
+- 12 interactables completos: cama, torneira, espelho, chuveiro, papel da geladeira, café, crachá, celular, janela, relógio, quadro e porta de saída
+- checklist obrigatório: torneira, café, crachá e celular
+- porta só libera depois do checklist
+- crachá nº 4471 legível
+- relógio de HUD inicia em 05:20 e avança 1 minuto de jogo a cada 10 segundos reais
+- tela final com reinício e indicador de save confirmado quando o backend está disponível
+
+### Áudio procedural
 
 - `AudioEngine` singleton com master gain 0.7
-- Tela de título com texto digitado e `[ PRESSIONE ENTER ]`
-- Alarme sintetizado de 1.5s ao iniciar
-- Fade da tela de título para o gameplay
-- Ambiente urbano contínuo em brown noise
-- Trem distante procedural em intervalos aleatórios de 25–40s
-- Chuva em white noise com highpass e atenuação pela distância da janela
-- Ping da torneira a cada 1.6s com sine 2100Hz, decay, reverb procedural e atenuação pela distância
-- Passos sintetizados com variação aleatória
-- Café de 3s em brown noise + bubbling tonal
-- Chuveiro de 4s com white noise e lowpass dinâmico
-- Tranca da porta com dois cliques metálicos
-- Blip de legenda e som de papel ao abrir notas
-- `M` muta/desmuta o master e mostra o estado no HUD
-- Saída da demo corta o áudio e mantém 3s de silêncio antes do texto final
+- alarme sintetizado na intro
+- ambiente urbano em brown noise
+- trem distante procedural
+- chuva com atenuação pela distância da janela
+- ping da torneira a cada 1.6s com sine em torno de 2100Hz, decay, reverb e atenuação espacial
+- passos em white noise filtrado
+- café procedural com bubbling tonal
+- chuveiro em white noise filtrado
+- tranca da porta, blip de legenda e som de papel
+- `M` alterna mute do master gain
 
-### Cena 1 — M6 Backend MERN
+### Intro e final
 
-- Express + Mongoose com MongoDB
-- `POST /api/save` com upsert por `playerId`
-- `GET /api/save/:playerId`
-- `POST /api/telemetry` com inserção em lote na collection `telemetry_events`
-- `GET /api/health`
-- `playerId` UUID persistido em `localStorage`
-- flags restauradas automaticamente ao recarregar quando o backend está disponível
-- save automático após mudanças de progresso e no fim da demo
-- telemetria enviada em lotes a cada 15 segundos e no fim da demo
-- eventos só saem da fila local depois de um POST bem-sucedido
-- fallback silencioso: backend ou Mongo offline nunca bloqueiam o jogo
-- Vite proxy `/api` para `localhost:3001`
-- indicador discreto `Progresso salvo ✓` na tela final quando o save foi confirmado
+- tela de título `O ÚLTIMO TURNO / THE LAST SHIFT`
+- texto digitado e `[ PRESSIONE ENTER ]`
+- alarme de aproximadamente 1.5s e fade para o despertar
+- saída da demo corta o áudio
+- 3s de silêncio antes da cópia final
 
-## Executar apenas o jogo
+### Backend MERN opcional
 
-O backend é opcional. O frontend funciona sem MongoDB e sem Express:
+O jogo funciona integralmente sem backend. Quando Express + MongoDB estão disponíveis:
+
+- `POST /api/save` — upsert por `playerId`
+- `GET /api/save/:playerId` — restaura progresso ou retorna 404
+- `POST /api/telemetry` — grava eventos em lote em `telemetry_events`
+- `GET /api/health` — health check
+- UUID do jogador persistido em `localStorage`
+- flags restauradas automaticamente
+- save automático durante o progresso e no fim da demo
+- telemetria enviada a cada 15s e no fim da demo
+- eventos permanecem na fila local até um POST bem-sucedido
+- falhas de Express/Mongo são silenciosas no frontend
+
+## Executar somente o jogo
 
 ```bash
 npm install
@@ -97,7 +94,7 @@ npm run dev
 
 Abra `http://localhost:5173`.
 
-## Executar com persistência MongoDB
+## Executar com MongoDB
 
 Suba MongoDB 7:
 
@@ -117,25 +114,72 @@ Terminal 2:
 npm run dev
 ```
 
-O Mongo padrão é `mongodb://127.0.0.1:27017/thelastshift`. Defina `MONGO_URI` no ambiente para usar outra conexão.
+Mongo padrão:
 
-Detalhes adicionais: `server/README.md`.
-
-## Build
-
-```bash
-npm run build
-npm run check:server
-npm run preview
+```text
+mongodb://127.0.0.1:27017/thelastshift
 ```
+
+Use `MONGO_URI` para apontar para outra instância. O servidor usa a porta `3001` por padrão e o Vite encaminha `/api` para ela.
 
 ## Controles
 
-- `Enter`: iniciar na tela de título
-- Mouse: olhar
-- Clique: capturar ponteiro
-- `WASD`: mover
-- `Shift`: correr
-- `E`: interagir / fechar nota
-- `M`: mutar/desmutar áudio
-- `ESC`: soltar ponteiro / fechar nota
+| Controle | Ação |
+| --- | --- |
+| `Enter` | iniciar a partir da tela de título |
+| Mouse | olhar |
+| Clique esquerdo | capturar Pointer Lock |
+| `WASD` | mover |
+| `Shift` | correr |
+| `E` | interagir / fechar nota |
+| Botão direito | inspeção / zoom 70° → 35° |
+| `M` | mutar / desmutar áudio |
+| `ESC` | fechar nota / liberar Pointer Lock |
+
+## Build e validação
+
+```bash
+npm run check:acceptance
+npm run check:server
+npm run build
+npm run preview
+```
+
+O CI executa ainda:
+
+- contrato automatizado da Cena 1
+- sintaxe do backend
+- health check com Mongo indisponível
+- round-trip real de save com MongoDB 7
+- inserção real de telemetria
+- build TypeScript/Vite
+- smoke test do preview de produção
+
+## Estrutura principal
+
+```text
+src/
+  game/
+    api/              persistência e telemetria frontend
+    audio/            Web Audio procedural
+    data/             contrato dos interactables
+    interaction/      raycast e ações
+    materials/        CanvasTextures procedurais
+    physics/          colisores AABB
+    player/           movimento e câmera
+    state/            Zustand
+    ui/               HUD, título e relógio
+server/
+  models/             modelos Mongoose
+  app.js              API Express
+  db.js               MongoDB opcional
+  smoke.js            teste de persistência/telemetria
+scripts/
+  acceptance.mjs      contrato automatizado da Cena 1
+```
+
+## Critério de conclusão da demo
+
+O fluxo esperado é: iniciar → levantar → explorar o apartamento → fechar a torneira → tomar café → pegar o crachá → checar o celular → sair pela porta. Espelho, banho, papel da geladeira, janela, relógio e quadro são interações narrativas adicionais. A porta permanece bloqueada até as quatro ações obrigatórias estarem concluídas.
+
+Detalhes específicos do backend: `server/README.md`.
