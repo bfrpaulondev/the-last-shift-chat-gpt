@@ -51,7 +51,7 @@ export default function App() {
       <Canvas
         id="game-canvas"
         shadows
-        dpr={1 / 3}
+        dpr={[1, 1.5]}
         camera={{
           position: [-1.52, 1.35, -0.45],
           rotation: [-0.087, Math.PI, 0],
@@ -60,12 +60,15 @@ export default function App() {
           far: 160,
         }}
         gl={{
-          antialias: false,
+          antialias: true,
           powerPreference: 'high-performance',
         }}
         onCreated={({ gl }) => {
           gl.shadowMap.enabled = true
           gl.shadowMap.type = THREE.PCFSoftShadowMap
+          gl.toneMapping = THREE.ACESFilmicToneMapping
+          gl.toneMappingExposure = 1.18
+          gl.outputColorSpace = THREE.SRGBColorSpace
         }}
       >
         <color attach="background" args={['#0d1017']} />
@@ -88,7 +91,7 @@ export default function App() {
       {gameStarted && !isPointerLocked && !demoEnded && (
         <div className="pointer-lock-hint" aria-hidden="true">
           <strong>CLIQUE PARA ENTRAR</strong>
-          <span>WASD mover · Shift correr · E interagir · RMB inspecionar · M áudio · ESC soltar</span>
+          <span>WASD mover · Shift correr · E interagir · SPACE continuar fala · RMB inspecionar · M áudio · ESC soltar</span>
         </div>
       )}
     </main>
