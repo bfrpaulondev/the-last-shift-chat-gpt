@@ -7,6 +7,7 @@ import { CafeteriaArea } from '../areas/cafeteria/CafeteriaArea'
 import { ElevatorArea } from '../areas/elevator/ElevatorArea'
 import { Floor22Area } from '../areas/floor22/Floor22Area'
 import { Floor30Area } from '../areas/floor30/Floor30Area'
+import { Floor37Area } from '../areas/floor37/Floor37Area'
 import { LobbyArea } from '../areas/lobby/LobbyArea'
 import { LockerArea } from '../areas/locker/LockerArea'
 import { PlazaArea } from '../areas/plaza/PlazaArea'
@@ -145,7 +146,15 @@ export function AreaDirector({
           onLockChange={onLockChange}
         />
       )}
-      {area !== 'apartment' && area !== 'street' && area !== 'bus-214' && area !== 'meridian-plaza' && area !== 'lobby' && area !== 'locker-b1' && area !== 'service-elevator' && area !== 'work-floor-22' && area !== 'work-floor-30' && area !== 'cafeteria' && (
+      {area === 'floor-37' && (
+        <Floor37Area
+          key="area-floor-37"
+          gameStarted={gameStarted}
+          isPointerLocked={isPointerLocked}
+          onLockChange={onLockChange}
+        />
+      )}
+      {area !== 'apartment' && area !== 'street' && area !== 'bus-214' && area !== 'meridian-plaza' && area !== 'lobby' && area !== 'locker-b1' && area !== 'service-elevator' && area !== 'work-floor-22' && area !== 'work-floor-30' && area !== 'cafeteria' && area !== 'floor-37' && (
         <StreamingStandby key={`area-${area}`} />
       )}
     </>
