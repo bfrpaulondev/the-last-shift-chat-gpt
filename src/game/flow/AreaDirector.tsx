@@ -4,6 +4,7 @@ import * as THREE from 'three'
 import { ApartmentSkeleton } from '../ApartmentSkeleton'
 import { BusArea } from '../areas/bus/BusArea'
 import { LobbyArea } from '../areas/lobby/LobbyArea'
+import { LockerArea } from '../areas/locker/LockerArea'
 import { PlazaArea } from '../areas/plaza/PlazaArea'
 import { StreetArea } from '../areas/street/StreetArea'
 import { AREA_DEFINITIONS } from './areaTypes'
@@ -100,7 +101,15 @@ export function AreaDirector({
           onLockChange={onLockChange}
         />
       )}
-      {area !== 'apartment' && area !== 'street' && area !== 'bus-214' && area !== 'meridian-plaza' && area !== 'lobby' && (
+      {area === 'locker-b1' && (
+        <LockerArea
+          key="area-locker-b1"
+          gameStarted={gameStarted}
+          isPointerLocked={isPointerLocked}
+          onLockChange={onLockChange}
+        />
+      )}
+      {area !== 'apartment' && area !== 'street' && area !== 'bus-214' && area !== 'meridian-plaza' && area !== 'lobby' && area !== 'locker-b1' && (
         <StreamingStandby key={`area-${area}`} />
       )}
     </>
