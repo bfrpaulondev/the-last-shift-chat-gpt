@@ -37,7 +37,7 @@ function Shell() {
 
 function Tables() {
   return (
-    <group raycast={() => null)}>
+    <group raycast={() => null}>
       {[-3.5, 0, 3.5].map((x) => (
         <group key={x} position={[x, 0, -2.2]}>
           <mesh position={[0, 0.78, 0]} castShadow receiveShadow>
