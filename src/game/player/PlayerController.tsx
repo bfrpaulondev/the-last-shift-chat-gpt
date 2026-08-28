@@ -7,6 +7,7 @@ import type { Collider } from '../physics/colliders'
 interface PlayerControllerProps {
   colliders: Collider[]
   enabled: boolean
+  speedScale?: number
 }
 
 const EYE_HEIGHT = 1.65
@@ -35,7 +36,7 @@ function isBlocked(x: number, z: number, colliders: Collider[]): boolean {
   return colliders.some((collider) => intersectsCollider(x, z, collider))
 }
 
-export function PlayerController({ colliders, enabled }: PlayerControllerProps) {
+export function PlayerController({ colliders, enabled, speedScale = 1 }: PlayerControllerProps) {
   const { camera } = useThree()
   const pressedKeys = useRef(new Set<string>())
   const velocity = useRef(new THREE.Vector3())
@@ -82,6 +83,7 @@ export function PlayerController({ colliders, enabled }: PlayerControllerProps) 
 
   useFrame((_, delta) => {
     const safeDelta = Math.min(delta, 0.05)
+    const clampedScale = THREE.MathUtils.clamp(speedScale, 0.1, 1)
 
     verticalVelocity.current += GRAVITY * safeDelta
     feetY.current += verticalVelocity.current * safeDelta
@@ -100,7 +102,7 @@ export function PlayerController({ colliders, enabled }: PlayerControllerProps) 
     const forwardInput = Number(keys.has('KeyW')) - Number(keys.has('KeyS'))
     const rightInput = Number(keys.has('KeyD')) - Number(keys.has('KeyA'))
     const running = keys.has('ShiftLeft') || keys.has('ShiftRight')
-    const speed = running ? SPRINT_SPEED : WALK_SPEED
+    const speed = (running ? SPRINT_SPEED : WALK_SPEED) * clampedScale
 
     camera.getWorldDirection(forward.current)
     forward.current.y = 0
@@ -159,9 +161,9 @@ export function PlayerController({ colliders, enabled }: PlayerControllerProps) 
     const moving = horizontalSpeed > 0.08
 
     if (moving) {
-      const bobFrequency = running ? SPRINT_BOB_FREQUENCY : WALK_BOB_FREQUENCY
+      const bobFrequency = (running ? SPRINT_BOB_FREQUENCY : WALK_BOB_FREQUENCY) * clampedScale
       bobPhase.current += safeDelta * bobFrequency
-      const targetBob = Math.sin(bobPhase.current) * BOB_AMPLITUDE
+      const targetBob = Math.sin(bobPhase.current) * BOB_AMPLITUDE * Math.max(0.55, clampedScale)
       currentBob.current = THREE.MathUtils.damp(currentBob.current, targetBob, 18, safeDelta)
 
       const stepIndex = Math.floor(bobPhase.current / Math.PI)

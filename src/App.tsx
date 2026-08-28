@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import * as THREE from 'three'
 import { PersistenceManager } from './game/api/PersistenceManager'
+import { BusTriageOverlay } from './game/areas/bus/BusTriageOverlay'
 import { audioEngine } from './game/audio/AudioEngine'
 import { AreaDirector } from './game/flow/AreaDirector'
 import { AreaTransitionOverlay } from './game/flow/AreaTransitionOverlay'
@@ -90,6 +91,7 @@ export default function App() {
       </Canvas>
 
       {gameStarted && <GameHud isPointerLocked={isPointerLocked} muted={muted} />}
+      {gameStarted && currentArea === 'bus-214' && <BusTriageOverlay />}
       <AreaTransitionOverlay />
 
       {!gameStarted && (
