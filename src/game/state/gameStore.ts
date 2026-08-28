@@ -8,6 +8,21 @@ export interface TelemetryEvent {
   wasFirstTime: boolean
 }
 
+export type HandActionKind =
+  | 'reach'
+  | 'grab'
+  | 'press'
+  | 'turn'
+  | 'door'
+  | 'brace'
+  | 'startle'
+
+export interface HandActionState {
+  kind: HandActionKind
+  startedAt: number
+  durationMs: number
+}
+
 interface NoteState {
   title: string
   body: string
@@ -23,6 +38,8 @@ interface GameState {
   telemetry: TelemetryEvent[]
   cinematic: boolean
   blackout: boolean
+  scareActive: boolean
+  handAction: HandActionState | null
   demoEnded: boolean
   backendOnline: boolean
   progressSaved: boolean
@@ -30,6 +47,7 @@ interface GameState {
   hydrateFlags: (flags: Record<string, boolean>) => void
   hasFlag: (flag: string) => boolean
   say: (text: string, seconds?: number) => void
+  dismissSubtitle: () => void
   queueSubtitle: (text: string) => void
   openNote: (title: string, body: string) => void
   closeNote: () => void
@@ -37,6 +55,8 @@ interface GameState {
   setPrompt: (prompt: string | null) => void
   setCinematic: (cinematic: boolean) => void
   setBlackout: (blackout: boolean) => void
+  triggerHandAction: (kind: HandActionKind, durationMs?: number) => void
+  triggerScare: (durationMs?: number) => void
   setBackendOnline: (backendOnline: boolean) => void
   setProgressSaved: (progressSaved: boolean) => void
   endDemo: () => void
@@ -51,7 +71,8 @@ const REQUIRED_EXIT_FLAGS = [
   'phone_checked',
 ] as const
 
-let subtitleTimer: number | null = null
+let handActionTimer: number | null = null
+let scareTimer: number | null = null
 
 function checklistComplete(flags: Record<string, boolean>): boolean {
   return REQUIRED_EXIT_FLAGS.every((flag) => Boolean(flags[flag]))
@@ -79,6 +100,8 @@ export const useGameStore = create<GameState>((set, get) => ({
   telemetry: [],
   cinematic: false,
   blackout: false,
+  scareActive: false,
+  handAction: null,
   demoEnded: false,
   backendOnline: false,
   progressSaved: false,
@@ -112,24 +135,23 @@ export const useGameStore = create<GameState>((set, get) => ({
     })
   },
   hasFlag: (flag) => Boolean(get().flags[flag]),
-  say: (text, seconds = 4) => {
-    if (subtitleTimer !== null) {
-      window.clearTimeout(subtitleTimer)
-    }
-
+  say: (text, _seconds) => {
     audioEngine.playDialogueBlip()
     set({ subtitle: text })
-    subtitleTimer = window.setTimeout(() => {
-      set({ subtitle: null })
-      subtitleTimer = null
-    }, seconds * 1000)
+  },
+  dismissSubtitle: () => {
+    set({ subtitle: null })
   },
   queueSubtitle: (pendingSubtitle) => {
     set({ pendingSubtitle })
   },
   openNote: (title, body) => {
     audioEngine.playPaper()
-    set({ note: { title, body }, interactPrompt: null })
+    set({
+      note: { title, body },
+      interactPrompt: null,
+      subtitle: null,
+    })
   },
   closeNote: () => {
     const pendingSubtitle = get().pendingSubtitle
@@ -159,6 +181,40 @@ export const useGameStore = create<GameState>((set, get) => ({
   setBlackout: (blackout) => {
     set({ blackout })
   },
+  triggerHandAction: (kind, durationMs = 650) => {
+    if (handActionTimer !== null) {
+      window.clearTimeout(handActionTimer)
+    }
+
+    const action: HandActionState = {
+      kind,
+      startedAt: performance.now(),
+      durationMs,
+    }
+
+    set({ handAction: action })
+    handActionTimer = window.setTimeout(() => {
+      if (get().handAction?.startedAt === action.startedAt) {
+        set({ handAction: null })
+      }
+      handActionTimer = null
+    }, durationMs)
+  },
+  triggerScare: (durationMs = 1600) => {
+    if (scareTimer !== null) {
+      window.clearTimeout(scareTimer)
+    }
+
+    audioEngine.playScareSting()
+    audioEngine.playHeartbeat()
+    get().triggerHandAction('startle', Math.min(durationMs, 1300))
+    set({ scareActive: true })
+
+    scareTimer = window.setTimeout(() => {
+      set({ scareActive: false })
+      scareTimer = null
+    }, durationMs)
+  },
   setBackendOnline: (backendOnline) => {
     set({ backendOnline })
   },
@@ -166,7 +222,13 @@ export const useGameStore = create<GameState>((set, get) => ({
     set({ progressSaved })
   },
   endDemo: () => {
-    set({ demoEnded: true, interactPrompt: null, subtitle: null })
+    set({
+      demoEnded: true,
+      interactPrompt: null,
+      subtitle: null,
+      scareActive: false,
+      handAction: null,
+    })
   },
   logEvent: (event) => {
     set((state) => ({ telemetry: [...state.telemetry, event] }))
