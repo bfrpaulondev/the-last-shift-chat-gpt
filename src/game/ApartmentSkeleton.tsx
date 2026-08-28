@@ -9,6 +9,7 @@ import { AudioAmbience } from './audio/AudioAmbience'
 import { FaucetDrip } from './effects/FaucetDrip'
 import { BadgeDropScene } from './events/BadgeDropScene'
 import { RatScare } from './events/RatScare'
+import { CinematicPropAnimations } from './interaction/CinematicPropAnimations'
 import { InteractionSystem } from './interaction/InteractionSystem'
 import { CameraPolish } from './player/CameraPolish'
 import { PlayerController } from './player/PlayerController'
@@ -57,6 +58,7 @@ export function ApartmentSkeleton({
       <ExteriorRain />
       <FaucetDrip />
       <BadgeDropScene />
+      <CinematicPropAnimations />
       <AudioAmbience enabled={gameStarted && !demoEnded} />
       {gameStarted && <InteractionSystem />}
       {gameStarted && <RatScare />}
