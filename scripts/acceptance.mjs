@@ -7,6 +7,7 @@ const files = {
   player: await readFile('src/game/player/PlayerController.tsx', 'utf8'),
   hands: await readFile('src/game/player/FirstPersonHands.tsx', 'utf8'),
   rat: await readFile('src/game/events/RatScare.tsx', 'utf8'),
+  suspense: await readFile('src/game/audio/SuspenseCue.ts', 'utf8'),
   colliders: await readFile('src/game/physics/colliders.ts', 'utf8'),
   camera: await readFile('src/game/player/CameraPolish.tsx', 'utf8'),
   clock: await readFile('src/game/ui/GameClock.tsx', 'utf8'),
@@ -60,6 +61,13 @@ if (
 }
 
 if (
+  !files.interaction.includes('state.subtitle || state.subtitleQueue.length > 0') ||
+  !files.interaction.includes('state.setPrompt(null)')
+) {
+  throw new Error('Interaction serialization while dialogue is active is missing')
+}
+
+if (
   !files.interaction.includes('coffee_failed_once') ||
   !files.interaction.includes('coffee_failed_twice')
 ) {
@@ -70,12 +78,31 @@ if (!files.interaction.includes('badge_dropped')) {
   throw new Error('Dropped badge interaction contract is missing')
 }
 
-if (!files.hands.includes('FirstPersonHands') || !files.gameStore.includes('triggerHandAction')) {
-  throw new Error('First-person hands contract is missing')
+if (
+  !files.hands.includes('FirstPersonHands') ||
+  !files.hands.includes('root.current.position.copy(camera.position)') ||
+  !files.hands.includes('depthTest={false}') ||
+  files.hands.includes('createPortal') ||
+  !files.gameStore.includes('triggerHandAction')
+) {
+  throw new Error('Reliable first-person hands rendering contract is missing')
 }
 
-if (!files.rat.includes('RatScare') || !files.gameStore.includes('triggerScare')) {
-  throw new Error('Post-shower scare contract is missing')
+if (
+  !files.rat.includes('RatScare') ||
+  !files.rat.includes('suspenseCue.play()') ||
+  !files.rat.includes('subtitleActive') ||
+  !files.gameStore.includes('triggerScare')
+) {
+  throw new Error('Sequenced post-shower scare contract is missing')
+}
+
+if (
+  !files.suspense.includes('class SuspenseCue') ||
+  !files.suspense.includes('exponentialRampToValueAtTime(0.0001') ||
+  !files.suspense.includes('duration = 6.8')
+) {
+  throw new Error('Fading suspense music contract is missing')
 }
 
 if (!files.camera.includes('DEFAULT_FOV = 70') || !files.camera.includes('INSPECTION_FOV = 35')) {
