@@ -158,6 +158,8 @@ export function InteractionSystem() {
   const { camera, scene } = useThree()
   const raycaster = useRef(new THREE.Raycaster())
   const currentInteractableId = useRef<string | null>(null)
+  const interactionPoint = useRef(new THREE.Vector3())
+  const hasInteractionPoint = useRef(false)
   const interactedIds = useRef(new Set<string>())
   const busy = useRef(false)
 
@@ -205,6 +207,11 @@ export function InteractionSystem() {
         return
       }
 
+      const interactionTarget: [number, number, number] | undefined =
+        hasInteractionPoint.current
+          ? [interactionPoint.current.x, interactionPoint.current.y, interactionPoint.current.z]
+          : undefined
+
       const wasFirstTime = !interactedIds.current.has(id)
       interactedIds.current.add(id)
       state.logEvent({
@@ -242,7 +249,7 @@ export function InteractionSystem() {
 
       if (id === 'coffee') {
         busy.current = true
-        state.triggerHandAction('press', 760)
+        state.triggerHandAction('press', 760, interactionTarget)
         state.setPrompt(null)
 
         if (!state.flags.coffee_failed_once) {
@@ -279,7 +286,7 @@ export function InteractionSystem() {
 
       if (id === 'badge') {
         busy.current = true
-        state.triggerHandAction('grab', 800)
+        state.triggerHandAction('grab', 800, interactionTarget)
 
         if (!state.flags.badge_dropped) {
           window.setTimeout(() => {
@@ -312,7 +319,7 @@ export function InteractionSystem() {
 
         busy.current = true
         state.setCinematic(true)
-        state.triggerHandAction('turn', 850)
+        state.triggerHandAction('turn', 850, interactionTarget)
 
         window.setTimeout(() => {
           const latest = useGameStore.getState()
@@ -337,7 +344,7 @@ export function InteractionSystem() {
 
       if (definition.mode === 'window') {
         busy.current = true
-        state.triggerHandAction('brace', 2500)
+        state.triggerHandAction('brace', 2500, interactionTarget)
         state.setCinematic(true)
         if (definition.flag) {
           state.setFlag(definition.flag)
@@ -359,7 +366,7 @@ export function InteractionSystem() {
       }
 
       if (definition.mode === 'door') {
-        state.triggerHandAction('door', 760)
+        state.triggerHandAction('door', 760, interactionTarget)
 
         if (!exitReady(state.flags)) {
           state.say(missingChecklistMessage(state.flags))
@@ -384,7 +391,7 @@ export function InteractionSystem() {
 
       if (id === 'faucet_bathroom') {
         busy.current = true
-        state.triggerHandAction('turn', 760)
+        state.triggerHandAction('turn', 760, interactionTarget)
         window.setTimeout(() => {
           const latest = useGameStore.getState()
           if (definition.flag) {
@@ -403,7 +410,7 @@ export function InteractionSystem() {
           ? 'grab'
           : 'reach'
       const handDuration = handKind === 'grab' ? 760 : 680
-      state.triggerHandAction(handKind, handDuration)
+      state.triggerHandAction(handKind, handDuration, interactionTarget)
 
       if (definition.note) {
         busy.current = true
@@ -452,12 +459,14 @@ export function InteractionSystem() {
       state.demoEnded
     ) {
       currentInteractableId.current = null
+      hasInteractionPoint.current = false
       state.setPrompt(null)
       return
     }
 
     if (!state.flags.awake) {
       currentInteractableId.current = 'bed'
+      hasInteractionPoint.current = false
       state.setPrompt(INTERACTABLES.bed.prompt)
       return
     }
@@ -467,6 +476,7 @@ export function InteractionSystem() {
 
     const hits = raycaster.current.intersectObjects(scene.children, true)
     let nextId: string | null = null
+    hasInteractionPoint.current = false
 
     for (const hit of hits) {
       if (hit.distance > INTERACTION_RANGE) {
@@ -476,6 +486,8 @@ export function InteractionSystem() {
       const id = findInteractableId(hit.object)
       if (id && INTERACTABLES[id] && isAvailable(id, state.flags)) {
         nextId = id
+        interactionPoint.current.copy(hit.point)
+        hasInteractionPoint.current = true
       }
 
       break
@@ -483,6 +495,9 @@ export function InteractionSystem() {
 
     const prompt = nextId ? getPrompt(nextId, state.flags) : null
     currentInteractableId.current = prompt ? nextId : null
+    if (!prompt) {
+      hasInteractionPoint.current = false
+    }
     state.setPrompt(prompt)
   })
 
