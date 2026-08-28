@@ -16,6 +16,8 @@ const files = {
   colliders: await readFile('src/game/physics/colliders.ts', 'utf8'),
   camera: await readFile('src/game/player/CameraPolish.tsx', 'utf8'),
   clock: await readFile('src/game/ui/GameClock.tsx', 'utf8'),
+  shiftClock: await readFile('src/game/time/shiftClock.ts', 'utf8'),
+  shiftController: await readFile('src/game/time/ShiftClockController.tsx', 'utf8'),
   interiorRealism: await readFile('src/game/InteriorRealismDetails.tsx', 'utf8'),
   narrativeRealism: await readFile('src/game/NarrativePropRealism.tsx', 'utf8'),
   atmosphere: await readFile('src/game/AtmosphereDetails.tsx', 'utf8'),
@@ -64,8 +66,14 @@ if (
 if (!files.camera.includes('DEFAULT_FOV = 70') || !files.camera.includes('INSPECTION_FOV = 35')) {
   throw new Error('Inspection zoom contract is missing')
 }
-if (!files.clock.includes('START_MINUTES = 320') || !files.clock.includes('SECONDS_PER_MINUTE = 10')) {
-  throw new Error('Game clock contract is missing')
+if (
+  !files.shiftClock.includes('INITIAL_WORLD_MINUTES = 5 * 60 + 20') ||
+  !files.shiftClock.includes('GAME_SECONDS_PER_MINUTE = 10') ||
+  !files.clock.includes('useShiftClock') ||
+  !files.clock.includes('formatWorldTime') ||
+  !files.shiftController.includes('GAME_SECONDS_PER_MINUTE')
+) {
+  throw new Error('Persistent game clock contract is missing')
 }
 
 if (
