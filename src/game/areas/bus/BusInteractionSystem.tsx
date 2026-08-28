@@ -57,6 +57,13 @@ export function BusInteractionSystem() {
     holding.current = false
     bus.setMarkProgress(0)
 
+    game.logEvent({
+      t: performance.now() / 1000,
+      type: 'interact',
+      objectId: `bus:triage:${id}`,
+      wasFirstTime: id === 'passenger-cap' ? !game.flags.caught_pickpocket : !game.flags[`triage_checked_${id}`],
+    })
+
     if (id === 'passenger-cap') {
       game.setFlag('caught_pickpocket')
       game.setFlag('bus_alert_completed')
@@ -105,8 +112,10 @@ export function BusInteractionSystem() {
       if (!id) return
 
       if (bus.triagePhase === 'alert' && TRIAGE_CANDIDATES.has(id)) {
-        holding.current = true
-        bus.setFocusedCandidate(id)
+        if (!event.repeat) {
+          holding.current = true
+          bus.setFocusedCandidate(id)
+        }
         return
       }
 
@@ -115,6 +124,14 @@ export function BusInteractionSystem() {
         interactionPoint.current.y,
         interactionPoint.current.z,
       ]
+      const interactionFlag = `bus_interacted_${id}`
+      game.logEvent({
+        t: performance.now() / 1000,
+        type: 'interact',
+        objectId: `bus:${id}`,
+        wasFirstTime: !game.flags[interactionFlag],
+      })
+      game.setFlag(interactionFlag)
 
       if (id === 'gossip-colleagues') {
         if (bus.gossipDistance > 2.5) return
