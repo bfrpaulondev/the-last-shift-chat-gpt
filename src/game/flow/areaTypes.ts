@@ -92,6 +92,7 @@ export const AREA_DEFINITIONS: Record<GameArea, AreaDefinition> = {
     chapter: 'part-2-road-to-meridian',
     label: 'Elevador de Serviço',
     defaultCheckpoint: 'elevator-cabin',
+    defaultSpawn: { x: 0, y: 1.65, z: 1.2, yaw: Math.PI },
   },
   'work-floor-22': {
     area: 'work-floor-22',
