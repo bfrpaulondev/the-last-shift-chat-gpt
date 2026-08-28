@@ -24,7 +24,10 @@ interface GameState {
   cinematic: boolean
   blackout: boolean
   demoEnded: boolean
+  backendOnline: boolean
+  progressSaved: boolean
   setFlag: (flag: string) => void
+  hydrateFlags: (flags: Record<string, boolean>) => void
   hasFlag: (flag: string) => boolean
   say: (text: string, seconds?: number) => void
   queueSubtitle: (text: string) => void
@@ -34,8 +37,11 @@ interface GameState {
   setPrompt: (prompt: string | null) => void
   setCinematic: (cinematic: boolean) => void
   setBlackout: (blackout: boolean) => void
+  setBackendOnline: (backendOnline: boolean) => void
+  setProgressSaved: (progressSaved: boolean) => void
   endDemo: () => void
   logEvent: (event: TelemetryEvent) => void
+  acknowledgeTelemetry: (count: number) => void
 }
 
 const REQUIRED_EXIT_FLAGS = [
@@ -51,6 +57,18 @@ function checklistComplete(flags: Record<string, boolean>): boolean {
   return REQUIRED_EXIT_FLAGS.every((flag) => Boolean(flags[flag]))
 }
 
+function objectiveForFlags(flags: Record<string, boolean>): string {
+  if (!flags.awake) {
+    return 'Levante-se da cama.'
+  }
+
+  if (checklistComplete(flags)) {
+    return 'Sair de casa — pegar o ônibus das 06:05.'
+  }
+
+  return 'Prepare-se: feche a torneira, tome café, pegue o crachá e o celular.'
+}
+
 export const useGameStore = create<GameState>((set, get) => ({
   flags: {},
   subtitle: null,
@@ -62,6 +80,8 @@ export const useGameStore = create<GameState>((set, get) => ({
   cinematic: false,
   blackout: false,
   demoEnded: false,
+  backendOnline: false,
+  progressSaved: false,
   setFlag: (flag) => {
     const wasChecklistComplete = checklistComplete(get().flags)
 
@@ -73,6 +93,7 @@ export const useGameStore = create<GameState>((set, get) => ({
 
       return {
         flags,
+        progressSaved: false,
         objective: checklistComplete(flags)
           ? 'Sair de casa — pegar o ônibus das 06:05.'
           : state.objective,
@@ -82,6 +103,13 @@ export const useGameStore = create<GameState>((set, get) => ({
     if (!wasChecklistComplete && checklistComplete(get().flags)) {
       audioEngine.playDoorUnlock()
     }
+  },
+  hydrateFlags: (flags) => {
+    set({
+      flags: { ...flags },
+      objective: objectiveForFlags(flags),
+      progressSaved: true,
+    })
   },
   hasFlag: (flag) => Boolean(get().flags[flag]),
   say: (text, seconds = 4) => {
@@ -131,10 +159,23 @@ export const useGameStore = create<GameState>((set, get) => ({
   setBlackout: (blackout) => {
     set({ blackout })
   },
+  setBackendOnline: (backendOnline) => {
+    set({ backendOnline })
+  },
+  setProgressSaved: (progressSaved) => {
+    set({ progressSaved })
+  },
   endDemo: () => {
     set({ demoEnded: true, interactPrompt: null, subtitle: null })
   },
   logEvent: (event) => {
     set((state) => ({ telemetry: [...state.telemetry, event] }))
+  },
+  acknowledgeTelemetry: (count) => {
+    if (count <= 0) {
+      return
+    }
+
+    set((state) => ({ telemetry: state.telemetry.slice(count) }))
   },
 }))
