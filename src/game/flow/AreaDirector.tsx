@@ -3,6 +3,7 @@ import { useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { ApartmentSkeleton } from '../ApartmentSkeleton'
 import { BusArea } from '../areas/bus/BusArea'
+import { CafeteriaArea } from '../areas/cafeteria/CafeteriaArea'
 import { ElevatorArea } from '../areas/elevator/ElevatorArea'
 import { Floor22Area } from '../areas/floor22/Floor22Area'
 import { Floor30Area } from '../areas/floor30/Floor30Area'
@@ -136,7 +137,15 @@ export function AreaDirector({
           onLockChange={onLockChange}
         />
       )}
-      {area !== 'apartment' && area !== 'street' && area !== 'bus-214' && area !== 'meridian-plaza' && area !== 'lobby' && area !== 'locker-b1' && area !== 'service-elevator' && area !== 'work-floor-22' && area !== 'work-floor-30' && (
+      {area === 'cafeteria' && (
+        <CafeteriaArea
+          key="area-cafeteria"
+          gameStarted={gameStarted}
+          isPointerLocked={isPointerLocked}
+          onLockChange={onLockChange}
+        />
+      )}
+      {area !== 'apartment' && area !== 'street' && area !== 'bus-214' && area !== 'meridian-plaza' && area !== 'lobby' && area !== 'locker-b1' && area !== 'service-elevator' && area !== 'work-floor-22' && area !== 'work-floor-30' && area !== 'cafeteria' && (
         <StreamingStandby key={`area-${area}`} />
       )}
     </>
