@@ -31,6 +31,7 @@ interface NoteState {
 interface GameState {
   flags: Record<string, boolean>
   subtitle: string | null
+  subtitleQueue: string[]
   pendingSubtitle: string | null
   note: NoteState | null
   objective: string
@@ -93,6 +94,7 @@ function objectiveForFlags(flags: Record<string, boolean>): string {
 export const useGameStore = create<GameState>((set, get) => ({
   flags: {},
   subtitle: null,
+  subtitleQueue: [],
   pendingSubtitle: null,
   note: null,
   objective: 'Levante-se da cama.',
@@ -136,11 +138,30 @@ export const useGameStore = create<GameState>((set, get) => ({
   },
   hasFlag: (flag) => Boolean(get().flags[flag]),
   say: (text, _seconds) => {
+    const current = get()
+    if (current.subtitle) {
+      if (
+        current.subtitle !== text &&
+        !current.subtitleQueue.includes(text)
+      ) {
+        set({ subtitleQueue: [...current.subtitleQueue, text] })
+      }
+      return
+    }
+
     audioEngine.playDialogueBlip()
     set({ subtitle: text })
   },
   dismissSubtitle: () => {
-    set({ subtitle: null })
+    const queue = get().subtitleQueue
+    const next = queue[0] ?? null
+    if (next) {
+      audioEngine.playDialogueBlip()
+    }
+    set({
+      subtitle: next,
+      subtitleQueue: queue.slice(1),
+    })
   },
   queueSubtitle: (pendingSubtitle) => {
     set({ pendingSubtitle })
@@ -150,7 +171,6 @@ export const useGameStore = create<GameState>((set, get) => ({
     set({
       note: { title, body },
       interactPrompt: null,
-      subtitle: null,
     })
   },
   closeNote: () => {
@@ -226,6 +246,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       demoEnded: true,
       interactPrompt: null,
       subtitle: null,
+      subtitleQueue: [],
       scareActive: false,
       handAction: null,
     })
