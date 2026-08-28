@@ -2,7 +2,9 @@ import { PointerLockControls } from '@react-three/drei'
 import { ApartmentDetails } from './ApartmentDetails'
 import { ApartmentLighting } from './ApartmentLighting'
 import { ApartmentScene } from './ApartmentScene'
+import { AtmosphereDetails } from './AtmosphereDetails'
 import { AudioAmbience } from './audio/AudioAmbience'
+import { FaucetDrip } from './effects/FaucetDrip'
 import { BadgeDropScene } from './events/BadgeDropScene'
 import { RatScare } from './events/RatScare'
 import { InteractionSystem } from './interaction/InteractionSystem'
@@ -10,7 +12,9 @@ import { CameraPolish } from './player/CameraPolish'
 import { FirstPersonHands } from './player/FirstPersonHands'
 import { PlayerController } from './player/PlayerController'
 import { APARTMENT_COLLIDERS } from './physics/colliders'
+import { PostEffects } from './render/PostEffects'
 import { useGameStore } from './state/gameStore'
+import { ExteriorRain } from './weather/ExteriorRain'
 
 type ApartmentSkeletonProps = {
   gameStarted: boolean
@@ -43,6 +47,9 @@ export function ApartmentSkeleton({
       <ApartmentScene />
       <ApartmentLighting />
       <ApartmentDetails />
+      <AtmosphereDetails />
+      <ExteriorRain />
+      <FaucetDrip />
       <BadgeDropScene />
       <AudioAmbience enabled={gameStarted && !demoEnded} />
       {gameStarted && <InteractionSystem />}
@@ -61,6 +68,8 @@ export function ApartmentSkeleton({
           onUnlock={() => onLockChange(false)}
         />
       )}
+
+      <PostEffects />
     </>
   )
 }
