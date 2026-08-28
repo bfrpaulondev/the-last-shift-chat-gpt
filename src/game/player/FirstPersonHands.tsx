@@ -9,45 +9,78 @@ interface FirstPersonHandsProps {
 
 type HandSide = 'left' | 'right'
 
-const LEFT_BASE = new THREE.Vector3(-0.31, -0.3, -0.5)
-const RIGHT_BASE = new THREE.Vector3(0.31, -0.3, -0.5)
+const LEFT_BASE = new THREE.Vector3(-0.19, -0.34, -0.62)
+const RIGHT_BASE = new THREE.Vector3(0.19, -0.34, -0.62)
+const SKIN = '#a86f59'
+const SKIN_DARK = '#8f5848'
+const SLEEVE = '#1e252b'
 
-function HandMaterial({ color }: { color: string }) {
+function SkinMaterial({ color = SKIN }: { color?: string }) {
   return (
-    <meshBasicMaterial
+    <meshStandardMaterial
       color={color}
+      roughness={0.78}
+      metalness={0}
+      emissive={color}
+      emissiveIntensity={0.035}
       depthTest={false}
       depthWrite={false}
-      toneMapped={false}
+    />
+  )
+}
+
+function SleeveMaterial() {
+  return (
+    <meshStandardMaterial
+      color={SLEEVE}
+      roughness={0.92}
+      metalness={0}
+      emissive="#11171b"
+      emissiveIntensity={0.04}
+      depthTest={false}
+      depthWrite={false}
     />
   )
 }
 
 function HandModel({ side }: { side: HandSide }) {
   const mirror = side === 'left' ? -1 : 1
-  const fingerOffsets = [-0.065, -0.022, 0.022, 0.065]
+  const fingerOffsets = [-0.038, -0.013, 0.013, 0.038]
+  const fingerLengths = [0.082, 0.096, 0.092, 0.078]
 
   return (
-    <group>
+    <group scale={[0.82, 0.82, 0.82]}>
       <mesh
         frustumCulled={false}
         raycast={() => null}
-        position={[0, -0.13, 0.19]}
+        position={[0, -0.105, 0.13]}
         rotation={[Math.PI / 2, 0, 0]}
         renderOrder={100}
       >
-        <cylinderGeometry args={[0.08, 0.105, 0.42, 8]} />
-        <HandMaterial color="#242b31" />
+        <cylinderGeometry args={[0.038, 0.048, 0.29, 12]} />
+        <SleeveMaterial />
       </mesh>
 
       <mesh
         frustumCulled={false}
         raycast={() => null}
-        scale={[0.13, 0.095, 0.16]}
+        position={[0, -0.005, 0]}
+        scale={[0.073, 0.048, 0.095]}
         renderOrder={101}
       >
-        <sphereGeometry args={[1, 10, 8]} />
-        <HandMaterial color="#bd886d" />
+        <sphereGeometry args={[1, 16, 12]} />
+        <SkinMaterial />
+      </mesh>
+
+      <mesh
+        frustumCulled={false}
+        raycast={() => null}
+        position={[0, -0.044, 0.015]}
+        scale={[0.056, 0.018, 0.072]}
+        renderOrder={102}
+      >
+        <sphereGeometry args={[1, 12, 8]} />
+        <SkinMaterial color={SKIN_DARK} />
       </mesh>
 
       {fingerOffsets.map((offset, index) => (
@@ -55,25 +88,25 @@ function HandModel({ side }: { side: HandSide }) {
           key={offset}
           frustumCulled={false}
           raycast={() => null}
-          position={[offset, 0.01 - Math.abs(index - 1.5) * 0.008, -0.135]}
-          rotation={[Math.PI / 2, 0, 0]}
-          renderOrder={102 + index}
+          position={[offset, 0.002, -0.098 - fingerLengths[index] * 0.35]}
+          rotation={[Math.PI / 2, 0, mirror * (index - 1.5) * 0.025]}
+          renderOrder={103 + index}
         >
-          <cylinderGeometry args={[0.018, 0.024, 0.18 + (1 - Math.abs(index - 1.5) / 2) * 0.025, 7]} />
-          <HandMaterial color="#bd886d" />
+          <cylinderGeometry args={[0.0095, 0.0115, fingerLengths[index], 10]} />
+          <SkinMaterial />
         </mesh>
       ))}
 
       <mesh
         frustumCulled={false}
         raycast={() => null}
-        position={[mirror * 0.105, -0.005, -0.02]}
-        rotation={[0.18, 0, mirror * 0.62]}
-        scale={[0.045, 0.04, 0.1]}
+        position={[mirror * 0.067, -0.004, -0.018]}
+        rotation={[0.12, 0, mirror * 0.7]}
+        scale={[0.024, 0.021, 0.055]}
         renderOrder={108}
       >
-        <sphereGeometry args={[1, 8, 6]} />
-        <HandMaterial color="#bd886d" />
+        <sphereGeometry args={[1, 12, 8]} />
+        <SkinMaterial />
       </mesh>
     </group>
   )
@@ -117,13 +150,13 @@ export function FirstPersonHands({ enabled }: FirstPersonHandsProps) {
     movementAmount.current = THREE.MathUtils.damp(
       movementAmount.current,
       targetMovement,
-      8,
+      7,
       Math.min(delta, 0.05),
     )
 
-    const walkPhase = state.clock.elapsedTime * 7.6
-    const sway = Math.sin(walkPhase) * 0.03 * movementAmount.current
-    const bob = Math.abs(Math.cos(walkPhase)) * 0.018 * movementAmount.current
+    const walkPhase = state.clock.elapsedTime * 7.2
+    const sway = Math.sin(walkPhase) * 0.012 * movementAmount.current
+    const bob = Math.abs(Math.cos(walkPhase)) * 0.008 * movementAmount.current
 
     const leftPosition = LEFT_BASE.clone()
     const rightPosition = RIGHT_BASE.clone()
@@ -132,104 +165,85 @@ export function FirstPersonHands({ enabled }: FirstPersonHandsProps) {
     leftPosition.y -= bob
     rightPosition.y -= bob
 
-    let leftRotationX = 0.08
-    let leftRotationZ = -0.08
-    let rightRotationX = 0.08
-    let rightRotationZ = 0.08
+    let leftRotationX = 0.14
+    let leftRotationZ = -0.09
+    let rightRotationX = 0.14
+    let rightRotationZ = 0.09
 
     if (handAction) {
       const elapsed = performance.now() - handAction.startedAt
-      const progress = THREE.MathUtils.clamp(
-        elapsed / handAction.durationMs,
-        0,
-        1,
-      )
+      const progress = THREE.MathUtils.clamp(elapsed / handAction.durationMs, 0, 1)
       const pulse = Math.sin(progress * Math.PI)
 
       switch (handAction.kind) {
         case 'reach':
-          rightPosition.y += 0.17 * pulse
-          rightPosition.z -= 0.35 * pulse
-          rightPosition.x -= 0.1 * pulse
-          rightRotationX -= 0.4 * pulse
+          rightPosition.y += 0.075 * pulse
+          rightPosition.z -= 0.17 * pulse
+          rightPosition.x -= 0.035 * pulse
+          rightRotationX -= 0.24 * pulse
           break
         case 'grab':
-          rightPosition.y += 0.19 * pulse
-          rightPosition.z -= 0.39 * pulse
-          rightPosition.x -= 0.11 * pulse
-          leftPosition.y += 0.06 * pulse
-          leftPosition.z -= 0.1 * pulse
-          rightRotationX -= 0.46 * pulse
+          rightPosition.y += 0.085 * pulse
+          rightPosition.z -= 0.19 * pulse
+          rightPosition.x -= 0.04 * pulse
+          leftPosition.y += 0.025 * pulse
+          leftPosition.z -= 0.035 * pulse
+          rightRotationX -= 0.28 * pulse
           break
         case 'press':
-          rightPosition.y += 0.2 * pulse
-          rightPosition.z -= 0.4 * pulse
-          rightPosition.x -= 0.11 * pulse
-          rightRotationX -= 0.5 * pulse
+          rightPosition.y += 0.09 * pulse
+          rightPosition.z -= 0.2 * pulse
+          rightPosition.x -= 0.045 * pulse
+          rightRotationX -= 0.3 * pulse
           break
         case 'turn':
-          rightPosition.y += 0.18 * pulse
-          rightPosition.z -= 0.36 * pulse
-          rightPosition.x -= 0.09 * pulse
-          rightRotationZ += 0.92 * pulse
+          rightPosition.y += 0.082 * pulse
+          rightPosition.z -= 0.18 * pulse
+          rightPosition.x -= 0.035 * pulse
+          rightRotationZ += 0.46 * pulse
           break
         case 'door':
-          rightPosition.y += 0.12 * pulse
-          rightPosition.z -= 0.38 * pulse
-          rightPosition.x -= 0.06 * pulse
-          rightRotationZ += 0.55 * pulse
+          rightPosition.y += 0.055 * pulse
+          rightPosition.z -= 0.19 * pulse
+          rightPosition.x -= 0.025 * pulse
+          rightRotationZ += 0.3 * pulse
           break
         case 'brace':
-          leftPosition.y += 0.12 * pulse
-          rightPosition.y += 0.12 * pulse
-          leftPosition.z -= 0.24 * pulse
-          rightPosition.z -= 0.24 * pulse
-          leftPosition.x -= 0.05 * pulse
-          rightPosition.x += 0.05 * pulse
+          leftPosition.y += 0.05 * pulse
+          rightPosition.y += 0.05 * pulse
+          leftPosition.z -= 0.09 * pulse
+          rightPosition.z -= 0.09 * pulse
+          leftPosition.x -= 0.02 * pulse
+          rightPosition.x += 0.02 * pulse
           break
         case 'startle':
-          leftPosition.y += 0.34 * pulse
-          rightPosition.y += 0.34 * pulse
-          leftPosition.z -= 0.12 * pulse
-          rightPosition.z -= 0.12 * pulse
-          leftPosition.x += 0.09 * pulse
-          rightPosition.x -= 0.09 * pulse
-          leftRotationX -= 0.68 * pulse
-          rightRotationX -= 0.68 * pulse
+          leftPosition.y += 0.17 * pulse
+          rightPosition.y += 0.17 * pulse
+          leftPosition.z -= 0.07 * pulse
+          rightPosition.z -= 0.07 * pulse
+          leftPosition.x += 0.04 * pulse
+          rightPosition.x -= 0.04 * pulse
+          leftRotationX -= 0.4 * pulse
+          rightRotationX -= 0.4 * pulse
           break
       }
     }
 
-    left.current.position.lerp(leftPosition, 0.38)
-    right.current.position.lerp(rightPosition, 0.38)
-    left.current.rotation.x = THREE.MathUtils.lerp(
-      left.current.rotation.x,
-      leftRotationX,
-      0.34,
-    )
-    left.current.rotation.z = THREE.MathUtils.lerp(
-      left.current.rotation.z,
-      leftRotationZ,
-      0.34,
-    )
-    right.current.rotation.x = THREE.MathUtils.lerp(
-      right.current.rotation.x,
-      rightRotationX,
-      0.34,
-    )
-    right.current.rotation.z = THREE.MathUtils.lerp(
-      right.current.rotation.z,
-      rightRotationZ,
-      0.34,
-    )
+    const smoothing = 1 - Math.exp(-12 * Math.min(delta, 0.05))
+    left.current.position.lerp(leftPosition, smoothing)
+    right.current.position.lerp(rightPosition, smoothing)
+    left.current.rotation.x = THREE.MathUtils.lerp(left.current.rotation.x, leftRotationX, smoothing)
+    left.current.rotation.z = THREE.MathUtils.lerp(left.current.rotation.z, leftRotationZ, smoothing)
+    right.current.rotation.x = THREE.MathUtils.lerp(right.current.rotation.x, rightRotationX, smoothing)
+    right.current.rotation.z = THREE.MathUtils.lerp(right.current.rotation.z, rightRotationZ, smoothing)
   })
 
   return (
     <group ref={root} visible={enabled} renderOrder={99}>
-      <group ref={left} position={LEFT_BASE.toArray()}>
+      <group ref={left} position={LEFT_BASE.toArray()} rotation={[0, -0.08, 0]}>
         <HandModel side="left" />
       </group>
-      <group ref={right} position={RIGHT_BASE.toArray()}>
+      <group ref={right} position={RIGHT_BASE.toArray()} rotation={[0, 0.08, 0]}>
         <HandModel side="right" />
       </group>
     </group>

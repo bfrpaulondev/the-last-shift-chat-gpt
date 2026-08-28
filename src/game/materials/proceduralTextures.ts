@@ -11,7 +11,7 @@ export function makeTexture(
   draw: TextureDraw,
   repeatX = 1,
   repeatY = 1,
-  size = 256,
+  size = 512,
 ): THREE.CanvasTexture {
   const canvas = document.createElement('canvas')
   canvas.width = size
@@ -28,7 +28,7 @@ export function makeTexture(
   texture.colorSpace = THREE.SRGBColorSpace
   texture.magFilter = THREE.LinearFilter
   texture.minFilter = THREE.LinearMipmapLinearFilter
-  texture.anisotropy = 4
+  texture.anisotropy = 8
   texture.wrapS = THREE.RepeatWrapping
   texture.wrapT = THREE.RepeatWrapping
   texture.repeat.set(repeatX, repeatY)
@@ -39,40 +39,40 @@ export function makeTexture(
 
 export function createWoodTexture(): THREE.CanvasTexture {
   return makeTexture((context, size) => {
-    context.fillStyle = '#352a25'
+    context.fillStyle = '#302720'
     context.fillRect(0, 0, size, size)
 
-    const plankHeight = 28
+    const plankHeight = 46
     for (let y = 0; y < size; y += plankHeight) {
-      const tone = 43 + Math.floor(noise(y, 7) * 20)
-      context.fillStyle = `rgb(${tone + 16}, ${tone + 1}, ${Math.max(0, tone - 8)})`
+      const tone = 43 + Math.floor(noise(y, 7) * 16)
+      context.fillStyle = `rgb(${tone + 15}, ${tone + 4}, ${Math.max(0, tone - 5)})`
       context.fillRect(0, y + 2, size, plankHeight - 3)
 
-      context.fillStyle = 'rgba(12, 8, 6, 0.68)'
+      context.fillStyle = 'rgba(16, 10, 7, 0.62)'
       context.fillRect(0, y, size, 2)
 
-      const offset = (Math.floor(y / plankHeight) % 2) * 56
-      for (let x = offset; x < size; x += 112) {
+      const offset = (Math.floor(y / plankHeight) % 2) * 88
+      for (let x = offset; x < size; x += 176) {
         context.fillRect(x, y, 2, plankHeight)
       }
 
-      for (let grain = 0; grain < 7; grain += 1) {
-        const gy = y + 4 + noise(grain, y) * (plankHeight - 8)
-        context.strokeStyle = `rgba(15, 9, 7, ${0.08 + noise(y, grain) * 0.12})`
+      for (let grain = 0; grain < 11; grain += 1) {
+        const gy = y + 5 + noise(grain * 5, y) * (plankHeight - 10)
+        context.strokeStyle = `rgba(27, 16, 11, ${0.06 + noise(y, grain) * 0.09})`
         context.lineWidth = 1
         context.beginPath()
         context.moveTo(0, gy)
-        for (let x = 0; x <= size; x += 20) {
-          context.lineTo(x, gy + Math.sin((x + grain * 13) * 0.055) * 2.2)
+        for (let x = 0; x <= size; x += 24) {
+          context.lineTo(x, gy + Math.sin((x + grain * 17) * 0.045) * 1.8)
         }
         context.stroke()
       }
     }
 
-    for (let y = 0; y < size; y += 3) {
-      for (let x = 0; x < size; x += 3) {
-        const alpha = noise(x, y) * 0.08
-        context.fillStyle = `rgba(245, 225, 190, ${alpha})`
+    for (let y = 0; y < size; y += 5) {
+      for (let x = 0; x < size; x += 5) {
+        const alpha = noise(x + 11, y + 19) * 0.045
+        context.fillStyle = `rgba(238, 215, 176, ${alpha})`
         context.fillRect(x, y, 1, 1)
       }
     }
@@ -81,44 +81,45 @@ export function createWoodTexture(): THREE.CanvasTexture {
 
 export function createWallTexture(): THREE.CanvasTexture {
   return makeTexture((context, size) => {
-    context.fillStyle = '#aaa79d'
+    context.fillStyle = '#a7a49d'
     context.fillRect(0, 0, size, size)
 
-    for (let y = 0; y < size; y += 2) {
-      for (let x = 0; x < size; x += 2) {
+    for (let y = 0; y < size; y += 3) {
+      for (let x = 0; x < size; x += 3) {
         const n = noise(x + 9, y + 3)
-        const light = 148 + Math.floor(n * 30)
-        context.fillStyle = `rgba(${light}, ${light}, ${light - 5}, 0.14)`
-        context.fillRect(x, y, 2, 2)
+        const light = 148 + Math.floor(n * 24)
+        context.fillStyle = `rgba(${light}, ${light}, ${light - 5}, 0.11)`
+        context.fillRect(x, y, 3, 3)
       }
     }
 
-    context.strokeStyle = 'rgba(74, 71, 67, 0.22)'
-    context.lineWidth = 1.2
+    const crackX = size * 0.72
+    context.strokeStyle = 'rgba(73, 69, 64, 0.19)'
+    context.lineWidth = 1.4
     context.beginPath()
-    context.moveTo(size * 0.72, size * 0.06)
-    context.lineTo(size * 0.68, size * 0.18)
+    context.moveTo(crackX, size * 0.05)
+    context.lineTo(size * 0.68, size * 0.17)
     context.lineTo(size * 0.73, size * 0.29)
-    context.lineTo(size * 0.69, size * 0.4)
+    context.lineTo(size * 0.7, size * 0.39)
     context.stroke()
 
-    const gradient = context.createRadialGradient(16, size - 18, 4, 16, size - 18, 78)
-    gradient.addColorStop(0, 'rgba(69, 75, 72, 0.34)')
-    gradient.addColorStop(0.55, 'rgba(69, 75, 72, 0.12)')
-    gradient.addColorStop(1, 'rgba(69, 75, 72, 0)')
-    context.fillStyle = gradient
+    const damp = context.createRadialGradient(32, size - 36, 8, 32, size - 36, 138)
+    damp.addColorStop(0, 'rgba(58, 67, 63, 0.26)')
+    damp.addColorStop(0.55, 'rgba(58, 67, 63, 0.09)')
+    damp.addColorStop(1, 'rgba(58, 67, 63, 0)')
+    context.fillStyle = damp
     context.fillRect(0, 0, size, size)
   }, 2.5, 2)
 }
 
 export function createBathroomTileTexture(): THREE.CanvasTexture {
   return makeTexture((context, size) => {
-    context.fillStyle = '#c7c1aa'
+    context.fillStyle = '#c4beae'
     context.fillRect(0, 0, size, size)
 
-    const divisions = 10
+    const divisions = 12
     const tile = size / divisions
-    context.strokeStyle = '#696a63'
+    context.strokeStyle = '#6f6c65'
     context.lineWidth = 2
 
     for (let index = 0; index <= divisions; index += 1) {
@@ -135,51 +136,43 @@ export function createBathroomTileTexture(): THREE.CanvasTexture {
 
     for (let y = 0; y < divisions; y += 1) {
       for (let x = 0; x < divisions; x += 1) {
-        const alpha = 0.02 + noise(x * 17, y * 23) * 0.05
-        context.fillStyle = `rgba(255, 255, 245, ${alpha})`
+        const alpha = 0.018 + noise(x * 17, y * 23) * 0.035
+        context.fillStyle = `rgba(255, 252, 238, ${alpha})`
         context.fillRect(x * tile + 3, y * tile + 3, tile - 6, tile - 6)
       }
     }
 
-    context.strokeStyle = 'rgba(66, 61, 52, 0.72)'
-    context.lineWidth = 1.3
+    context.strokeStyle = 'rgba(70, 64, 54, 0.52)'
+    context.lineWidth = 1.2
     context.beginPath()
-    context.moveTo(tile * 6.2, tile * 2)
-    context.lineTo(tile * 6.55, tile * 2.45)
-    context.lineTo(tile * 6.3, tile * 2.8)
-    context.lineTo(tile * 6.7, tile * 3.25)
+    context.moveTo(tile * 7.2, tile * 2)
+    context.lineTo(tile * 7.55, tile * 2.45)
+    context.lineTo(tile * 7.3, tile * 2.8)
+    context.lineTo(tile * 7.7, tile * 3.25)
     context.stroke()
   }, 3, 3)
 }
 
 export function createCeilingTexture(): THREE.CanvasTexture {
   return makeTexture((context, size) => {
-    context.fillStyle = '#b8b5aa'
+    context.fillStyle = '#b5b2aa'
     context.fillRect(0, 0, size, size)
 
-    for (let y = 0; y < size; y += 3) {
-      for (let x = 0; x < size; x += 3) {
-        const alpha = noise(x + 15, y + 21) * 0.07
-        context.fillStyle = `rgba(65, 61, 53, ${alpha})`
+    for (let y = 0; y < size; y += 4) {
+      for (let x = 0; x < size; x += 4) {
+        const alpha = noise(x + 15, y + 21) * 0.045
+        context.fillStyle = `rgba(63, 59, 52, ${alpha})`
         context.fillRect(x, y, 2, 2)
       }
     }
 
-    const stain = context.createRadialGradient(size - 34, 36, 3, size - 34, 36, 62)
-    stain.addColorStop(0, 'rgba(124, 93, 43, 0.45)')
-    stain.addColorStop(0.42, 'rgba(135, 111, 55, 0.25)')
-    stain.addColorStop(0.74, 'rgba(126, 103, 54, 0.09)')
-    stain.addColorStop(1, 'rgba(126, 103, 54, 0)')
+    const stain = context.createRadialGradient(size - 68, 72, 6, size - 68, 72, 122)
+    stain.addColorStop(0, 'rgba(117, 85, 40, 0.38)')
+    stain.addColorStop(0.42, 'rgba(128, 101, 50, 0.2)')
+    stain.addColorStop(0.74, 'rgba(121, 98, 53, 0.07)')
+    stain.addColorStop(1, 'rgba(121, 98, 53, 0)')
     context.fillStyle = stain
     context.fillRect(0, 0, size, size)
-
-    context.strokeStyle = 'rgba(93, 77, 43, 0.28)'
-    context.lineWidth = 1.2
-    context.beginPath()
-    context.moveTo(size - 34, 36)
-    context.lineTo(size - 71, 64)
-    context.lineTo(size - 94, 92)
-    context.stroke()
   }, 3.5, 3)
 }
 
@@ -217,7 +210,7 @@ export function createLabelTexture(
   texture.colorSpace = THREE.SRGBColorSpace
   texture.magFilter = THREE.LinearFilter
   texture.minFilter = THREE.LinearMipmapLinearFilter
-  texture.anisotropy = 4
+  texture.anisotropy = 8
   texture.generateMipmaps = true
   texture.needsUpdate = true
   return texture
