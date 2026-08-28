@@ -13,6 +13,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    services:
+      mongodb:
+        image: mongo:7
+        ports:
+          - 27017:27017
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -28,13 +34,44 @@ jobs:
       - name: Check server syntax
         run: npm run check:server
 
-      - name: Server health smoke test
+      - name: Backend offline fallback smoke test
+        run: |
+          MONGO_URI=mongodb://127.0.0.1:1/unavailable PORT=3002 node server/index.js &
+          SERVER_PID=$!
+          for i in {1..20}; do
+            if curl --fail --silent http://127.0.0.1:3002/api/health; then
+              break
+            fi
+            sleep 0.25
+          done
+          curl --fail --silent http://127.0.0.1:3002/api/health
+          kill $SERVER_PID
+
+      - name: Mongo persistence and telemetry smoke test
         run: |
           node server/index.js &
           SERVER_PID=$!
-          sleep 1
-          curl --fail --silent http://127.0.0.1:3001/api/health
+          for i in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:3001/api/health; then
+              break
+            fi
+            sleep 0.25
+          done
+          npm run smoke:api
           kill $SERVER_PID
 
       - name: Build frontend
         run: npm run build
+
+      - name: Production preview smoke test
+        run: |
+          npm run preview -- --host 127.0.0.1 --port 4173 &
+          PREVIEW_PID=$!
+          for i in {1..20}; do
+            if curl --fail --silent http://127.0.0.1:4173/ > /dev/null; then
+              break
+            fi
+            sleep 0.25
+          done
+          curl --fail --silent http://127.0.0.1:4173/ > /dev/null
+          kill $PREVIEW_PID
