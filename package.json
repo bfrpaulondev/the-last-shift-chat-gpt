@@ -7,7 +7,8 @@
     "dev": "vite",
     "dev:server": "node --watch server/index.js",
     "build": "tsc -b && vite build",
-    "check:server": "node --check server/index.js && node --check server/app.js && node --check server/db.js && node --check server/models/Save.js && node --check server/models/TelemetryEvent.js",
+    "check:server": "node --check server/index.js && node --check server/app.js && node --check server/db.js && node --check server/models/Save.js && node --check server/models/TelemetryEvent.js && node --check server/smoke.js",
+    "smoke:api": "node server/smoke.js",
     "preview": "vite preview"
   },
   "dependencies": {
