@@ -44,9 +44,7 @@ function isFiniteNumber(value) {
 }
 
 function isSpawn(value) {
-  if (value === undefined) {
-    return true
-  }
+  if (value === undefined) return true
   return (
     isRecord(value) &&
     isFiniteNumber(value.x) &&
@@ -57,9 +55,7 @@ function isSpawn(value) {
 }
 
 function isGameLocation(value) {
-  if (value === undefined) {
-    return true
-  }
+  if (value === undefined) return true
   return (
     isRecord(value) &&
     GAME_PARTS.has(value.part) &&
@@ -67,6 +63,18 @@ function isGameLocation(value) {
     typeof value.checkpoint === 'string' &&
     value.checkpoint.length > 0 &&
     isSpawn(value.spawn)
+  )
+}
+
+function isShiftTime(value) {
+  if (value === undefined) return true
+  return (
+    isRecord(value) &&
+    Number.isInteger(value.worldMinute) &&
+    value.worldMinute >= 0 &&
+    (value.lastRoutineMinute === null ||
+      value.lastRoutineMinute === undefined ||
+      (Number.isInteger(value.lastRoutineMinute) && value.lastRoutineMinute >= 0))
   )
 }
 
@@ -93,7 +101,6 @@ app.use(
         callback(null, true)
         return
       }
-
       callback(null, false)
     },
   }),
@@ -110,6 +117,7 @@ app.post('/api/save', requireMongo, async (request, response) => {
     flags,
     chapter,
     location,
+    shiftTime,
     schemaVersion = 1,
     playtimeSeconds,
   } = request.body ?? {}
@@ -121,6 +129,7 @@ app.post('/api/save', requireMongo, async (request, response) => {
     typeof chapter !== 'string' ||
     chapter.length === 0 ||
     !isGameLocation(location) ||
+    !isShiftTime(shiftTime) ||
     !Number.isInteger(schemaVersion) ||
     schemaVersion < 1 ||
     typeof playtimeSeconds !== 'number' ||
@@ -138,9 +147,8 @@ app.post('/api/save', requireMongo, async (request, response) => {
       schemaVersion,
       playtimeSeconds,
     }
-    if (location !== undefined) {
-      update.location = location
-    }
+    if (location !== undefined) update.location = location
+    if (shiftTime !== undefined) update.shiftTime = shiftTime
 
     const save = await Save.findOneAndUpdate(
       { playerId },
@@ -161,12 +169,10 @@ app.post('/api/save', requireMongo, async (request, response) => {
 app.get('/api/save/:playerId', requireMongo, async (request, response) => {
   try {
     const save = await Save.findOne({ playerId: request.params.playerId }).lean()
-
     if (!save) {
       response.status(404).json({ ok: false })
       return
     }
-
     response.json(save)
   } catch {
     response.status(503).json({ ok: false })
