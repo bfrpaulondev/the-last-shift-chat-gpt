@@ -79,7 +79,7 @@ export function LobbyInteractionSystem() {
       }
 
       if (id === 'badge-reader') {
-        game.triggerHandAction('card', 900, target, id, 'badge-reader')
+        game.triggerHandAction('press', 900, target, id)
         if (!game.flags.badge_taken) {
           game.say('Sem o crachá eu não passo daqui.')
           return
