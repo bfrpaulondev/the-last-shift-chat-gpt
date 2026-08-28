@@ -70,9 +70,25 @@ Jogo 3D de terror/investigação em primeira pessoa para navegador, desenvolvido
 - `M` muta/desmuta o master e mostra o estado no HUD
 - Saída da demo corta o áudio e mantém 3s de silêncio antes do texto final
 
-Backend de save/telemetria persistente entra no M6.
+### Cena 1 — M6 Backend MERN
 
-## Executar
+- Express + Mongoose com MongoDB
+- `POST /api/save` com upsert por `playerId`
+- `GET /api/save/:playerId`
+- `POST /api/telemetry` com inserção em lote na collection `telemetry_events`
+- `GET /api/health`
+- `playerId` UUID persistido em `localStorage`
+- flags restauradas automaticamente ao recarregar quando o backend está disponível
+- save automático após mudanças de progresso e no fim da demo
+- telemetria enviada em lotes a cada 15 segundos e no fim da demo
+- eventos só saem da fila local depois de um POST bem-sucedido
+- fallback silencioso: backend ou Mongo offline nunca bloqueiam o jogo
+- Vite proxy `/api` para `localhost:3001`
+- indicador discreto `Progresso salvo ✓` na tela final quando o save foi confirmado
+
+## Executar apenas o jogo
+
+O backend é opcional. O frontend funciona sem MongoDB e sem Express:
 
 ```bash
 npm install
@@ -81,10 +97,35 @@ npm run dev
 
 Abra `http://localhost:5173`.
 
+## Executar com persistência MongoDB
+
+Suba MongoDB 7:
+
+```bash
+docker run -d --name the-last-shift-mongo -p 27017:27017 mongo:7
+```
+
+Terminal 1:
+
+```bash
+npm run dev:server
+```
+
+Terminal 2:
+
+```bash
+npm run dev
+```
+
+O Mongo padrão é `mongodb://127.0.0.1:27017/thelastshift`. Defina `MONGO_URI` no ambiente para usar outra conexão.
+
+Detalhes adicionais: `server/README.md`.
+
 ## Build
 
 ```bash
 npm run build
+npm run check:server
 npm run preview
 ```
 
