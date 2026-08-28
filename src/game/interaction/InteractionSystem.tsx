@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
+import { audioEngine } from '../audio/AudioEngine'
 import { INTERACTABLES } from '../data/interactables'
 import { useGameStore } from '../state/gameStore'
 
@@ -37,6 +38,12 @@ function isAvailable(id: string, flags: Record<string, boolean>): boolean {
     return false
   }
   if (id === 'badge' && flags.badge_taken) {
+    return false
+  }
+  if (id === 'coffee' && flags.coffee_made) {
+    return false
+  }
+  if (id === 'faucet_bathroom' && flags.faucet_fixed) {
     return false
   }
   return true
@@ -176,6 +183,23 @@ export function InteractionSystem() {
         return
       }
 
+      if (id === 'coffee') {
+        busy.current = true
+        audioEngine.playCoffee()
+        state.setPrompt(null)
+        window.setTimeout(() => {
+          const latest = useGameStore.getState()
+          if (definition.flag) {
+            latest.setFlag(definition.flag)
+          }
+          if (definition.subtitle) {
+            latest.say(definition.subtitle)
+          }
+          busy.current = false
+        }, 3000)
+        return
+      }
+
       if (definition.mode === 'shower') {
         if (!state.flags.awake) {
           return
@@ -184,6 +208,7 @@ export function InteractionSystem() {
         busy.current = true
         state.setCinematic(true)
         state.setBlackout(true)
+        audioEngine.playShower()
         window.setTimeout(() => {
           const latest = useGameStore.getState()
           if (definition.flag) {
@@ -230,6 +255,7 @@ export function InteractionSystem() {
         if (definition.flag) {
           state.setFlag(definition.flag)
         }
+        audioEngine.setMuted(true)
         state.endDemo()
         if (document.pointerLockElement) {
           document.exitPointerLock()
