@@ -68,6 +68,7 @@ export const AREA_DEFINITIONS: Record<GameArea, AreaDefinition> = {
     chapter: 'part-2-road-to-meridian',
     label: 'Praça Meridian',
     defaultCheckpoint: 'plaza-arrival',
+    defaultSpawn: { x: 0, y: 1.65, z: 6.2, yaw: Math.PI },
   },
   lobby: {
     area: 'lobby',
