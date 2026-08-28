@@ -1,4 +1,12 @@
 import type { TelemetryEvent } from '../state/gameStore'
+import {
+  AREA_DEFINITIONS,
+  INITIAL_LOCATION,
+  isGameArea,
+  isGamePart,
+  locationForArea,
+  type GameLocationSnapshot,
+} from '../flow/areaTypes'
 
 const PLAYER_ID_KEY = 'the-last-shift-player-id'
 
@@ -6,6 +14,8 @@ export interface SaveSnapshot {
   playerId: string
   flags: Record<string, boolean>
   chapter: string
+  location?: GameLocationSnapshot
+  schemaVersion?: number
   playtimeSeconds: number
 }
 
@@ -30,6 +40,25 @@ export function getPlayerId(): string {
   } catch {
     return createPlayerId()
   }
+}
+
+export function normalizeSaveLocation(save: SaveSnapshot): GameLocationSnapshot {
+  const candidate = save.location
+  if (
+    candidate &&
+    isGamePart(candidate.part) &&
+    isGameArea(candidate.area) &&
+    typeof candidate.checkpoint === 'string' &&
+    candidate.checkpoint.length > 0
+  ) {
+    return candidate
+  }
+
+  if (save.flags?.left_home) {
+    return locationForArea('street', 'street-arrival')
+  }
+
+  return INITIAL_LOCATION
 }
 
 export async function checkBackend(): Promise<boolean> {
@@ -60,6 +89,7 @@ export async function loadSave(playerId: string): Promise<SaveSnapshot | null> {
 export async function saveProgress(
   playerId: string,
   flags: Record<string, boolean>,
+  location: GameLocationSnapshot,
   playtimeSeconds: number,
 ): Promise<boolean> {
   try {
@@ -71,7 +101,9 @@ export async function saveProgress(
       body: JSON.stringify({
         playerId,
         flags,
-        chapter: 'scene-1',
+        chapter: AREA_DEFINITIONS[location.area].chapter,
+        location,
+        schemaVersion: 2,
         playtimeSeconds,
       }),
     })
