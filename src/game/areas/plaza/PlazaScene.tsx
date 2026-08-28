@@ -57,7 +57,7 @@ function SecurityNotice() {
 
 function Bollards() {
   return (
-    <group raycast={() => null)}>
+    <group raycast={() => null}>
       {[-5.6, -3.4, 3.4, 5.6].map((x) => (
         <mesh key={x} position={[x, 0.42, -4.15]} castShadow>
           <cylinderGeometry args={[0.16, 0.2, 0.84, 12]} />
