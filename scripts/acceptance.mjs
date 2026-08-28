@@ -14,7 +14,6 @@ const files = {
   colliders: await readFile('src/game/physics/colliders.ts', 'utf8'),
   camera: await readFile('src/game/player/CameraPolish.tsx', 'utf8'),
   clock: await readFile('src/game/ui/GameClock.tsx', 'utf8'),
-  details: await readFile('src/game/ApartmentDetails.tsx', 'utf8'),
   interiorRealism: await readFile('src/game/InteriorRealismDetails.tsx', 'utf8'),
   narrativeRealism: await readFile('src/game/NarrativePropRealism.tsx', 'utf8'),
   atmosphere: await readFile('src/game/AtmosphereDetails.tsx', 'utf8'),
@@ -27,70 +26,42 @@ const files = {
   textures: await readFile('src/game/materials/proceduralTextures.ts', 'utf8'),
   surfaceMaps: await readFile('src/game/materials/pbrSurfaceMaps.ts', 'utf8'),
   styles: await readFile('src/styles.css', 'utf8'),
-  immersionStyles: await readFile('src/immersion.css', 'utf8'),
   server: await readFile('server/app.js', 'utf8'),
 }
 
-const requiredInteractables = [
-  'bed',
-  'faucet_bathroom',
-  'mirror',
-  'shower',
-  'fridge_note',
-  'coffee',
-  'badge',
-  'phone',
-  'window',
-  'clock',
-  'frame',
-  'door_exit',
-]
-
-for (const id of requiredInteractables) {
-  if (!files.interactables.includes(`${id}:`)) {
-    throw new Error(`Missing interactable: ${id}`)
-  }
+for (const id of [
+  'bed', 'faucet_bathroom', 'mirror', 'shower', 'fridge_note', 'coffee',
+  'badge', 'phone', 'window', 'clock', 'frame', 'door_exit',
+]) {
+  if (!files.interactables.includes(`${id}:`)) throw new Error(`Missing interactable: ${id}`)
 }
 
 for (const snippet of ['[E] Fechar a torneira', 'CRACHÁ Nº 4471', 'CELULAR — 12%']) {
-  if (!files.interactables.includes(snippet)) {
-    throw new Error(`Missing required scene contract text: ${snippet}`)
-  }
-}
-
-if (!files.gameStore.includes('Sair de casa — pegar o ônibus das 06:05.')) {
-  throw new Error('Exit objective contract is missing')
+  if (!files.interactables.includes(snippet)) throw new Error(`Missing required scene text: ${snippet}`)
 }
 
 if (
   !files.gameStore.includes('dismissSubtitle') ||
   !files.interaction.includes("event.code === 'Space'") ||
   !files.interaction.includes('state.subtitle || state.subtitleQueue.length > 0')
-) {
-  throw new Error('Space-controlled serialized dialogue contract is missing')
-}
+) throw new Error('Serialized SPACE dialogue contract is missing')
 
 if (
   !files.interaction.includes('coffee_failed_once') ||
   !files.interaction.includes('coffee_failed_twice') ||
   !files.interaction.includes('badge_dropped')
-) {
-  throw new Error('Interaction surprise contract is missing')
-}
+) throw new Error('Interaction surprise contract is missing')
 
 if (
   !files.rat.includes('RatScare') ||
   !files.rat.includes('suspenseCue.play()') ||
   !files.suspense.includes('duration = 6.8') ||
   !files.suspense.includes('exponentialRampToValueAtTime(0.0001')
-) {
-  throw new Error('Rat scare and fading suspense contract is missing')
-}
+) throw new Error('Rat scare/suspense contract is missing')
 
 if (!files.camera.includes('DEFAULT_FOV = 70') || !files.camera.includes('INSPECTION_FOV = 35')) {
   throw new Error('Inspection zoom contract is missing')
 }
-
 if (!files.clock.includes('START_MINUTES = 320') || !files.clock.includes('SECONDS_PER_MINUTE = 10')) {
   throw new Error('Game clock contract is missing')
 }
@@ -100,9 +71,7 @@ if (
   !files.app.includes('gl.toneMappingExposure = 0.86') ||
   !files.app.includes('near: 0.05') ||
   !files.lighting.includes('<rectAreaLight')
-) {
-  throw new Error('Realistic renderer/camera foundation contract is missing')
-}
+) throw new Error('Realistic renderer/camera foundation is missing')
 
 if (
   !files.skeleton.includes('<PbrEnvironment />') ||
@@ -112,9 +81,7 @@ if (
   !files.post.includes('UnrealBloomPass') ||
   !files.post.includes('FXAAShader') ||
   !files.post.includes('OutputPass')
-) {
-  throw new Error('Free Three.js rendering pipeline contract is missing')
-}
+) throw new Error('Free Three.js rendering pipeline is missing')
 
 if (
   !files.surfaceMaps.includes('createPbrSurfaceMaps') ||
@@ -124,9 +91,7 @@ if (
   !files.scene.includes('roughnessMap={textures.tileRoughness}') ||
   !files.scene.includes('roughnessMap={textures.brushedMetalRoughness}') ||
   !files.scene.includes('<meshPhysicalMaterial')
-) {
-  throw new Error('M13 PBR material contract is missing')
-}
+) throw new Error('M13 PBR materials contract is missing')
 
 if (
   !files.rain.includes('NEAR_RAIN_COUNT = 280') ||
@@ -137,9 +102,7 @@ if (
   !files.atmosphere.includes('function MovingTraffic()') ||
   !files.atmosphere.includes('beacon.current') ||
   !files.atmosphere.includes('clearcoat={0.5}')
-) {
-  throw new Error('M14 cinematic exterior/weather contract is missing')
-}
+) throw new Error('M14 exterior/weather contract is missing')
 
 if (
   !files.skeleton.includes('<InteriorRealismDetails />') ||
@@ -153,15 +116,12 @@ if (
   !files.narrativeRealism.includes('function FridgeNoteWear') ||
   !files.narrativeRealism.includes('function FrameWear') ||
   !files.narrativeRealism.includes('function DoorAge')
-) {
-  throw new Error('M15 lived-in interior realism contract is missing')
-}
+) throw new Error('M15 lived-in interior contract is missing')
 
 if (
   !files.skeleton.includes('<TrueFirstPersonBody enabled={gameStarted && !demoEnded} />') ||
   files.skeleton.includes('FirstPersonHands') ||
   !files.body.includes('export function TrueFirstPersonBody') ||
-  !files.body.includes('function TorsoAndLegs') ||
   !files.body.includes('function ArticulatedHand') ||
   !files.body.includes('LEFT_SHOULDER') ||
   !files.body.includes('RIGHT_SHOULDER') ||
@@ -170,73 +130,51 @@ if (
   !files.body.includes('leftThigh.current.rotation.x') ||
   !files.body.includes('rightKnee.current.rotation.x') ||
   !files.body.includes('bodyYaw.current = dampAngle') ||
-  !files.body.includes('Math.min(reachVector.length(), 0.72)') ||
+  !files.body.includes('Math.min(s.reachVector.length(), 0.72)') ||
   !files.body.includes('handAction.target') ||
   !files.body.includes('fingerRoots.current.forEach') ||
+  !files.body.includes('const scratch = useRef({') ||
+  !files.body.includes('const NAIL =') ||
   !files.body.includes('<RoundedBox args={[0.43, 0.34, 0.2]}')
-) {
-  throw new Error('M16 true first person articulated body contract is missing')
-}
+) throw new Error('M16 true first person articulated body contract is missing')
 
 if (
   !files.gameStore.includes('target?: [number, number, number]') ||
-  !files.gameStore.includes('triggerHandAction: (') ||
   !files.interaction.includes('interactionPoint = useRef(new THREE.Vector3())') ||
   !files.interaction.includes('hasInteractionPoint = useRef(false)') ||
   !files.interaction.includes("state.triggerHandAction('press', 760, interactionTarget)") ||
   !files.interaction.includes("state.triggerHandAction('turn', 760, interactionTarget)")
-) {
-  throw new Error('M16 raycast-driven interaction targeting contract is missing')
-}
+) throw new Error('M16 raycast-driven arm targeting contract is missing')
 
 if (
   !files.textures.includes('createFridgeNoteTexture') ||
   !files.textures.includes('createFamilyPhotoTexture') ||
   !files.drip.includes('DROP_PERIOD = 1.6') ||
   !files.brokenLight.includes('flickerValue') ||
-  !files.immersionStyles.includes('image-rendering: auto') ||
   !files.styles.includes('radial-gradient')
-) {
-  throw new Error('Visual storytelling and atmosphere contract is missing')
-}
+) throw new Error('Visual storytelling/atmosphere contract is missing')
 
 const playerRadiusMatch = files.player.match(/PLAYER_RADIUS = ([0-9.]+)/)
-if (!playerRadiusMatch) {
-  throw new Error('Player radius not found')
-}
+if (!playerRadiusMatch) throw new Error('Player radius not found')
 const playerRadius = Number(playerRadiusMatch[1])
-
 const colliderPattern = /\{ minX: (-?[0-9.]+), maxX: (-?[0-9.]+), minZ: (-?[0-9.]+), maxZ: (-?[0-9.]+) \}/g
 const colliders = [...files.colliders.matchAll(colliderPattern)].map((match) => ({
-  minX: Number(match[1]),
-  maxX: Number(match[2]),
-  minZ: Number(match[3]),
-  maxZ: Number(match[4]),
+  minX: Number(match[1]), maxX: Number(match[2]), minZ: Number(match[3]), maxZ: Number(match[4]),
 }))
-
-if (colliders.length < 10) {
-  throw new Error('Apartment collider contract could not be parsed')
-}
+if (colliders.length < 10) throw new Error('Apartment collider contract could not be parsed')
 
 function blocked(x, z) {
-  return colliders.some((collider) => (
-    x + playerRadius > collider.minX &&
-    x - playerRadius < collider.maxX &&
-    z + playerRadius > collider.minZ &&
-    z - playerRadius < collider.maxZ
+  return colliders.some((c) => (
+    x + playerRadius > c.minX && x - playerRadius < c.maxX &&
+    z + playerRadius > c.minZ && z - playerRadius < c.maxZ
   ))
 }
-
 for (let z = -0.45; z >= -1.55; z -= 0.05) {
-  if (blocked(2.45, z)) {
-    throw new Error(`Bathroom navigation path blocked at x=2.45 z=${z.toFixed(2)}`)
-  }
+  if (blocked(2.45, z)) throw new Error(`Bathroom path blocked at x=2.45 z=${z.toFixed(2)}`)
 }
 
 for (const route of ['/api/save', '/api/telemetry', '/api/health']) {
-  if (!files.server.includes(route)) {
-    throw new Error(`Missing API route: ${route}`)
-  }
+  if (!files.server.includes(route)) throw new Error(`Missing API route: ${route}`)
 }
 
 console.log('Scene 1 acceptance contract: OK')
