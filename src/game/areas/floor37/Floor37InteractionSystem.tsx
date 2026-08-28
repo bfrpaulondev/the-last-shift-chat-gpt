@@ -45,7 +45,6 @@ export function Floor37InteractionSystem() {
   const currentId = useRef<string | null>(null)
   const point = useRef(new THREE.Vector3())
   const busy = useRef(false)
-  const blackoutTimer = useRef<number | null>(null)
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -159,25 +158,11 @@ export function Floor37InteractionSystem() {
         game.setObjective('')
         game.triggerScare(1200)
         game.setBlackout(true)
-
-        blackoutTimer.current = window.setTimeout(() => {
-          const latest = useGameStore.getState()
-          if (latest.location.area !== 'floor-37') return
-          latest.requestAreaTransition(
-            'blackout',
-            'knocked-out',
-            { x: 0, y: 1.35, z: 0, yaw: Math.PI },
-            1000,
-          )
-        }, 850)
       }
     }
 
     window.addEventListener('keydown', onKeyDown)
-    return () => {
-      window.removeEventListener('keydown', onKeyDown)
-      if (blackoutTimer.current !== null) window.clearTimeout(blackoutTimer.current)
-    }
+    return () => window.removeEventListener('keydown', onKeyDown)
   }, [])
 
   useFrame(() => {
