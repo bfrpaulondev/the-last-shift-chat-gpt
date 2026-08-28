@@ -5,6 +5,10 @@ type Waveform = OscillatorType
 class InteractionFoley {
   private context: AudioContext | null = null
 
+  prepare(): void {
+    void this.getContext()
+  }
+
   private getContext(): AudioContext | null {
     if (audioEngine.isMuted()) {
       return null
