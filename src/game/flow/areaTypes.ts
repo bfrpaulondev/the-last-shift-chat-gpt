@@ -60,6 +60,7 @@ export const AREA_DEFINITIONS: Record<GameArea, AreaDefinition> = {
     chapter: 'part-2-road-to-meridian',
     label: 'Ônibus 214',
     defaultCheckpoint: 'bus-boarded',
+    defaultSpawn: { x: 0, y: 1.65, z: 1.55, yaw: Math.PI },
   },
   'meridian-plaza': {
     area: 'meridian-plaza',
