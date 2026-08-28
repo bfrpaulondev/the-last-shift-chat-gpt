@@ -32,6 +32,18 @@ export function ElevatorArea({ gameStarted, isPointerLocked, onLockChange }: Ele
     if (clock.worldMinute < 394) clock.setWorldMinute(394)
 
     const state = useGameStore.getState()
+    if (state.location.checkpoint === 'elevator-after-floor-22' && !state.flags.elevator_floor22_return_seen) {
+      state.setFlag('elevator_floor22_return_seen')
+      state.setCheckpoint('elevator-after-floor-22', state.location.spawn)
+      state.setObjective('Selecione o 30.º andar no elevador de serviço.')
+      window.setTimeout(() => {
+        const latest = useGameStore.getState()
+        if (latest.location.area !== 'service-elevator' || latest.subtitle) return
+        latest.say('22.º feito. Agora 30.º.')
+      }, 650)
+      return
+    }
+
     if (!state.flags.elevator_entry_seen) {
       state.setFlag('elevator_entry_seen')
       state.setCheckpoint(state.location.checkpoint, state.location.spawn)
