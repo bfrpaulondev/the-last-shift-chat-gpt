@@ -247,6 +247,15 @@ export class AudioEngine {
     }
   }
 
+  playCoffeeFail(attempt: number): void {
+    const baseDelay = attempt > 1 ? 0.05 : 0
+    this.playTone(105, 'square', 0.13, 0.085, baseDelay)
+    this.playTone(72, 'sawtooth', 0.2, 0.055, baseDelay + 0.14)
+    if (attempt > 1) {
+      this.playTone(135, 'square', 0.05, 0.055, baseDelay + 0.39)
+    }
+  }
+
   playShower(): void {
     const context = this.context
     const master = this.master
@@ -337,6 +346,100 @@ export class AudioEngine {
     gain.connect(master)
     source.start(now)
     source.stop(now + duration)
+  }
+
+  playObjectDrop(): void {
+    const context = this.context
+    const master = this.master
+
+    if (!context || !master) {
+      return
+    }
+
+    const source = context.createBufferSource()
+    const filter = context.createBiquadFilter()
+    const gain = context.createGain()
+    const now = context.currentTime
+
+    source.buffer = this.createNoiseBuffer(0.12, 'white')
+    filter.type = 'lowpass'
+    filter.frequency.value = 850
+    gain.gain.setValueAtTime(0.13, now)
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.12)
+    source.connect(filter)
+    filter.connect(gain)
+    gain.connect(master)
+    source.start(now)
+    source.stop(now + 0.12)
+
+    this.playTone(92, 'sine', 0.16, 0.09, 0.02)
+  }
+
+  playRatScurry(): void {
+    const context = this.context
+    const master = this.master
+
+    if (!context || !master) {
+      return
+    }
+
+    for (let index = 0; index < 10; index += 1) {
+      const source = context.createBufferSource()
+      const filter = context.createBiquadFilter()
+      const gain = context.createGain()
+      const start = context.currentTime + index * 0.065
+      const duration = 0.035
+
+      source.buffer = this.createNoiseBuffer(duration, 'white')
+      filter.type = 'bandpass'
+      filter.frequency.value = 900 + Math.random() * 850
+      filter.Q.value = 1.2
+      gain.gain.setValueAtTime(0.0001, start)
+      gain.gain.exponentialRampToValueAtTime(0.08, start + 0.005)
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + duration)
+      source.connect(filter)
+      filter.connect(gain)
+      gain.connect(master)
+      source.start(start)
+      source.stop(start + duration)
+    }
+  }
+
+  playHeartbeat(): void {
+    for (let index = 0; index < 4; index += 1) {
+      const base = index * 0.42
+      this.playTone(88, 'sine', 0.12, 0.21, base)
+      this.playTone(62, 'sine', 0.15, 0.16, base + 0.15)
+    }
+  }
+
+  playScareSting(): void {
+    const context = this.context
+    const master = this.master
+
+    if (!context || !master) {
+      return
+    }
+
+    const source = context.createBufferSource()
+    const filter = context.createBiquadFilter()
+    const gain = context.createGain()
+    const now = context.currentTime
+
+    source.buffer = this.createNoiseBuffer(0.45, 'white')
+    filter.type = 'highpass'
+    filter.frequency.setValueAtTime(1300, now)
+    filter.frequency.exponentialRampToValueAtTime(3400, now + 0.16)
+    gain.gain.setValueAtTime(0.0001, now)
+    gain.gain.exponentialRampToValueAtTime(0.2, now + 0.015)
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.45)
+    source.connect(filter)
+    filter.connect(gain)
+    gain.connect(master)
+    source.start(now)
+    source.stop(now + 0.45)
+
+    this.playTone(170, 'sawtooth', 0.32, 0.09, 0)
   }
 
   private playFaucetPing(): void {
