@@ -15,6 +15,8 @@ const files = {
   camera: await readFile('src/game/player/CameraPolish.tsx', 'utf8'),
   clock: await readFile('src/game/ui/GameClock.tsx', 'utf8'),
   details: await readFile('src/game/ApartmentDetails.tsx', 'utf8'),
+  interiorRealism: await readFile('src/game/InteriorRealismDetails.tsx', 'utf8'),
+  narrativeRealism: await readFile('src/game/NarrativePropRealism.tsx', 'utf8'),
   atmosphere: await readFile('src/game/AtmosphereDetails.tsx', 'utf8'),
   lighting: await readFile('src/game/ApartmentLighting.tsx', 'utf8'),
   brokenLight: await readFile('src/game/effects/BrokenBathroomLight.tsx', 'utf8'),
@@ -229,6 +231,25 @@ if (
   !files.atmosphere.includes('DetailedBuilding')
 ) {
   throw new Error('M14 cinematic exterior and layered weather contract is missing')
+}
+
+if (
+  !files.skeleton.includes('<InteriorRealismDetails />') ||
+  !files.skeleton.includes('<NarrativePropRealism />') ||
+  !files.interiorRealism.includes("type DecalKind = 'scuff' | 'damp' | 'grease' | 'rust' | 'dust' | 'coffee'") ||
+  !files.interiorRealism.includes('function BedroomLivedIn') ||
+  !files.interiorRealism.includes('function BathroomLivedIn') ||
+  !files.interiorRealism.includes('function KitchenLivedIn') ||
+  !files.interiorRealism.includes('function HallwayLivedIn') ||
+  !files.interiorRealism.includes('createReceiptTexture') ||
+  !files.interiorRealism.includes('<tubeGeometry') ||
+  !files.interiorRealism.includes('€ 184,70') ||
+  !files.narrativeRealism.includes('function FridgeNoteWear') ||
+  !files.narrativeRealism.includes('function FrameWear') ||
+  !files.narrativeRealism.includes('function DoorAge') ||
+  !files.narrativeRealism.includes('THREE.DoubleSide')
+) {
+  throw new Error('M15 lived-in interior and narrative-prop realism contract is missing')
 }
 
 if (
