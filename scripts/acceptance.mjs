@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises'
 const files = {
   app: await readFile('src/App.tsx', 'utf8'),
   skeleton: await readFile('src/game/ApartmentSkeleton.tsx', 'utf8'),
+  scene: await readFile('src/game/ApartmentScene.tsx', 'utf8'),
   interactables: await readFile('src/game/data/interactables.tsx', 'utf8'),
   interaction: await readFile('src/game/interaction/InteractionSystem.tsx', 'utf8'),
   gameStore: await readFile('src/game/state/gameStore.ts', 'utf8'),
@@ -22,6 +23,7 @@ const files = {
   post: await readFile('src/game/render/PostEffects.tsx', 'utf8'),
   environment: await readFile('src/game/render/PbrEnvironment.tsx', 'utf8'),
   textures: await readFile('src/game/materials/proceduralTextures.ts', 'utf8'),
+  surfaceMaps: await readFile('src/game/materials/pbrSurfaceMaps.ts', 'utf8'),
   styles: await readFile('src/styles.css', 'utf8'),
   immersionStyles: await readFile('src/immersion.css', 'utf8'),
   server: await readFile('server/app.js', 'utf8'),
@@ -192,6 +194,26 @@ if (
   !files.immersionStyles.includes('opacity: 0.002')
 ) {
   throw new Error('M12 realistic rendering foundation contract is missing')
+}
+
+if (
+  !files.surfaceMaps.includes('createPbrSurfaceMaps') ||
+  !files.surfaceMaps.includes('THREE.NoColorSpace') ||
+  !files.surfaceMaps.includes('woodRoughness') ||
+  !files.surfaceMaps.includes('woodBump') ||
+  !files.surfaceMaps.includes('tileRoughness') ||
+  !files.surfaceMaps.includes('brushedMetalRoughness') ||
+  !files.surfaceMaps.includes('applianceRoughness') ||
+  !files.surfaceMaps.includes('fabricBump') ||
+  !files.scene.includes('roughnessMap={textures.wallRoughness}') ||
+  !files.scene.includes('bumpMap={textures.woodBump}') ||
+  !files.scene.includes('roughnessMap={textures.tileRoughness}') ||
+  !files.scene.includes('roughnessMap={textures.brushedMetalRoughness}') ||
+  !files.scene.includes('roughnessMap={textures.applianceRoughness}') ||
+  !files.scene.includes('roughnessMap={textures.fabricRoughness}') ||
+  !files.scene.includes('<meshPhysicalMaterial')
+) {
+  throw new Error('M13 procedural PBR materials contract is missing')
 }
 
 if (
