@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { audioEngine } from '../audio/AudioEngine'
 
 export interface TelemetryEvent {
   t: number
@@ -62,6 +63,8 @@ export const useGameStore = create<GameState>((set, get) => ({
   blackout: false,
   demoEnded: false,
   setFlag: (flag) => {
+    const wasChecklistComplete = checklistComplete(get().flags)
+
     set((state) => {
       const flags = {
         ...state.flags,
@@ -75,6 +78,10 @@ export const useGameStore = create<GameState>((set, get) => ({
           : state.objective,
       }
     })
+
+    if (!wasChecklistComplete && checklistComplete(get().flags)) {
+      audioEngine.playDoorUnlock()
+    }
   },
   hasFlag: (flag) => Boolean(get().flags[flag]),
   say: (text, seconds = 4) => {
@@ -82,6 +89,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       window.clearTimeout(subtitleTimer)
     }
 
+    audioEngine.playDialogueBlip()
     set({ subtitle: text })
     subtitleTimer = window.setTimeout(() => {
       set({ subtitle: null })
@@ -92,6 +100,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     set({ pendingSubtitle })
   },
   openNote: (title, body) => {
+    audioEngine.playPaper()
     set({ note: { title, body }, interactPrompt: null })
   },
   closeNote: () => {
