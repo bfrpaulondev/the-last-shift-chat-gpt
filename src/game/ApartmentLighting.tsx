@@ -6,6 +6,21 @@ export function ApartmentLighting() {
         groundColor="#3d342f"
         intensity={0.38}
       />
+      <directionalLight
+        castShadow
+        color="#d0deec"
+        intensity={0.52}
+        position={[-2.8, 5.4, -3.8]}
+        shadow-mapSize-width={2048}
+        shadow-mapSize-height={2048}
+        shadow-camera-near={0.5}
+        shadow-camera-far={24}
+        shadow-camera-left={-6}
+        shadow-camera-right={6}
+        shadow-camera-top={6}
+        shadow-camera-bottom={-6}
+        shadow-bias={-0.00025}
+      />
       <pointLight
         castShadow
         color="#c7d7e8"
