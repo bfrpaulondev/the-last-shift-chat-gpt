@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises'
 
 const files = {
   app: await readFile('src/App.tsx', 'utf8'),
+  skeleton: await readFile('src/game/ApartmentSkeleton.tsx', 'utf8'),
   interactables: await readFile('src/game/data/interactables.tsx', 'utf8'),
   interaction: await readFile('src/game/interaction/InteractionSystem.tsx', 'utf8'),
   gameStore: await readFile('src/game/state/gameStore.ts', 'utf8'),
@@ -13,7 +14,12 @@ const files = {
   camera: await readFile('src/game/player/CameraPolish.tsx', 'utf8'),
   clock: await readFile('src/game/ui/GameClock.tsx', 'utf8'),
   details: await readFile('src/game/ApartmentDetails.tsx', 'utf8'),
+  atmosphere: await readFile('src/game/AtmosphereDetails.tsx', 'utf8'),
   lighting: await readFile('src/game/ApartmentLighting.tsx', 'utf8'),
+  brokenLight: await readFile('src/game/effects/BrokenBathroomLight.tsx', 'utf8'),
+  drip: await readFile('src/game/effects/FaucetDrip.tsx', 'utf8'),
+  rain: await readFile('src/game/weather/ExteriorRain.tsx', 'utf8'),
+  post: await readFile('src/game/render/PostEffects.tsx', 'utf8'),
   textures: await readFile('src/game/materials/proceduralTextures.ts', 'utf8'),
   styles: await readFile('src/styles.css', 'utf8'),
   immersionStyles: await readFile('src/immersion.css', 'utf8'),
@@ -135,6 +141,40 @@ if (
   !files.lighting.includes('intensity={0.11}')
 ) {
   throw new Error('M10 realism and environment detail contract is missing')
+}
+
+if (
+  !files.skeleton.includes('<ExteriorRain />') ||
+  !files.skeleton.includes('<FaucetDrip />') ||
+  !files.skeleton.includes('<AtmosphereDetails />') ||
+  !files.skeleton.includes('<PostEffects />') ||
+  !files.rain.includes('RAIN_COUNT = 420') ||
+  !files.drip.includes('DROP_PERIOD = 1.6') ||
+  !files.brokenLight.includes('flickerValue') ||
+  !files.lighting.includes('<BrokenBathroomLight />')
+) {
+  throw new Error('M11 weather and broken-light atmosphere contract is missing')
+}
+
+if (
+  !files.textures.includes('createFridgeNoteTexture') ||
+  !files.textures.includes('ESCOLA TÉCNICA') ||
+  !files.textures.includes('createFamilyPhotoTexture') ||
+  !files.textures.includes('Festival do bairro — 2016') ||
+  !files.atmosphere.includes('DetailedBuilding') ||
+  !files.atmosphere.includes('textures.fridgeNote') ||
+  !files.atmosphere.includes('textures.familyPhoto')
+) {
+  throw new Error('M11 readable story props and exterior detail contract is missing')
+}
+
+if (
+  !files.post.includes('EffectComposer') ||
+  !files.post.includes('UnrealBloomPass') ||
+  !files.post.includes('FXAAShader') ||
+  !files.post.includes('OutputPass')
+) {
+  throw new Error('M11 free Three.js post-processing contract is missing')
 }
 
 if (
