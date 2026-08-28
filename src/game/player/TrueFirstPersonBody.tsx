@@ -24,6 +24,17 @@ const SEGMENT_MIDPOINT = new THREE.Vector3()
 const LEFT_SHOULDER = new THREE.Vector3(-0.235, 1.365, 0.055)
 const RIGHT_SHOULDER = new THREE.Vector3(0.235, 1.365, 0.055)
 
+function smooth01(value: number): number {
+  const t = THREE.MathUtils.clamp(value, 0, 1)
+  return t * t * (3 - 2 * t)
+}
+
+function gripWindow(progress: number): number {
+  const enter = smooth01(progress / 0.4)
+  const leave = 1 - smooth01((progress - 0.82) / 0.18)
+  return Math.min(enter, leave)
+}
+
 function dampAngle(current: number, target: number, lambda: number, delta: number): number {
   const difference = Math.atan2(Math.sin(target - current), Math.cos(target - current))
   return current + difference * (1 - Math.exp(-lambda * delta))
@@ -121,8 +132,7 @@ function ArticulatedHand({ side }: { side: Side }) {
   const distalLengths = [0.035, 0.041, 0.039, 0.032]
 
   useFrame((_, delta) => {
-    let curl = 0.1
-    let indexCurl = curl
+    const curls = [0.1, 0.1, 0.1, 0.1]
     let thumbCurl = 0.16
 
     if (handAction) {
@@ -131,35 +141,71 @@ function ArticulatedHand({ side }: { side: Side }) {
         0,
         1,
       )
+      const contact = gripWindow(progress)
       const pulse = Math.sin(progress * Math.PI)
+      const isRight = side === 'right'
 
-      switch (handAction.kind) {
-        case 'grab':
-          curl += 0.95 * pulse
-          thumbCurl += 0.68 * pulse
-          break
-        case 'turn':
-          curl += 0.72 * pulse
-          thumbCurl += 0.56 * pulse
-          break
-        case 'door':
-          curl += 0.62 * pulse
-          thumbCurl += 0.45 * pulse
-          break
-        case 'press':
-          curl += 0.48 * pulse
-          indexCurl = 0.08 + 0.08 * pulse
-          thumbCurl += 0.35 * pulse
-          break
-        case 'reach':
-          curl += 0.18 * pulse
-          break
-        case 'brace':
-          curl += 0.12 * pulse
-          break
-        case 'startle':
-          curl += 0.22 * pulse
-          break
+      if (isRight && handAction.objectId === 'coffee') {
+        curls[0] += 0.44 * contact
+        curls[1] += 0.05 * contact
+        curls[2] += 0.5 * contact
+        curls[3] += 0.58 * contact
+        thumbCurl += 0.32 * contact
+      } else if (isRight && handAction.objectId === 'door_exit') {
+        curls[0] += 0.9 * contact
+        curls[1] += 0.82 * contact
+        curls[2] += 0.94 * contact
+        curls[3] += 1.0 * contact
+        thumbCurl += 0.7 * contact
+      } else if (isRight && handAction.objectId === 'faucet_bathroom') {
+        curls[0] += 0.72 * contact
+        curls[1] += 0.7 * contact
+        curls[2] += 0.78 * contact
+        curls[3] += 0.84 * contact
+        thumbCurl += 0.72 * contact
+      } else if (isRight && handAction.objectId === 'phone') {
+        curls[0] += 0.52 * contact
+        curls[1] += 0.46 * contact
+        curls[2] += 0.58 * contact
+        curls[3] += 0.66 * contact
+        thumbCurl += 0.62 * contact
+      } else if (isRight && handAction.objectId === 'badge') {
+        curls[0] += 0.25 * contact
+        curls[1] += 0.82 * contact
+        curls[2] += 0.32 * contact
+        curls[3] += 0.25 * contact
+        thumbCurl += 0.92 * contact
+      } else {
+        switch (handAction.kind) {
+          case 'grab':
+            curls.forEach((_, index) => { curls[index] += 0.95 * pulse })
+            thumbCurl += 0.68 * pulse
+            break
+          case 'turn':
+            curls.forEach((_, index) => { curls[index] += 0.72 * pulse })
+            thumbCurl += 0.56 * pulse
+            break
+          case 'door':
+            curls.forEach((_, index) => { curls[index] += 0.62 * pulse })
+            thumbCurl += 0.45 * pulse
+            break
+          case 'press':
+            curls[0] += 0.48 * pulse
+            curls[1] += 0.08 * pulse
+            curls[2] += 0.5 * pulse
+            curls[3] += 0.55 * pulse
+            thumbCurl += 0.35 * pulse
+            break
+          case 'reach':
+            curls.forEach((_, index) => { curls[index] += 0.18 * pulse })
+            break
+          case 'brace':
+            curls.forEach((_, index) => { curls[index] += 0.12 * pulse })
+            break
+          case 'startle':
+            curls.forEach((_, index) => { curls[index] += 0.22 * pulse })
+            break
+        }
       }
     }
 
@@ -168,27 +214,35 @@ function ArticulatedHand({ side }: { side: Side }) {
       if (!finger) {
         return
       }
-      const target = index === 1 ? indexCurl : curl
-      finger.rotation.x = THREE.MathUtils.damp(finger.rotation.x, target * 0.92, 16, safeDelta)
+      finger.rotation.x = THREE.MathUtils.damp(
+        finger.rotation.x,
+        curls[index] * 0.92,
+        18,
+        safeDelta,
+      )
     })
     fingerDistals.current.forEach((finger, index) => {
       if (!finger) {
         return
       }
-      const target = index === 1 ? indexCurl : curl
-      finger.rotation.x = THREE.MathUtils.damp(finger.rotation.x, target * 0.82, 18, safeDelta)
+      finger.rotation.x = THREE.MathUtils.damp(
+        finger.rotation.x,
+        curls[index] * 0.82,
+        20,
+        safeDelta,
+      )
     })
     if (thumb.current) {
       thumb.current.rotation.z = THREE.MathUtils.damp(
         thumb.current.rotation.z,
         mirror * (0.72 + thumbCurl * 0.5),
-        16,
+        18,
         safeDelta,
       )
       thumb.current.rotation.x = THREE.MathUtils.damp(
         thumb.current.rotation.x,
         0.18 + thumbCurl * 0.45,
-        16,
+        18,
         safeDelta,
       )
     }
@@ -284,6 +338,7 @@ export function TrueFirstPersonBody({ enabled }: TrueFirstPersonBodyProps) {
     leftWorld: new THREE.Vector3(),
     rightWorld: new THREE.Vector3(),
     desiredRight: new THREE.Vector3(),
+    holdWorld: new THREE.Vector3(),
     requestedTarget: new THREE.Vector3(),
     shoulderWorld: new THREE.Vector3(),
     reachVector: new THREE.Vector3(),
@@ -295,8 +350,10 @@ export function TrueFirstPersonBody({ enabled }: TrueFirstPersonBodyProps) {
     cameraLocalQuaternion: new THREE.Quaternion(),
     leftTargetQuaternion: new THREE.Quaternion(),
     rightTargetQuaternion: new THREE.Quaternion(),
+    interactionQuaternion: new THREE.Quaternion(),
     leftOffset: new THREE.Quaternion().setFromEuler(new THREE.Euler(0.05, -0.05, -0.11)),
     rightOffset: new THREE.Quaternion().setFromEuler(new THREE.Euler(0.05, 0.05, 0.11)),
+    interactionEuler: new THREE.Euler(),
   })
 
   useFrame((state, delta) => {
@@ -348,9 +405,22 @@ export function TrueFirstPersonBody({ enabled }: TrueFirstPersonBodyProps) {
     root.current.position.set(camera.position.x, 0, camera.position.z)
     root.current.quaternion.setFromAxisAngle(UP, bodyYaw.current)
 
+    let actionProgress = 0
+    let actionContact = 0
+    if (handAction) {
+      actionProgress = THREE.MathUtils.clamp(
+        (performance.now() - handAction.startedAt) / handAction.durationMs,
+        0,
+        1,
+      )
+      actionContact = gripWindow(actionProgress)
+    }
+
     const breath = Math.sin(state.clock.elapsedTime * 1.7) * 0.004
     if (torso.current) {
       torso.current.position.y = breath
+      const leanTarget = handAction?.objectId ? -0.018 * actionContact : 0
+      torso.current.rotation.x = THREE.MathUtils.damp(torso.current.rotation.x, leanTarget, 10, safeDelta)
       torso.current.rotation.z = Math.sin(state.clock.elapsedTime * 0.72) * 0.003
     }
 
@@ -385,35 +455,27 @@ export function TrueFirstPersonBody({ enabled }: TrueFirstPersonBodyProps) {
       .addScaledVector(s.cameraUp, -0.305)
       .addScaledVector(s.viewForward, 0.48)
 
-    const actionPulse = handAction
-      ? Math.sin(
-        THREE.MathUtils.clamp(
-          (performance.now() - handAction.startedAt) / handAction.durationMs,
-          0,
-          1,
-        ) * Math.PI,
-      )
-      : 0
-
     if (handAction) {
+      const pulse = Math.sin(actionProgress * Math.PI)
+
       if (handAction.kind === 'brace') {
         s.leftWorld
-          .addScaledVector(s.cameraRight, -0.025 * actionPulse)
-          .addScaledVector(s.cameraUp, 0.12 * actionPulse)
-          .addScaledVector(s.viewForward, 0.16 * actionPulse)
+          .addScaledVector(s.cameraRight, -0.025 * pulse)
+          .addScaledVector(s.cameraUp, 0.12 * pulse)
+          .addScaledVector(s.viewForward, 0.16 * pulse)
         s.rightWorld
-          .addScaledVector(s.cameraRight, 0.025 * actionPulse)
-          .addScaledVector(s.cameraUp, 0.12 * actionPulse)
-          .addScaledVector(s.viewForward, 0.16 * actionPulse)
+          .addScaledVector(s.cameraRight, 0.025 * pulse)
+          .addScaledVector(s.cameraUp, 0.12 * pulse)
+          .addScaledVector(s.viewForward, 0.16 * pulse)
       } else if (handAction.kind === 'startle') {
         s.leftWorld
-          .addScaledVector(s.cameraRight, 0.08 * actionPulse)
-          .addScaledVector(s.cameraUp, 0.23 * actionPulse)
-          .addScaledVector(s.viewForward, 0.06 * actionPulse)
+          .addScaledVector(s.cameraRight, 0.08 * pulse)
+          .addScaledVector(s.cameraUp, 0.23 * pulse)
+          .addScaledVector(s.viewForward, 0.06 * pulse)
         s.rightWorld
-          .addScaledVector(s.cameraRight, -0.08 * actionPulse)
-          .addScaledVector(s.cameraUp, 0.23 * actionPulse)
-          .addScaledVector(s.viewForward, 0.06 * actionPulse)
+          .addScaledVector(s.cameraRight, -0.08 * pulse)
+          .addScaledVector(s.cameraUp, 0.23 * pulse)
+          .addScaledVector(s.viewForward, 0.06 * pulse)
       } else {
         s.desiredRight.copy(camera.position)
           .addScaledVector(s.cameraRight, 0.12)
@@ -433,12 +495,60 @@ export function TrueFirstPersonBody({ enabled }: TrueFirstPersonBodyProps) {
           }
         }
 
-        s.rightWorld.lerp(s.desiredRight, actionPulse)
-        if (handAction.kind === 'grab' || handAction.kind === 'turn' || handAction.kind === 'door') {
+        const approach = smooth01(actionProgress / 0.38)
+        const release = smooth01((actionProgress - 0.84) / 0.16)
+        const reachBlend = approach * (1 - release)
+        s.rightWorld.lerp(s.desiredRight, reachBlend)
+
+        if (handAction.objectId === 'coffee') {
+          const press = Math.sin(smooth01((actionProgress - 0.34) / 0.38) * Math.PI)
+          s.rightWorld
+            .addScaledVector(s.viewForward, 0.026 * press)
+            .addScaledVector(s.cameraUp, 0.012 * actionContact)
+        } else if (handAction.objectId === 'door_exit') {
+          s.rightWorld
+            .addScaledVector(s.cameraUp, -0.018 * actionContact)
+            .addScaledVector(s.cameraRight, -0.018 * actionContact)
+        } else if (handAction.objectId === 'faucet_bathroom') {
+          s.rightWorld
+            .addScaledVector(s.cameraUp, -0.012 * actionContact)
+            .addScaledVector(s.viewForward, 0.012 * actionContact)
+        } else if (handAction.objectId === 'phone') {
+          const lift = smooth01((actionProgress - 0.48) / 0.32)
+          s.holdWorld.copy(camera.position)
+            .addScaledVector(s.cameraRight, 0.14)
+            .addScaledVector(s.cameraUp, -0.17)
+            .addScaledVector(s.viewForward, 0.42)
+          s.rightWorld.lerp(s.holdWorld, lift)
           s.leftWorld
-            .addScaledVector(s.cameraRight, 0.025 * actionPulse)
-            .addScaledVector(s.cameraUp, 0.045 * actionPulse)
-            .addScaledVector(s.viewForward, 0.055 * actionPulse)
+            .addScaledVector(s.cameraRight, 0.055 * lift)
+            .addScaledVector(s.cameraUp, 0.035 * lift)
+            .addScaledVector(s.viewForward, 0.06 * lift)
+        } else if (handAction.objectId === 'badge') {
+          if (handAction.variant === 'badge-pickup') {
+            const lift = smooth01((actionProgress - 0.48) / 0.3)
+            s.holdWorld.copy(camera.position)
+              .addScaledVector(s.cameraRight, 0.13)
+              .addScaledVector(s.cameraUp, -0.2)
+              .addScaledVector(s.viewForward, 0.43)
+            s.rightWorld.lerp(s.holdWorld, lift)
+          } else if (handAction.variant === 'badge-slip' && actionProgress > 0.58) {
+            const recoil = smooth01((actionProgress - 0.58) / 0.24)
+            s.rightWorld
+              .addScaledVector(s.cameraUp, 0.07 * recoil)
+              .addScaledVector(s.viewForward, -0.06 * recoil)
+          }
+        }
+
+        if (
+          handAction.kind === 'grab' ||
+          handAction.kind === 'turn' ||
+          handAction.kind === 'door'
+        ) {
+          s.leftWorld
+            .addScaledVector(s.cameraRight, 0.025 * actionContact)
+            .addScaledVector(s.cameraUp, 0.045 * actionContact)
+            .addScaledVector(s.viewForward, 0.055 * actionContact)
         }
       }
     }
@@ -460,6 +570,11 @@ export function TrueFirstPersonBody({ enabled }: TrueFirstPersonBodyProps) {
     s.rightElbow.y -= 0.055
     s.rightElbow.z += 0.035
 
+    if (handAction?.objectId === 'phone' || handAction?.variant === 'badge-pickup') {
+      s.rightElbow.x -= 0.045 * actionContact
+      s.rightElbow.z += 0.035 * actionContact
+    }
+
     setSegment(leftUpperArm.current, LEFT_SHOULDER, s.leftElbow)
     setSegment(rightUpperArm.current, RIGHT_SHOULDER, s.rightElbow)
     setSegment(leftForearm.current, s.leftElbow, s.leftWristLocal)
@@ -479,6 +594,23 @@ export function TrueFirstPersonBody({ enabled }: TrueFirstPersonBodyProps) {
     s.cameraLocalQuaternion.copy(s.inverseBodyQuaternion).multiply(camera.quaternion)
     s.leftTargetQuaternion.copy(s.cameraLocalQuaternion).multiply(s.leftOffset)
     s.rightTargetQuaternion.copy(s.cameraLocalQuaternion).multiply(s.rightOffset)
+
+    s.interactionEuler.set(0, 0, 0)
+    if (handAction?.objectId === 'door_exit') {
+      s.interactionEuler.set(0.08 * actionContact, -0.08 * actionContact, -0.58 * actionContact)
+    } else if (handAction?.objectId === 'faucet_bathroom') {
+      s.interactionEuler.set(-0.12 * actionContact, 0.28 * actionContact, -0.82 * actionContact)
+    } else if (handAction?.objectId === 'coffee') {
+      s.interactionEuler.set(-0.34 * actionContact, 0.02, -0.06 * actionContact)
+    } else if (handAction?.objectId === 'phone') {
+      const lift = smooth01((actionProgress - 0.48) / 0.32)
+      s.interactionEuler.set(-0.16 - 0.12 * lift, 0.1 * lift, 0.06 * lift)
+    } else if (handAction?.objectId === 'badge') {
+      s.interactionEuler.set(-0.18 * actionContact, 0.04, 0.14 * actionContact)
+    }
+
+    s.interactionQuaternion.setFromEuler(s.interactionEuler)
+    s.rightTargetQuaternion.multiply(s.interactionQuaternion)
     leftHand.current.quaternion.slerp(s.leftTargetQuaternion, smoothing)
     rightHand.current.quaternion.slerp(s.rightTargetQuaternion, smoothing)
   })
