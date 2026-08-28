@@ -2,9 +2,10 @@ import { useGameStore } from '../state/gameStore'
 
 interface GameHudProps {
   isPointerLocked: boolean
+  muted: boolean
 }
 
-export function GameHud({ isPointerLocked }: GameHudProps) {
+export function GameHud({ isPointerLocked, muted }: GameHudProps) {
   const objective = useGameStore((state) => state.objective)
   const prompt = useGameStore((state) => state.interactPrompt)
   const subtitle = useGameStore((state) => state.subtitle)
@@ -20,6 +21,7 @@ export function GameHud({ isPointerLocked }: GameHudProps) {
   return (
     <div className="game-hud">
       {!demoEnded && <div className="objective">▸ {objective}</div>}
+      {!demoEnded && <div className="mute-indicator">{muted ? 'MUDO' : 'SOM'} [M]</div>}
 
       {isPointerLocked && !note && !cinematic && !demoEnded && (
         <div className="crosshair" aria-hidden="true">+</div>
