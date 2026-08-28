@@ -76,6 +76,7 @@ export const AREA_DEFINITIONS: Record<GameArea, AreaDefinition> = {
     chapter: 'part-2-road-to-meridian',
     label: 'Portaria / Lobby',
     defaultCheckpoint: 'lobby-entry',
+    defaultSpawn: { x: 0, y: 1.65, z: 4.8, yaw: Math.PI },
   },
   'locker-b1': {
     area: 'locker-b1',

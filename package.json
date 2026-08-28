@@ -8,7 +8,7 @@
     "dev:server": "node --watch server/index.js",
     "build": "tsc -b && vite build",
     "check:server": "node --check server/index.js && node --check server/app.js && node --check server/db.js && node --check server/models/Save.js && node --check server/models/TelemetryEvent.js && node --check server/smoke.js",
-    "check:acceptance": "node scripts/acceptance.mjs && node scripts/acceptance-m18.mjs && node scripts/acceptance-m19.mjs && node scripts/acceptance-m20.mjs && node scripts/acceptance-m21.mjs",
+    "check:acceptance": "node scripts/acceptance.mjs && node scripts/acceptance-m18.mjs && node scripts/acceptance-m19.mjs && node scripts/acceptance-m20.mjs && node scripts/acceptance-m21.mjs && node scripts/acceptance-m22.mjs",
     "smoke:api": "node server/smoke.js",
     "preview": "vite preview"
   },
