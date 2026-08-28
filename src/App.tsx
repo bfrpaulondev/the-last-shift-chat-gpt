@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import * as THREE from 'three'
 import { ApartmentSkeleton } from './game/ApartmentSkeleton'
+import { GameHud } from './game/ui/GameHud'
 
 export default function App() {
   const [isPointerLocked, setIsPointerLocked] = useState(false)
@@ -33,10 +34,12 @@ export default function App() {
         />
       </Canvas>
 
+      <GameHud isPointerLocked={isPointerLocked} />
+
       {!isPointerLocked && (
         <div className="pointer-lock-hint" aria-hidden="true">
           <strong>CLIQUE PARA ENTRAR</strong>
-          <span>WASD para mover · Shift para correr · ESC para soltar</span>
+          <span>WASD para mover · Shift para correr · E para interagir · ESC para soltar</span>
         </div>
       )}
     </main>
