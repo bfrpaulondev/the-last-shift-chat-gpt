@@ -3,6 +3,7 @@ import { useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { ApartmentSkeleton } from '../ApartmentSkeleton'
 import { BusArea } from '../areas/bus/BusArea'
+import { PlazaArea } from '../areas/plaza/PlazaArea'
 import { StreetArea } from '../areas/street/StreetArea'
 import { AREA_DEFINITIONS } from './areaTypes'
 import { useGameStore } from '../state/gameStore'
@@ -82,7 +83,15 @@ export function AreaDirector({
           onLockChange={onLockChange}
         />
       )}
-      {area !== 'apartment' && area !== 'street' && area !== 'bus-214' && (
+      {area === 'meridian-plaza' && (
+        <PlazaArea
+          key="area-meridian-plaza"
+          gameStarted={gameStarted}
+          isPointerLocked={isPointerLocked}
+          onLockChange={onLockChange}
+        />
+      )}
+      {area !== 'apartment' && area !== 'street' && area !== 'bus-214' && area !== 'meridian-plaza' && (
         <StreamingStandby key={`area-${area}`} />
       )}
     </>
