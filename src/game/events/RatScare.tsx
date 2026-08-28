@@ -12,38 +12,58 @@ export function RatScare() {
   const rat = useRef<THREE.Group>(null)
   const startedAt = useRef(0)
   const scheduled = useRef(false)
+  const messageTimer = useRef<number | null>(null)
   const [running, setRunning] = useState(false)
   const showered = useGameStore((state) => Boolean(state.flags.showered))
-  const alreadySeen = useGameStore((state) => Boolean(state.flags.rat_scare_seen))
 
   useEffect(() => {
-    if (!showered || alreadySeen || scheduled.current) {
+    if (!showered || scheduled.current) {
+      return
+    }
+
+    const current = useGameStore.getState()
+    if (current.flags.rat_scare_seen || current.demoEnded) {
       return
     }
 
     scheduled.current = true
+    let fired = false
     const startTimer = window.setTimeout(() => {
       const state = useGameStore.getState()
       if (state.flags.rat_scare_seen || state.demoEnded) {
+        scheduled.current = false
         return
       }
 
+      fired = true
       startedAt.current = performance.now()
       setRunning(true)
       audioEngine.playRatScurry()
       state.setFlag('rat_scare_seen')
       state.triggerScare(1700)
 
-      window.setTimeout(() => {
+      messageTimer.current = window.setTimeout(() => {
         const latest = useGameStore.getState()
         if (!latest.demoEnded) {
           latest.say('Um rato... ótimo. Agora eu acordei de vez.')
         }
+        messageTimer.current = null
       }, 950)
     }, 850)
 
-    return () => window.clearTimeout(startTimer)
-  }, [alreadySeen, showered])
+    return () => {
+      window.clearTimeout(startTimer)
+      if (!fired) {
+        scheduled.current = false
+      }
+    }
+  }, [showered])
+
+  useEffect(() => () => {
+    if (messageTimer.current !== null) {
+      window.clearTimeout(messageTimer.current)
+    }
+  }, [])
 
   useFrame(() => {
     if (!rat.current || !running) {
@@ -71,7 +91,7 @@ export function RatScare() {
   }
 
   return (
-    <group ref={rat} position={RAT_START.toArray()}>
+    <group ref={rat} position={[2.72, 0.1, -1.02]}>
       <mesh castShadow raycast={() => null} scale={[0.18, 0.1, 0.31]}>
         <sphereGeometry args={[1, 8, 6]} />
         <meshStandardMaterial color="#282523" roughness={0.96} />
