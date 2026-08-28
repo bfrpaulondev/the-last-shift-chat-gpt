@@ -7,6 +7,7 @@ import {
   locationForArea,
   type GameLocationSnapshot,
 } from '../flow/areaTypes'
+import type { ShiftTimeSnapshot } from '../time/shiftClock'
 
 const PLAYER_ID_KEY = 'the-last-shift-player-id'
 
@@ -15,6 +16,7 @@ export interface SaveSnapshot {
   flags: Record<string, boolean>
   chapter: string
   location?: GameLocationSnapshot
+  shiftTime?: ShiftTimeSnapshot
   schemaVersion?: number
   playtimeSeconds: number
 }
@@ -90,6 +92,7 @@ export async function saveProgress(
   playerId: string,
   flags: Record<string, boolean>,
   location: GameLocationSnapshot,
+  shiftTime: ShiftTimeSnapshot,
   playtimeSeconds: number,
 ): Promise<boolean> {
   try {
@@ -103,6 +106,7 @@ export async function saveProgress(
         flags,
         chapter: AREA_DEFINITIONS[location.area].chapter,
         location,
+        shiftTime,
         schemaVersion: 2,
         playtimeSeconds,
       }),
