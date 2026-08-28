@@ -28,8 +28,12 @@ function CabinShell() {
 }
 
 function FrontDoors() {
-  const arrived = useGameStore((state) => Boolean(state.flags.elevator_arrived_22))
-  const offset = arrived ? 0.64 : 0
+  const arrived22 = useGameStore((state) => Boolean(state.flags.elevator_arrived_22))
+  const floor22Complete = useGameStore((state) => Boolean(state.flags.floor22_routine_complete))
+  const ride30Started = useGameStore((state) => Boolean(state.flags.elevator_ride_to_30_started))
+  const arrived30 = useGameStore((state) => Boolean(state.flags.elevator_arrived_30))
+  const open = arrived30 || (arrived22 && !floor22Complete) || (floor22Complete && !ride30Started)
+  const offset = open ? 0.64 : 0
 
   return (
     <group position={[0, 0, -1.94]}>
@@ -46,32 +50,50 @@ function FrontDoors() {
 }
 
 function ControlPanel() {
-  const rideStarted = useGameStore((state) => Boolean(state.flags.elevator_ride_started))
-  const arrived = useGameStore((state) => Boolean(state.flags.elevator_arrived_22))
+  const ride22Started = useGameStore((state) => Boolean(state.flags.elevator_ride_started))
+  const arrived22 = useGameStore((state) => Boolean(state.flags.elevator_arrived_22))
+  const floor22Complete = useGameStore((state) => Boolean(state.flags.floor22_routine_complete))
+  const ride30Started = useGameStore((state) => Boolean(state.flags.elevator_ride_to_30_started))
+  const arrived30 = useGameStore((state) => Boolean(state.flags.elevator_arrived_30))
 
   return (
     <group position={[1.83, 1.2, -0.35]} rotation={[0, -Math.PI / 2, 0]}>
       <mesh castShadow>
-        <boxGeometry args={[0.08, 1.45, 0.72]} />
+        <boxGeometry args={[0.08, 1.55, 0.72]} />
         <meshStandardMaterial color="#555b5d" metalness={0.88} roughness={0.2} />
       </mesh>
-      <mesh position={[0.047, 0.3, 0]} userData={{ elevatorInteractableId: 'floor-22-button' }}>
-        <cylinderGeometry args={[0.1, 0.1, 0.04, 24]} />
+      <mesh position={[0.047, 0.34, -0.15]} userData={{ elevatorInteractableId: 'floor-22-button' }}>
+        <cylinderGeometry args={[0.09, 0.09, 0.04, 24]} />
         <meshStandardMaterial
           color="#d6d9d7"
-          emissive={rideStarted ? '#f4c65d' : '#202522'}
-          emissiveIntensity={rideStarted ? 1.1 : 0.08}
+          emissive={ride22Started ? '#f4c65d' : '#202522'}
+          emissiveIntensity={ride22Started ? 1.05 : 0.08}
           metalness={0.65}
           roughness={0.22}
         />
       </mesh>
-      <mesh position={[0.047, -0.22, 0]} userData={{ elevatorInteractableId: 'service-notice' }}>
-        <boxGeometry args={[0.05, 0.42, 0.5]} />
+      <mesh position={[0.047, 0.34, 0.15]} userData={{ elevatorInteractableId: 'floor-30-button' }}>
+        <cylinderGeometry args={[0.09, 0.09, 0.04, 24]} />
+        <meshStandardMaterial
+          color={floor22Complete ? '#d6d9d7' : '#767b7b'}
+          emissive={ride30Started ? '#f4c65d' : '#202522'}
+          emissiveIntensity={ride30Started ? 1.05 : 0.05}
+          metalness={0.65}
+          roughness={0.22}
+        />
+      </mesh>
+      <mesh position={[0.047, -0.26, 0]} userData={{ elevatorInteractableId: 'service-notice' }}>
+        <boxGeometry args={[0.05, 0.38, 0.5]} />
         <meshStandardMaterial color="#d8d3c4" roughness={0.78} />
       </mesh>
-      <mesh position={[0.047, 0.59, 0]}>
+      <mesh position={[0.047, 0.62, 0]}>
         <boxGeometry args={[0.05, 0.2, 0.5]} />
-        <meshStandardMaterial color="#101719" emissive={arrived ? '#72d3a5' : '#d6a84f'} emissiveIntensity={0.85} toneMapped={false} />
+        <meshStandardMaterial
+          color="#101719"
+          emissive={arrived30 || arrived22 ? '#72d3a5' : '#d6a84f'}
+          emissiveIntensity={0.85}
+          toneMapped={false}
+        />
       </mesh>
     </group>
   )
