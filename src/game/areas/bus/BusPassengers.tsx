@@ -5,7 +5,6 @@ import { useGameStore } from '../../state/gameStore'
 
 type PassengerRole =
   | 'book'
-  | 'student'
   | 'paulo'
   | 'knitting'
   | 'executive'
@@ -102,9 +101,6 @@ function Passenger({ id, role, position, rotationY, shirt, trousers, skin = '#9d
       if (role === 'cap') {
         head.current.rotation.y = Math.sin(t * 0.58) * 0.32
         head.current.rotation.x = -0.05 + Math.sin(t * 0.9) * 0.025
-      } else if (role === 'student') {
-        head.current.rotation.z = 0.3 + Math.sin(t * 0.35) * 0.025
-        head.current.rotation.x = 0.18
       } else {
         head.current.rotation.y = Math.sin(t * 0.25) * 0.04
       }
@@ -197,14 +193,13 @@ export function BusPassengers() {
     <group>
       <Driver />
       <Passenger id="passenger-book" role="book" position={[-0.76, 0.04, 2.72]} rotationY={Math.PI} shirt="#605a4d" trousers="#2d3132" skin="#a8755b" />
-      <Passenger id="passenger-sleeper" role="student" position={[0.76, 0.04, 2.15]} rotationY={Math.PI} shirt="#485d69" trousers="#29333b" skin="#b77c62" />
-      <Passenger id="passenger-paulo" role="paulo" position={[-0.76, 0.04, 1.12]} rotationY={Math.PI} shirt="#716052" trousers="#2f3337" skin="#885a48" />
-      <Passenger id="passenger-knitting" role="knitting" position={[0.76, 0.04, 0.5]} rotationY={Math.PI} shirt="#695563" trousers="#343337" skin="#b78064" />
-      <Passenger id="passenger-executive" role="executive" position={[-0.76, 0.04, -0.58]} rotationY={0} shirt="#30363b" trousers="#20252a" skin="#9a6850" />
-      <Passenger id="gossip-colleagues" role="colleague-a" position={[0.76, 0.04, -1.12]} rotationY={0} shirt="#695e52" trousers="#303438" skin="#a76f58" />
-      <Passenger id="gossip-colleagues" role="colleague-b" position={[0.76, 0.04, -2.0]} rotationY={0} shirt="#4f6260" trousers="#292f31" skin="#9f6c55" />
+      <Passenger id="passenger-paulo" role="paulo" position={[0.76, 0.04, 1.72]} rotationY={Math.PI} shirt="#716052" trousers="#2f3337" skin="#885a48" />
+      <Passenger id="passenger-knitting" role="knitting" position={[-0.76, 0.04, 0.62]} rotationY={Math.PI} shirt="#695563" trousers="#343337" skin="#b78064" />
+      <Passenger id="passenger-executive" role="executive" position={[0.76, 0.04, -0.42]} rotationY={0} shirt="#30363b" trousers="#20252a" skin="#9a6850" />
+      <Passenger id="gossip-colleagues" role="colleague-a" position={[-0.76, 0.04, -1.26]} rotationY={0} shirt="#695e52" trousers="#303438" skin="#a76f58" />
+      <Passenger id="gossip-colleagues" role="colleague-b" position={[0.76, 0.04, -1.72]} rotationY={0} shirt="#4f6260" trousers="#292f31" skin="#9f6c55" />
       {!pickpocketLeft && (
-        <Passenger id="passenger-cap" role="cap" position={[-0.76, 0.04, -2.3]} rotationY={0} shirt="#41494b" trousers="#282d30" skin="#8f604e" />
+        <Passenger id="passenger-cap" role="cap" position={[-0.76, 0.04, -2.48]} rotationY={0} shirt="#41494b" trousers="#282d30" skin="#8f604e" />
       )}
     </group>
   )
