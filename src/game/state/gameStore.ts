@@ -17,11 +17,22 @@ export type HandActionKind =
   | 'brace'
   | 'startle'
 
+export type HandActionVariant =
+  | 'generic'
+  | 'coffee-press'
+  | 'badge-slip'
+  | 'badge-pickup'
+  | 'phone-lift'
+  | 'faucet-turn'
+  | 'door-handle'
+
 export interface HandActionState {
   kind: HandActionKind
   startedAt: number
   durationMs: number
   target?: [number, number, number]
+  objectId?: string
+  variant?: HandActionVariant
 }
 
 interface NoteState {
@@ -61,6 +72,8 @@ interface GameState {
     kind: HandActionKind,
     durationMs?: number,
     target?: [number, number, number],
+    objectId?: string,
+    variant?: HandActionVariant,
   ) => void
   triggerScare: (durationMs?: number) => void
   setBackendOnline: (backendOnline: boolean) => void
@@ -206,7 +219,13 @@ export const useGameStore = create<GameState>((set, get) => ({
   setBlackout: (blackout) => {
     set({ blackout })
   },
-  triggerHandAction: (kind, durationMs = 650, target) => {
+  triggerHandAction: (
+    kind,
+    durationMs = 650,
+    target,
+    objectId,
+    variant = 'generic',
+  ) => {
     if (handActionTimer !== null) {
       window.clearTimeout(handActionTimer)
     }
@@ -216,6 +235,8 @@ export const useGameStore = create<GameState>((set, get) => ({
       startedAt: performance.now(),
       durationMs,
       target,
+      objectId,
+      variant,
     }
 
     set({ handAction: action })
