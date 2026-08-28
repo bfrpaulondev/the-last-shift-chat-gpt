@@ -1,5 +1,4 @@
 import { useGameStore } from '../state/gameStore'
-import { ShiftClockDriver } from '../time/ShiftClockDriver'
 import { GameClock } from './GameClock'
 
 interface GameHudProps {
@@ -25,7 +24,6 @@ export function GameHud({ isPointerLocked, muted }: GameHudProps) {
 
   return (
     <div className="game-hud">
-      <ShiftClockDriver />
       {!demoEnded && <div className="objective">▸ {objective}</div>}
 
       {!demoEnded && (
