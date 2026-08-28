@@ -31,6 +31,9 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Check scene acceptance contract
+        run: npm run check:acceptance
+
       - name: Check server syntax
         run: npm run check:server
 
