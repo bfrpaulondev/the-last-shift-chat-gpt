@@ -1,19 +1,19 @@
 #game-canvas {
   image-rendering: auto;
-  filter: contrast(1.04) saturate(0.92) brightness(0.99);
+  filter: none;
 }
 
 .game-shell::before {
   background: radial-gradient(
     circle at center,
-    transparent 58%,
-    rgba(0, 0, 0, 0.08) 76%,
-    rgba(0, 0, 0, 0.38) 100%
+    transparent 68%,
+    rgba(0, 0, 0, 0.025) 86%,
+    rgba(0, 0, 0, 0.2) 100%
   );
 }
 
 .game-shell::after {
-  opacity: 0.008;
+  opacity: 0.002;
   mix-blend-mode: soft-light;
 }
 
