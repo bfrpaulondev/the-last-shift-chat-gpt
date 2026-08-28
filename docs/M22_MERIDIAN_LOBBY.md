@@ -37,7 +37,7 @@ Orienta o jogador a usar o leitor. Depois da validação, reforça o destino B1 
 
 `[E] Apresentar crachá`
 
-Usa a animação cinematográfica de cartão, exige `badge_taken`, registra telemetria `lobby:badge-reader`, marca `lobby_badge_verified` e grava checkpoint persistente.
+Usa a animação cinematográfica de interação com o leitor já suportada pelo sistema M17, exige `badge_taken`, registra telemetria `lobby:badge-reader`, marca `lobby_badge_verified` e grava checkpoint persistente.
 
 ### Diretório
 
