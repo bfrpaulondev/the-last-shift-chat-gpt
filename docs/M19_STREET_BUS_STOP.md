@@ -58,15 +58,37 @@ Boarding:
 
 M20 replaces the current bus standby with the complete bus interior.
 
-## Clock integration
+## Global shift clock and 15-minute routine
 
-The concurrent clock work was reviewed and retained because it is directly useful to Part 2:
+The shift clock is a shared persistent system, not a HUD-only timer.
+
+The authoritative cadence is:
+
+`ROUTINE_INTERVAL_MINUTES = 15`
+
+Routine boundaries are aligned to the quarter hour:
+
+- 08:00
+- 08:15
+- 08:30
+- 08:45
+- 09:00
+- and so on.
+
+With the current time scale, `GAME_SECONDS_PER_MINUTE = 10`, so one 15-minute in-game routine interval corresponds to 150 seconds / 2m30s of real play while the clock is running normally.
+
+The routine trigger is enabled only in work/elevator areas (`service-elevator`, `work-floor-22`, `work-floor-30`, `cafeteria`, `floor-37`). Street, bus, plaza, lobby and locker areas advance time but do not trigger cleaning-routine cycles.
+
+`worldMinute` and `lastRoutineMinute` are persisted with the save. This prevents a reload on a quarter-hour boundary from repeating a routine cycle that already happened.
+
+## Clock integration
 
 - `ShiftClockController` is mounted once in `App`;
 - the HUD reads the shared shift clock;
-- `worldMinute` and `lastRoutineMinute` are persisted with the save;
-- the separate duplicate clock driver created during M19 was removed;
-- routine-boundary tracking is limited to later work/elevator areas.
+- street arrival is raised to at least 05:55;
+- boarding aligns the story to 06:05;
+- save hydration reanchors the real-time clock so a loaded time is not overwritten;
+- the separate duplicate clock driver created during M19 was removed.
 
 ## Performance boundaries
 
