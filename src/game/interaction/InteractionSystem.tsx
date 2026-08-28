@@ -5,6 +5,7 @@ import { INTERACTABLES } from '../data/interactables'
 import { useGameStore } from '../state/gameStore'
 
 const INTERACTION_RANGE = 2.2
+const CENTER_SCREEN = new THREE.Vector2(0, 0)
 const gameStartedAt = performance.now()
 
 function findInteractableId(object: THREE.Object3D | null): string | null {
@@ -89,7 +90,7 @@ export function InteractionSystem() {
       return
     }
 
-    raycaster.current.setFromCamera({ x: 0, y: 0 }, camera)
+    raycaster.current.setFromCamera(CENTER_SCREEN, camera)
     raycaster.current.far = INTERACTION_RANGE
 
     const hits = raycaster.current.intersectObjects(scene.children, true)
