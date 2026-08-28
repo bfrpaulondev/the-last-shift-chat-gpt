@@ -1,12 +1,12 @@
-import type { AabbCollider } from '../../player/collision'
+import type { Collider } from '../../physics/colliders'
 
-export const FLOOR30_COLLIDERS: AabbCollider[] = [
-  { min: [-5.7, -0.2, -7.1], max: [-5.35, 2.8, 7.1] },
-  { min: [5.35, -0.2, -7.1], max: [5.7, 2.8, 7.1] },
-  { min: [-5.7, -0.2, -7.1], max: [5.7, 2.8, -6.75] },
-  { min: [-5.7, -0.2, 6.75], max: [-1.2, 2.8, 7.1] },
-  { min: [1.2, -0.2, 6.75], max: [5.7, 2.8, 7.1] },
-  { min: [-4.9, -0.1, -2.8], max: [-1.8, 1.45, -1.5] },
-  { min: [1.5, -0.1, -3.4], max: [4.7, 1.45, -2.0] },
-  { min: [-4.4, -0.1, 1.0], max: [-2.8, 1.2, 2.6] },
+export const FLOOR30_COLLIDERS: Collider[] = [
+  { minX: -5.7, maxX: -5.35, minZ: -7.1, maxZ: 7.1 },
+  { minX: 5.35, maxX: 5.7, minZ: -7.1, maxZ: 7.1 },
+  { minX: -5.7, maxX: 5.7, minZ: -7.1, maxZ: -6.75 },
+  { minX: -5.7, maxX: -1.2, minZ: 6.75, maxZ: 7.1 },
+  { minX: 1.2, maxX: 5.7, minZ: 6.75, maxZ: 7.1 },
+  { minX: -4.9, maxX: -1.8, minZ: -2.8, maxZ: -1.5 },
+  { minX: 1.5, maxX: 4.7, minZ: -3.4, maxZ: -2.0 },
+  { minX: -4.4, maxX: -2.8, minZ: 1.0, maxZ: 2.6 },
 ]
