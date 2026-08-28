@@ -48,7 +48,7 @@ export function ApartmentSkeleton({
       {gameStarted && <InteractionSystem />}
       {gameStarted && <RatScare />}
       <CameraPolish enabled={cameraInteractionEnabled} />
-      <FirstPersonHands enabled={gameStarted && awake && !demoEnded} />
+      <FirstPersonHands enabled={gameStarted && !demoEnded} />
       <PlayerController
         colliders={APARTMENT_COLLIDERS}
         enabled={cameraInteractionEnabled && awake}
