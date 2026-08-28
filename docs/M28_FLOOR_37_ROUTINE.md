@@ -15,7 +15,7 @@ Transformar `floor-37` de standby numa área jogável completa para o fechamento
 7. O chamado do elevador permanece funcionalmente bloqueado enquanto a rotina não estiver concluída.
 8. Depois da conclusão, pressionar o chamado registra `floor37_elevator_called`, dispara a falha elétrica, marca `floor37_blackout_triggered` e grava `floor-37-blackout`.
 9. A falha usa o sistema de susto já existente, corta a iluminação/ambiente do 37.º e bloqueia movimento sem criar um novo mecanismo paralelo.
-10. O fluxo então faz handoff persistente para `blackout / knocked-out`, área já prevista no contrato da Parte 2.
+10. `Floor37BlackoutController` observa a flag persistida e conclui o handoff para `blackout / knocked-out`. Se houver reload entre o disparo da falha e a troca de área, o controlador retoma a transição automaticamente.
 11. O conteúdo jogável do blackout permanece reservado ao próximo milestone.
 
 ## Cena
@@ -70,7 +70,8 @@ Antes da conclusão informa apenas as tarefas faltantes. Depois usa `press`, reg
 - `floor-37-routine` preserva a preparação dos materiais.
 - `floor-37-complete` preserva o fechamento da última rotina.
 - `floor-37-blackout` preserva o ponto narrativo imediatamente anterior ao handoff.
-- `blackout / knocked-out` torna a progressão retomável depois da troca de área.
+- o controlador de blackout torna o handoff retomável mesmo se a sessão recarregar antes da troca de área.
+- `blackout / knocked-out` preserva a localização depois da troca de área.
 - eventos `floor37:*` continuam usando o pipeline global de telemetria/Mongo.
 - flags e location continuam no save existente.
 - interações respeitam `subtitleQueue` e `dismissSubtitle`.
@@ -91,7 +92,7 @@ A área só existe em memória quando `location.area === 'floor-37'`. Geometria,
 - checkpoints `floor-37-routine`, `floor-37-complete` e `floor-37-blackout`
 - telemetria e flags
 - continuidade elevador → 37.º
-- handoff `blackout / knocked-out`
+- controlador reload-safe do handoff `blackout / knocked-out`
 - uso do sistema de susto/blackout existente
 - áudio procedural reativo à falha
 - colisores dedicados
