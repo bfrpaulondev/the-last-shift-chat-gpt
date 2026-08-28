@@ -1,5 +1,6 @@
 import { PointerLockControls } from '@react-three/drei'
 import { ApartmentDetails } from './ApartmentDetails'
+import { ApartmentLighting } from './ApartmentLighting'
 import { ApartmentScene } from './ApartmentScene'
 import { AudioAmbience } from './audio/AudioAmbience'
 import { BadgeDropScene } from './events/BadgeDropScene'
@@ -38,6 +39,7 @@ export function ApartmentSkeleton({
   return (
     <>
       <ApartmentScene />
+      <ApartmentLighting />
       <ApartmentDetails />
       <BadgeDropScene />
       <AudioAmbience enabled={gameStarted && !demoEnded} />
