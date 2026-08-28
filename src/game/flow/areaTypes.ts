@@ -84,6 +84,7 @@ export const AREA_DEFINITIONS: Record<GameArea, AreaDefinition> = {
     chapter: 'part-2-road-to-meridian',
     label: 'Vestiário B1',
     defaultCheckpoint: 'locker-entry',
+    defaultSpawn: { x: 0, y: 1.65, z: 4.2, yaw: Math.PI },
   },
   'service-elevator': {
     area: 'service-elevator',
