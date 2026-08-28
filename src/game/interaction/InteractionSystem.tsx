@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { audioEngine } from '../audio/AudioEngine'
+import { interactionFoley } from '../audio/InteractionFoley'
 import { INTERACTABLES } from '../data/interactables'
 import { useGameStore } from '../state/gameStore'
 
@@ -96,6 +97,29 @@ function getPrompt(id: string, flags: Record<string, boolean>): string | null {
   }
 
   return INTERACTABLES[id]?.prompt ?? null
+}
+
+function canonicalInteractionTarget(
+  id: string,
+  flags: Record<string, boolean>,
+  fallback?: [number, number, number],
+): [number, number, number] | undefined {
+  switch (id) {
+    case 'door_exit':
+      return [1.27, 1.08, 2.815]
+    case 'faucet_bathroom':
+      return [1.98, 1.055, -2.705]
+    case 'coffee':
+      return [-1.6, 1.315, 2.365]
+    case 'phone':
+      return [-1.12, 0.72, -2.1]
+    case 'badge':
+      return flags.badge_dropped
+        ? [0.4, 0.055, 2.38]
+        : [0.22, 1.52, 2.86]
+    default:
+      return fallback
+  }
 }
 
 function easeInOutCubic(value: number): number {
@@ -207,10 +231,11 @@ export function InteractionSystem() {
         return
       }
 
-      const interactionTarget: [number, number, number] | undefined =
+      const raycastTarget: [number, number, number] | undefined =
         hasInteractionPoint.current
           ? [interactionPoint.current.x, interactionPoint.current.y, interactionPoint.current.z]
           : undefined
+      const interactionTarget = canonicalInteractionTarget(id, state.flags, raycastTarget)
 
       const wasFirstTime = !interactedIds.current.has(id)
       interactedIds.current.add(id)
@@ -224,7 +249,7 @@ export function InteractionSystem() {
       if (definition.mode === 'bed') {
         busy.current = true
         state.setCinematic(true)
-        state.triggerHandAction('brace', 850)
+        state.triggerHandAction('brace', 850, undefined, 'bed')
         if (definition.subtitle) {
           state.say(definition.subtitle)
         }
@@ -249,28 +274,38 @@ export function InteractionSystem() {
 
       if (id === 'coffee') {
         busy.current = true
-        state.triggerHandAction('press', 760, interactionTarget)
+        state.triggerHandAction('press', 1050, interactionTarget, 'coffee', 'coffee-press')
         state.setPrompt(null)
+        window.setTimeout(() => interactionFoley.playCoffeeButton(), 390)
 
         if (!state.flags.coffee_failed_once) {
-          audioEngine.playCoffeeFail(1)
-          state.setFlag('coffee_failed_once')
-          state.say('Nada. A máquina nem ligou.')
-          releaseBusyAfter(650)
+          window.setTimeout(() => {
+            audioEngine.playCoffeeFail(1)
+            const latest = useGameStore.getState()
+            latest.setFlag('coffee_failed_once')
+          }, 470)
+          window.setTimeout(() => useGameStore.getState().say('Nada. A máquina nem ligou.'), 790)
+          releaseBusyAfter(920)
           return
         }
 
         if (!state.flags.coffee_failed_twice) {
-          audioEngine.playCoffeeFail(2)
-          state.setFlag('coffee_failed_twice')
-          state.say('Sério? Vamos... só preciso que funcione uma vez.')
-          releaseBusyAfter(720)
+          window.setTimeout(() => {
+            audioEngine.playCoffeeFail(2)
+            const latest = useGameStore.getState()
+            latest.setFlag('coffee_failed_twice')
+          }, 470)
+          window.setTimeout(
+            () => useGameStore.getState().say('Sério? Vamos... só preciso que funcione uma vez.'),
+            800,
+          )
+          releaseBusyAfter(940)
           return
         }
 
         window.setTimeout(() => {
           audioEngine.playCoffee()
-        }, 420)
+        }, 540)
         window.setTimeout(() => {
           const latest = useGameStore.getState()
           if (definition.flag) {
@@ -280,35 +315,67 @@ export function InteractionSystem() {
             latest.say(definition.subtitle)
           }
           busy.current = false
-        }, 3420)
+        }, 3600)
         return
       }
 
       if (id === 'badge') {
         busy.current = true
-        state.triggerHandAction('grab', 800, interactionTarget)
 
         if (!state.flags.badge_dropped) {
+          state.triggerHandAction('grab', 1250, interactionTarget, 'badge', 'badge-slip')
+          window.setTimeout(() => interactionFoley.playBadgeHandling(), 360)
           window.setTimeout(() => {
             const latest = useGameStore.getState()
             latest.setFlag('badge_dropped')
             audioEngine.playObjectDrop()
-            latest.say('Droga. Caiu no chão.')
-            busy.current = false
-          }, 520)
+          }, 820)
+          window.setTimeout(() => useGameStore.getState().say('Droga. Caiu no chão.'), 980)
+          releaseBusyAfter(1100)
           return
         }
 
+        state.triggerHandAction('grab', 1450, interactionTarget, 'badge', 'badge-pickup')
+        window.setTimeout(() => interactionFoley.playBadgeHandling(), 420)
         window.setTimeout(() => {
           const latest = useGameStore.getState()
           if (definition.flag) {
             latest.setFlag(definition.flag)
           }
+        }, 980)
+        window.setTimeout(() => {
+          const latest = useGameStore.getState()
           if (definition.note) {
             latest.openNote(definition.note.title, definition.note.body)
           }
           busy.current = false
-        }, 620)
+        }, 1180)
+        return
+      }
+
+      if (id === 'phone') {
+        busy.current = true
+        state.triggerHandAction('grab', 1500, interactionTarget, 'phone', 'phone-lift')
+        if (definition.afterNoteSubtitle) {
+          state.queueSubtitle(definition.afterNoteSubtitle)
+        }
+        if (definition.objective) {
+          state.setObjective(definition.objective)
+        }
+        window.setTimeout(() => interactionFoley.playPhonePickup(), 430)
+        window.setTimeout(() => {
+          const latest = useGameStore.getState()
+          if (definition.flag) {
+            latest.setFlag(definition.flag)
+          }
+        }, 950)
+        window.setTimeout(() => {
+          const latest = useGameStore.getState()
+          if (definition.note) {
+            latest.openNote(definition.note.title, definition.note.body)
+          }
+          busy.current = false
+        }, 1180)
         return
       }
 
@@ -319,7 +386,7 @@ export function InteractionSystem() {
 
         busy.current = true
         state.setCinematic(true)
-        state.triggerHandAction('turn', 850, interactionTarget)
+        state.triggerHandAction('turn', 850, interactionTarget, 'shower')
 
         window.setTimeout(() => {
           const latest = useGameStore.getState()
@@ -344,7 +411,7 @@ export function InteractionSystem() {
 
       if (definition.mode === 'window') {
         busy.current = true
-        state.triggerHandAction('brace', 2500, interactionTarget)
+        state.triggerHandAction('brace', 2500, interactionTarget, 'window')
         state.setCinematic(true)
         if (definition.flag) {
           state.setFlag(definition.flag)
@@ -366,14 +433,19 @@ export function InteractionSystem() {
       }
 
       if (definition.mode === 'door') {
-        state.triggerHandAction('door', 760, interactionTarget)
+        busy.current = true
+        state.triggerHandAction('door', 1250, interactionTarget, 'door_exit', 'door-handle')
+        window.setTimeout(() => interactionFoley.playDoorHandle(), 430)
 
         if (!exitReady(state.flags)) {
-          state.say(missingChecklistMessage(state.flags))
+          window.setTimeout(
+            () => useGameStore.getState().say(missingChecklistMessage(state.flags)),
+            790,
+          )
+          releaseBusyAfter(1060)
           return
         }
 
-        busy.current = true
         state.setCinematic(true)
         window.setTimeout(() => {
           const latest = useGameStore.getState()
@@ -385,32 +457,33 @@ export function InteractionSystem() {
           if (document.pointerLockElement) {
             document.exitPointerLock()
           }
-        }, 620)
+        }, 1080)
         return
       }
 
       if (id === 'faucet_bathroom') {
         busy.current = true
-        state.triggerHandAction('turn', 760, interactionTarget)
+        state.triggerHandAction('turn', 1300, interactionTarget, 'faucet_bathroom', 'faucet-turn')
+        window.setTimeout(() => interactionFoley.playFaucetTurn(), 410)
         window.setTimeout(() => {
           const latest = useGameStore.getState()
           if (definition.flag) {
             latest.setFlag(definition.flag)
           }
+        }, 760)
+        window.setTimeout(() => {
+          const latest = useGameStore.getState()
           if (definition.subtitle) {
             latest.say(definition.subtitle)
           }
           busy.current = false
-        }, 500)
+        }, 1010)
         return
       }
 
-      const handKind =
-        id === 'phone' || id === 'fridge_note' || id === 'frame'
-          ? 'grab'
-          : 'reach'
-      const handDuration = handKind === 'grab' ? 760 : 680
-      state.triggerHandAction(handKind, handDuration, interactionTarget)
+      const handKind = id === 'fridge_note' || id === 'frame' ? 'grab' : 'reach'
+      const handDuration = handKind === 'grab' ? 820 : 700
+      state.triggerHandAction(handKind, handDuration, interactionTarget, id)
 
       if (definition.note) {
         busy.current = true
@@ -428,7 +501,7 @@ export function InteractionSystem() {
           }
           latest.openNote(definition.note!.title, definition.note!.body)
           busy.current = false
-        }, 600)
+        }, 680)
         return
       }
 

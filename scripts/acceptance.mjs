@@ -6,6 +6,8 @@ const files = {
   scene: await readFile('src/game/ApartmentScene.tsx', 'utf8'),
   interactables: await readFile('src/game/data/interactables.tsx', 'utf8'),
   interaction: await readFile('src/game/interaction/InteractionSystem.tsx', 'utf8'),
+  cinematicProps: await readFile('src/game/interaction/CinematicPropAnimations.tsx', 'utf8'),
+  interactionFoley: await readFile('src/game/audio/InteractionFoley.ts', 'utf8'),
   gameStore: await readFile('src/game/state/gameStore.ts', 'utf8'),
   player: await readFile('src/game/player/PlayerController.tsx', 'utf8'),
   body: await readFile('src/game/player/TrueFirstPersonBody.tsx', 'utf8'),
@@ -140,11 +142,54 @@ if (
 
 if (
   !files.gameStore.includes('target?: [number, number, number]') ||
+  !files.gameStore.includes('objectId?: string') ||
+  !files.gameStore.includes("| 'badge-slip'") ||
   !files.interaction.includes('interactionPoint = useRef(new THREE.Vector3())') ||
-  !files.interaction.includes('hasInteractionPoint = useRef(false)') ||
-  !files.interaction.includes("state.triggerHandAction('press', 760, interactionTarget)") ||
-  !files.interaction.includes("state.triggerHandAction('turn', 760, interactionTarget)")
-) throw new Error('M16 raycast-driven arm targeting contract is missing')
+  !files.interaction.includes('canonicalInteractionTarget') ||
+  !files.interaction.includes("return [1.27, 1.08, 2.815]") ||
+  !files.interaction.includes("return [1.98, 1.055, -2.705]") ||
+  !files.interaction.includes("return [-1.6, 1.315, 2.365]") ||
+  !files.interaction.includes("'coffee', 'coffee-press'") ||
+  !files.interaction.includes("'badge', 'badge-slip'") ||
+  !files.interaction.includes("'badge', 'badge-pickup'") ||
+  !files.interaction.includes("'phone', 'phone-lift'") ||
+  !files.interaction.includes("'door_exit', 'door-handle'") ||
+  !files.interaction.includes("'faucet_bathroom', 'faucet-turn'")
+) throw new Error('M17 object-specific interaction sequencing contract is missing')
+
+if (
+  !files.skeleton.includes('<CinematicPropAnimations />') ||
+  !files.cinematicProps.includes('function DoorHardware()') ||
+  !files.cinematicProps.includes('function FaucetHardware()') ||
+  !files.cinematicProps.includes('function CoffeeHardware()') ||
+  !files.cinematicProps.includes('function PhoneProxy()') ||
+  !files.cinematicProps.includes('function BadgeProxy()') ||
+  !files.cinematicProps.includes("action.variant === 'badge-slip'") ||
+  !files.cinematicProps.includes("action.variant === 'badge-pickup'") ||
+  !files.cinematicProps.includes('cinematic-phone-proxy') ||
+  !files.cinematicProps.includes('material.emissiveIntensity')
+) throw new Error('M17 responsive animated prop contract is missing')
+
+if (
+  !files.body.includes("handAction.objectId === 'coffee'") ||
+  !files.body.includes("handAction.objectId === 'door_exit'") ||
+  !files.body.includes("handAction.objectId === 'faucet_bathroom'") ||
+  !files.body.includes("handAction.objectId === 'phone'") ||
+  !files.body.includes("handAction.objectId === 'badge'") ||
+  !files.body.includes("handAction.variant === 'badge-pickup'") ||
+  !files.body.includes('function gripWindow(progress: number)') ||
+  !files.body.includes('s.interactionQuaternion.setFromEuler')
+) throw new Error('M17 cinematic hand/wrist choreography contract is missing')
+
+if (
+  !files.interactionFoley.includes('class InteractionFoley') ||
+  !files.interactionFoley.includes('playDoorHandle()') ||
+  !files.interactionFoley.includes('playFaucetTurn()') ||
+  !files.interactionFoley.includes('playCoffeeButton()') ||
+  !files.interactionFoley.includes('playPhonePickup()') ||
+  !files.interactionFoley.includes('playBadgeHandling()') ||
+  !files.interactionFoley.includes('audioEngine.isMuted()')
+) throw new Error('M17 procedural interaction foley contract is missing')
 
 if (
   !files.textures.includes('createFridgeNoteTexture') ||
