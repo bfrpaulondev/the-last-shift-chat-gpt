@@ -92,7 +92,7 @@ function HandModel({ side }: { side: HandSide }) {
           rotation={[Math.PI / 2, 0, mirror * (index - 1.5) * 0.025]}
           renderOrder={103 + index}
         >
-          <capsuleGeometry args={[0.0095, fingerLengths[index], 4, 8]} />
+          <cylinderGeometry args={[0.0095, 0.0115, fingerLengths[index], 10]} />
           <SkinMaterial />
         </mesh>
       ))}
