@@ -1,8 +1,10 @@
 import { PointerLockControls } from '@react-three/drei'
 import { ApartmentScene } from './ApartmentScene'
 import { AudioAmbience } from './audio/AudioAmbience'
+import { RatScare } from './events/RatScare'
 import { InteractionSystem } from './interaction/InteractionSystem'
 import { CameraPolish } from './player/CameraPolish'
+import { FirstPersonHands } from './player/FirstPersonHands'
 import { PlayerController } from './player/PlayerController'
 import { APARTMENT_COLLIDERS } from './physics/colliders'
 import { useGameStore } from './state/gameStore'
@@ -36,7 +38,9 @@ export function ApartmentSkeleton({
       <ApartmentScene />
       <AudioAmbience enabled={gameStarted && !demoEnded} />
       {gameStarted && <InteractionSystem />}
+      {gameStarted && <RatScare />}
       <CameraPolish enabled={cameraInteractionEnabled} />
+      <FirstPersonHands enabled={gameStarted && awake && !demoEnded} />
       <PlayerController
         colliders={APARTMENT_COLLIDERS}
         enabled={cameraInteractionEnabled && awake}
