@@ -8,6 +8,7 @@ import {
   saveProgress,
 } from './gameApi'
 import { useGameStore } from '../state/gameStore'
+import { useShiftClock } from '../time/shiftClock'
 
 interface PersistenceManagerProps {
   gameStarted: boolean
@@ -20,6 +21,8 @@ export function PersistenceManager({ gameStarted }: PersistenceManagerProps) {
   const flags = useGameStore((state) => state.flags)
   const location = useGameStore((state) => state.location)
   const demoEnded = useGameStore((state) => state.demoEnded)
+  const worldMinute = useShiftClock((state) => state.worldMinute)
+  const lastRoutineMinute = useShiftClock((state) => state.lastRoutineMinute)
   const [hydrated, setHydrated] = useState(false)
   const playerId = useRef(getPlayerId())
   const gameplayStartedAt = useRef<number | null>(null)
@@ -47,6 +50,7 @@ export function PersistenceManager({ gameStarted }: PersistenceManagerProps) {
             save.flags,
             normalizeSaveLocation(save),
           )
+          useShiftClock.getState().hydrateShiftTime(save.shiftTime)
         }
       }
 
@@ -85,6 +89,7 @@ export function PersistenceManager({ gameStarted }: PersistenceManagerProps) {
         playerId.current,
         flags,
         location,
+        { worldMinute, lastRoutineMinute },
         getPlaytimeSeconds(),
       ).then((saved) => {
         if (cancelled) {
@@ -101,7 +106,7 @@ export function PersistenceManager({ gameStarted }: PersistenceManagerProps) {
       cancelled = true
       window.clearTimeout(timeout)
     }
-  }, [flags, gameStarted, hydrated, location])
+  }, [flags, gameStarted, hydrated, lastRoutineMinute, location, worldMinute])
 
   useEffect(() => {
     if (!hydrated || !gameStarted) {
@@ -162,10 +167,15 @@ export function PersistenceManager({ gameStarted }: PersistenceManagerProps) {
       }
 
       const latestState = useGameStore.getState()
+      const clock = useShiftClock.getState()
       const saved = await saveProgress(
         playerId.current,
         latestState.flags,
         latestState.location,
+        {
+          worldMinute: clock.worldMinute,
+          lastRoutineMinute: clock.lastRoutineMinute,
+        },
         getPlaytimeSeconds(),
       )
 
