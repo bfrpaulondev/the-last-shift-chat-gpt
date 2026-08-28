@@ -1,4 +1,5 @@
 import { useGameStore } from '../state/gameStore'
+import { GameClock } from './GameClock'
 
 interface GameHudProps {
   isPointerLocked: boolean
@@ -23,7 +24,13 @@ export function GameHud({ isPointerLocked, muted }: GameHudProps) {
   return (
     <div className="game-hud">
       {!demoEnded && <div className="objective">▸ {objective}</div>}
-      {!demoEnded && <div className="mute-indicator">{muted ? 'MUDO' : 'SOM'} [M]</div>}
+
+      {!demoEnded && (
+        <div className="hud-status">
+          <GameClock />
+          <div className="mute-indicator">{muted ? 'MUDO' : 'SOM'} [M]</div>
+        </div>
+      )}
 
       {isPointerLocked && !note && !cinematic && !demoEnded && (
         <div className="crosshair" aria-hidden="true">+</div>
