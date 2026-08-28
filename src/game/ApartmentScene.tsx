@@ -198,7 +198,7 @@ function Architecture({ textures }: { textures: SceneTextures }) {
         { p: [-1.3, 1.48, -2.97] as const, s: [0.06, 1.4, 0.1] as const },
       ].map(({ p, s }, index) => (
         <mesh key={index} position={p} castShadow>
-          <boxGeometry args={s} />
+          <boxGeometry args={[s[0], s[1], s[2]]} />
           <meshStandardMaterial
             color="#282c31"
             roughnessMap={textures.brushedMetalRoughness}
