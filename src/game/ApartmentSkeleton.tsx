@@ -11,8 +11,8 @@ import { BadgeDropScene } from './events/BadgeDropScene'
 import { RatScare } from './events/RatScare'
 import { InteractionSystem } from './interaction/InteractionSystem'
 import { CameraPolish } from './player/CameraPolish'
-import { FirstPersonHands } from './player/FirstPersonHands'
 import { PlayerController } from './player/PlayerController'
+import { TrueFirstPersonBody } from './player/TrueFirstPersonBody'
 import { APARTMENT_COLLIDERS } from './physics/colliders'
 import { PbrEnvironment } from './render/PbrEnvironment'
 import { PostEffects } from './render/PostEffects'
@@ -61,7 +61,7 @@ export function ApartmentSkeleton({
       {gameStarted && <InteractionSystem />}
       {gameStarted && <RatScare />}
       <CameraPolish enabled={cameraInteractionEnabled} />
-      <FirstPersonHands enabled={gameStarted && !demoEnded} />
+      <TrueFirstPersonBody enabled={gameStarted && !demoEnded} />
       <PlayerController
         colliders={APARTMENT_COLLIDERS}
         enabled={cameraInteractionEnabled && awake}

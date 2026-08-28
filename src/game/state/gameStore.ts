@@ -21,6 +21,7 @@ export interface HandActionState {
   kind: HandActionKind
   startedAt: number
   durationMs: number
+  target?: [number, number, number]
 }
 
 interface NoteState {
@@ -56,7 +57,11 @@ interface GameState {
   setPrompt: (prompt: string | null) => void
   setCinematic: (cinematic: boolean) => void
   setBlackout: (blackout: boolean) => void
-  triggerHandAction: (kind: HandActionKind, durationMs?: number) => void
+  triggerHandAction: (
+    kind: HandActionKind,
+    durationMs?: number,
+    target?: [number, number, number],
+  ) => void
   triggerScare: (durationMs?: number) => void
   setBackendOnline: (backendOnline: boolean) => void
   setProgressSaved: (progressSaved: boolean) => void
@@ -201,7 +206,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   setBlackout: (blackout) => {
     set({ blackout })
   },
-  triggerHandAction: (kind, durationMs = 650) => {
+  triggerHandAction: (kind, durationMs = 650, target) => {
     if (handActionTimer !== null) {
       window.clearTimeout(handActionTimer)
     }
@@ -210,6 +215,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       kind,
       startedAt: performance.now(),
       durationMs,
+      target,
     }
 
     set({ handAction: action })
