@@ -115,7 +115,7 @@ if (
 
 if (
   !files.areaTypes.includes("defaultSpawn: { x: 0, y: 1.65, z: 1.55, yaw: Math.PI }") ||
-  !files.app.includes("currentArea !== 'blackout'")
+  (!files.app.includes("currentArea !== 'blackout'") && !files.app.includes('!blackout &&'))
 ) {
   throw new Error('M19 post-stream spawn/pointer-lock continuity contract is missing')
 }

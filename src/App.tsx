@@ -20,6 +20,7 @@ export default function App() {
   const demoEnded = useGameStore((state) => state.demoEnded)
   const currentArea = useGameStore((state) => state.location.area)
   const areaTransition = useGameStore((state) => state.areaTransition)
+  const blackout = useGameStore((state) => state.blackout)
   const gameStarted = introPhase === 'playing'
 
   const startGame = useCallback(() => {
@@ -102,7 +103,7 @@ export default function App() {
       )}
 
       {gameStarted &&
-        currentArea !== 'blackout' &&
+        !blackout &&
         !isPointerLocked &&
         !demoEnded &&
         !areaTransition && (
