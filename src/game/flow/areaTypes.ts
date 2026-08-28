@@ -132,6 +132,7 @@ export const AREA_DEFINITIONS: Record<GameArea, AreaDefinition> = {
     chapter: 'part-2-road-to-meridian',
     label: 'Blackout',
     defaultCheckpoint: 'knocked-out',
+    defaultSpawn: { x: 0, y: 0.72, z: 2.2, yaw: Math.PI },
   },
 }
 
