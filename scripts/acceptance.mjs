@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises'
 
 const files = {
   interactables: await readFile('src/game/data/interactables.tsx', 'utf8'),
+  gameStore: await readFile('src/game/state/gameStore.ts', 'utf8'),
   camera: await readFile('src/game/player/CameraPolish.tsx', 'utf8'),
   clock: await readFile('src/game/ui/GameClock.tsx', 'utf8'),
   styles: await readFile('src/styles.css', 'utf8'),
@@ -23,11 +24,10 @@ const requiredInteractables = [
   'door_exit',
 ]
 
-const requiredSnippets = [
+const requiredInteractionText = [
   '[E] Fechar a torreia',
   'CRACHÁ Nº 4471',
   'CELULAR — 12%',
-  'Sair de casa — pegar o ônibus das 06:05.',
 ]
 
 for (const id of requiredInteractables) {
@@ -36,10 +36,14 @@ for (const id of requiredInteractables) {
   }
 }
 
-for (const snippet of requiredSnippets) {
-  if (!files.interactables.includes(snippet) && !files.clock.includes(snippet)) {
+for (const snippet of requiredInteractionText) {
+  if (!files.interactables.includes(snippet)) {
     throw new Error(`Missing required scene contract text: ${snippet}`)
   }
+}
+
+if (!files.gameStore.includes('Sair de casa — pegar o ônibus das 06:05.')) {
+  throw new Error('Exit objective contract is missing')
 }
 
 if (!files.camera.includes('DEFAULT_FOV = 70') || !files.camera.includes('INSPECTION_FOV = 35')) {
