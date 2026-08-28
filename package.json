@@ -5,12 +5,17 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:server": "node --watch server/index.js",
     "build": "tsc -b && vite build",
+    "check:server": "node --check server/index.js && node --check server/app.js && node --check server/db.js && node --check server/models/Save.js && node --check server/models/TelemetryEvent.js",
     "preview": "vite preview"
   },
   "dependencies": {
     "@react-three/drei": "^9.114.3",
     "@react-three/fiber": "^8.17.10",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "mongoose": "^8.18.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "three": "^0.169.0",

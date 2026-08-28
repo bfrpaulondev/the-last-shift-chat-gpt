@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import * as THREE from 'three'
 import { ApartmentSkeleton } from './game/ApartmentSkeleton'
+import { PersistenceManager } from './game/api/PersistenceManager'
 import { audioEngine } from './game/audio/AudioEngine'
 import { useGameStore } from './game/state/gameStore'
 import { GameHud } from './game/ui/GameHud'
@@ -45,6 +46,8 @@ export default function App() {
 
   return (
     <main className="game-shell">
+      <PersistenceManager gameStarted={gameStarted} />
+
       <Canvas
         id="game-canvas"
         shadows

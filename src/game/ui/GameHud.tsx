@@ -13,6 +13,8 @@ export function GameHud({ isPointerLocked, muted }: GameHudProps) {
   const blackout = useGameStore((state) => state.blackout)
   const cinematic = useGameStore((state) => state.cinematic)
   const demoEnded = useGameStore((state) => state.demoEnded)
+  const backendOnline = useGameStore((state) => state.backendOnline)
+  const progressSaved = useGameStore((state) => state.progressSaved)
 
   const noteClassName = note?.title.startsWith('CRACHÁ')
     ? 'note-paper badge-note'
@@ -54,6 +56,9 @@ export function GameHud({ isPointerLocked, muted }: GameHudProps) {
             <h1>O ÚLTIMO TURNO</h1>
             <h2>CAPÍTULO 1 — &quot;O TURNO NORMAL&quot; (em produção)</h2>
             <span>[DEMO TÉCNICA 0.1]</span>
+            {backendOnline && progressSaved && (
+              <span className="progress-saved">Progresso salvo ✓</span>
+            )}
             <button type="button" onClick={() => window.location.reload()}>
               [ REINICIAR ]
             </button>
