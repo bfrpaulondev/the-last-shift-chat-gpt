@@ -21,7 +21,7 @@ export const APARTMENT_COLLIDERS: Collider[] = [
   { minX: -0.96, maxX: -0.84, minZ: 0.55, maxZ: 1.35 },
   { minX: -0.96, maxX: -0.84, minZ: 2.45, maxZ: 3 },
 
-  { minX: -3.25, maxX: -1.55, minZ: -2.45, maxZ: 0.05 },
+  { minX: -3.25, maxX: -1.6, minZ: -2.45, maxZ: 0.05 },
   { minX: -1.48, maxX: -0.9, minZ: -2.5, maxZ: -1.78 },
   { minX: -3.35, maxX: -2.65, minZ: 0.02, maxZ: 0.45 },
 
