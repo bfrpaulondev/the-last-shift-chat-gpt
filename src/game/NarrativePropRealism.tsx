@@ -1,4 +1,5 @@
 import { RoundedBox } from '@react-three/drei'
+import * as THREE from 'three'
 
 function FridgeNoteWear() {
   return (
@@ -10,7 +11,7 @@ function FridgeNoteWear() {
 
       <mesh raycast={() => null} position={[0.16, -0.225, 0.02]} rotation={[0.18, 0.08, -0.12]}>
         <planeGeometry args={[0.075, 0.085]} />
-        <meshStandardMaterial color="#d4c7a7" roughness={0.94} side={2} />
+        <meshStandardMaterial color="#d4c7a7" roughness={0.94} side={THREE.DoubleSide} />
       </mesh>
 
       <mesh raycast={() => null} position={[0, 0.06, 0.021]}>
