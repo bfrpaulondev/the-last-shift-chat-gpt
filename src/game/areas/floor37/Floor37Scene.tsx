@@ -71,7 +71,10 @@ export function Floor37Scene() {
       <group position={[0, 1.15, 7.22]} userData={{ floor37InteractableId: 'elevator-call' }}>
         <mesh castShadow><boxGeometry args={[2.3, 2.3, 0.12]} /><meshStandardMaterial color="#535c64" metalness={0.58} roughness={0.38} /></mesh>
         <mesh castShadow position={[1.35, 0.15, -0.02]}><boxGeometry args={[0.22, 0.55, 0.14]} /><meshStandardMaterial color="#22282d" metalness={0.4} roughness={0.45} /></mesh>
-        <mesh castShadow position={[1.35, 0.15, -0.11]}><cylinderGeometry args={[0.075, 0.075, 0.04, 16]} /><meshStandardMaterial color={blackoutTriggered ? '#481414' : '#b9c7ce'} emissive={blackoutTriggered ? '#5d0909' : '#64747d'} emissiveIntensity={blackoutTriggered ? 0.55 : 0.18} metalness={0.5} roughness={0.28} rotation={[Math.PI / 2, 0, 0]} /></mesh>
+        <mesh castShadow position={[1.35, 0.15, -0.11]} rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.075, 0.075, 0.04, 16]} />
+          <meshStandardMaterial color={blackoutTriggered ? '#481414' : '#b9c7ce'} emissive={blackoutTriggered ? '#5d0909' : '#64747d'} emissiveIntensity={blackoutTriggered ? 0.55 : 0.18} metalness={0.5} roughness={0.28} />
+        </mesh>
       </group>
 
       {[-3.8, 0, 3.8].map((x) => (
