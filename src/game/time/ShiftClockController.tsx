@@ -15,15 +15,16 @@ const ROUTINE_AREAS = new Set([
 ])
 
 export function ShiftClockController({ enabled }: ShiftClockControllerProps) {
+  const worldMinute = useShiftClock((state) => state.worldMinute)
   const anchorRealMs = useRef(performance.now())
-  const anchorWorldMinute = useRef(useShiftClock.getState().worldMinute)
+  const anchorWorldMinute = useRef(worldMinute)
   const enabledRef = useRef(enabled)
 
   useEffect(() => {
     enabledRef.current = enabled
     anchorRealMs.current = performance.now()
-    anchorWorldMinute.current = useShiftClock.getState().worldMinute
-  }, [enabled])
+    anchorWorldMinute.current = worldMinute
+  }, [enabled, worldMinute])
 
   useEffect(() => {
     const timer = window.setInterval(() => {
