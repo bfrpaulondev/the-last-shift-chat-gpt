@@ -12,6 +12,7 @@ import { CameraPolish } from './player/CameraPolish'
 import { FirstPersonHands } from './player/FirstPersonHands'
 import { PlayerController } from './player/PlayerController'
 import { APARTMENT_COLLIDERS } from './physics/colliders'
+import { PbrEnvironment } from './render/PbrEnvironment'
 import { PostEffects } from './render/PostEffects'
 import { useGameStore } from './state/gameStore'
 import { ExteriorRain } from './weather/ExteriorRain'
@@ -44,6 +45,7 @@ export function ApartmentSkeleton({
 
   return (
     <>
+      <PbrEnvironment />
       <ApartmentScene />
       <ApartmentLighting />
       <ApartmentDetails />
