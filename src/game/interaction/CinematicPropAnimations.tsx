@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
-import { useGameStore } from '../state/gameStore'
+import { useGameStore, type HandActionState } from '../state/gameStore'
 
 const PHONE_SOURCE = new THREE.Vector3(-1.12, 0.72, -2.1)
 const BADGE_WALL_SOURCE = new THREE.Vector3(0.22, 1.52, 2.86)
@@ -22,6 +22,13 @@ function actionProgress(startedAt: number, durationMs: number): number {
   return THREE.MathUtils.clamp((performance.now() - startedAt) / durationMs, 0, 1)
 }
 
+function progressFor(action: HandActionState | null, objectId: string): number {
+  if (!action || action.objectId !== objectId) {
+    return 0
+  }
+  return actionProgress(action.startedAt, action.durationMs)
+}
+
 function DoorHardware() {
   const lever = useRef<THREE.Group>(null)
   const action = useGameStore((state) => state.handAction)
@@ -30,9 +37,14 @@ function DoorHardware() {
     if (!lever.current) {
       return
     }
-    const active = action?.objectId === 'door_exit'
-    const target = active ? -0.52 * gripWindow(actionProgress(action.startedAt, action.durationMs)) : 0
-    lever.current.rotation.z = THREE.MathUtils.damp(lever.current.rotation.z, target, 20, Math.min(delta, 0.05))
+    const progress = progressFor(action, 'door_exit')
+    const target = -0.52 * gripWindow(progress)
+    lever.current.rotation.z = THREE.MathUtils.damp(
+      lever.current.rotation.z,
+      target,
+      20,
+      Math.min(delta, 0.05),
+    )
   })
 
   return (
@@ -63,10 +75,14 @@ function FaucetHardware() {
     if (!valve.current) {
       return
     }
-    const active = action?.objectId === 'faucet_bathroom'
-    const progress = active ? actionProgress(action.startedAt, action.durationMs) : 0
-    const target = active ? -1.08 * gripWindow(progress) : 0
-    valve.current.rotation.y = THREE.MathUtils.damp(valve.current.rotation.y, target, 18, Math.min(delta, 0.05))
+    const progress = progressFor(action, 'faucet_bathroom')
+    const target = -1.08 * gripWindow(progress)
+    valve.current.rotation.y = THREE.MathUtils.damp(
+      valve.current.rotation.y,
+      target,
+      18,
+      Math.min(delta, 0.05),
+    )
   })
 
   return (
@@ -96,8 +112,8 @@ function CoffeeHardware() {
   const coffeeMade = useGameStore((state) => Boolean(state.flags.coffee_made))
 
   useFrame((_, delta) => {
-    const active = action?.objectId === 'coffee'
-    const progress = active ? actionProgress(action.startedAt, action.durationMs) : 0
+    const progress = progressFor(action, 'coffee')
+    const active = progress > 0
     const press = active ? Math.sin(Math.min(progress / 0.72, 1) * Math.PI) : 0
 
     if (button.current) {
@@ -165,8 +181,8 @@ function PhoneProxy() {
     if (!group.current) {
       return
     }
-    const active = action?.objectId === 'phone'
-    const progress = active ? actionProgress(action.startedAt, action.durationMs) : 0
+    const progress = progressFor(action, 'phone')
+    const active = progress > 0
     const lift = smooth01((progress - 0.28) / 0.42)
     const visible = active && progress > 0.24
 
@@ -235,10 +251,9 @@ function BadgeProxy() {
     if (!group.current) {
       return
     }
-    const active = action?.objectId === 'badge'
-    const progress = active ? actionProgress(action.startedAt, action.durationMs) : 0
-    const slip = active && action.variant === 'badge-slip'
-    const pickup = active && action.variant === 'badge-pickup'
+    const progress = progressFor(action, 'badge')
+    const slip = action?.objectId === 'badge' && action.variant === 'badge-slip'
+    const pickup = action?.objectId === 'badge' && action.variant === 'badge-pickup'
     const floor = scene.getObjectByName('badge-floor')
 
     if (wallBadge.current) {
@@ -262,18 +277,19 @@ function BadgeProxy() {
       .addScaledVector(forward.current, 0.43)
 
     const source = pickup ? BADGE_FLOOR_SOURCE : BADGE_WALL_SOURCE
-    let blend = smooth01((progress - 0.24) / 0.32)
+    const blend = smooth01((progress - 0.24) / 0.32)
     group.current.position.lerpVectors(source, hold.current, blend)
 
     if (slip && progress > 0.58) {
       const fall = smooth01((progress - 0.58) / 0.32)
       group.current.position.lerp(BADGE_FLOOR_SOURCE, fall)
-      group.current.rotation.z += 0.045
-      blend *= 1 - fall * 0.25
+      group.current.rotation.z = -0.08 + fall * 1.25
     }
 
     targetQuaternion.current.copy(camera.quaternion).multiply(offsetQuaternion.current)
-    group.current.quaternion.slerp(targetQuaternion.current, Math.max(0.12, blend))
+    if (!slip || progress <= 0.58) {
+      group.current.quaternion.slerp(targetQuaternion.current, Math.max(0.12, blend))
+    }
   })
 
   return (
