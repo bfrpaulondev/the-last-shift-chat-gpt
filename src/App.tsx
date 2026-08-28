@@ -6,6 +6,7 @@ import { audioEngine } from './game/audio/AudioEngine'
 import { AreaDirector } from './game/flow/AreaDirector'
 import { AreaTransitionOverlay } from './game/flow/AreaTransitionOverlay'
 import { useGameStore } from './game/state/gameStore'
+import { ShiftClockController } from './game/time/ShiftClockController'
 import { GameHud } from './game/ui/GameHud'
 import { TitleScreen } from './game/ui/TitleScreen'
 
@@ -49,6 +50,7 @@ export default function App() {
   return (
     <main className="game-shell">
       <PersistenceManager gameStarted={gameStarted} />
+      <ShiftClockController enabled={gameStarted && !demoEnded} />
 
       <Canvas
         id="game-canvas"
