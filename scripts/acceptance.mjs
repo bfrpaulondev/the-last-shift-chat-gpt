@@ -151,7 +151,6 @@ if (
   !files.skeleton.includes('<FaucetDrip />') ||
   !files.skeleton.includes('<AtmosphereDetails />') ||
   !files.skeleton.includes('<PostEffects />') ||
-  !files.rain.includes('RAIN_COUNT = 420') ||
   !files.drip.includes('DROP_PERIOD = 1.6') ||
   !files.brokenLight.includes('flickerValue') ||
   !files.lighting.includes('<BrokenBathroomLight />')
@@ -214,6 +213,22 @@ if (
   !files.scene.includes('<meshPhysicalMaterial')
 ) {
   throw new Error('M13 procedural PBR materials contract is missing')
+}
+
+if (
+  !files.rain.includes('NEAR_RAIN_COUNT = 280') ||
+  !files.rain.includes('MID_RAIN_COUNT = 440') ||
+  !files.rain.includes('FAR_RAIN_COUNT = 360') ||
+  !files.rain.includes('function WetWindow()') ||
+  !files.rain.includes('WINDOW_DROPS = 26') ||
+  !files.atmosphere.includes('function MovingTraffic()') ||
+  !files.atmosphere.includes('eastbound.current.position.x += delta * 2.15') ||
+  !files.atmosphere.includes('meshPhysicalMaterial') ||
+  !files.atmosphere.includes('clearcoat={0.5}') ||
+  !files.atmosphere.includes('beacon.current') ||
+  !files.atmosphere.includes('DetailedBuilding')
+) {
+  throw new Error('M14 cinematic exterior and layered weather contract is missing')
 }
 
 if (
