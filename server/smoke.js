@@ -24,6 +24,10 @@ await request('/api/save', {
       checkpoint: 'street-arrival',
       spawn: { x: 0, y: 1.65, z: 2.4, yaw: Math.PI },
     },
+    shiftTime: {
+      worldMinute: 405,
+      lastRoutineMinute: 390,
+    },
     schemaVersion: 2,
     playtimeSeconds: 42,
   }),
@@ -37,9 +41,11 @@ if (
   save.flags?.coffee_made !== true ||
   save.location?.area !== 'street' ||
   save.location?.checkpoint !== 'street-arrival' ||
+  save.shiftTime?.worldMinute !== 405 ||
+  save.shiftTime?.lastRoutineMinute !== 390 ||
   save.schemaVersion !== 2
 ) {
-  throw new Error('Save/location round-trip validation failed')
+  throw new Error('Save/location/shift-time round-trip validation failed')
 }
 
 const telemetryResponse = await request('/api/telemetry', {
