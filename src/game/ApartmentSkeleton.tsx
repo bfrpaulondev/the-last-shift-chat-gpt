@@ -3,6 +3,7 @@ import { ApartmentDetails } from './ApartmentDetails'
 import { ApartmentLighting } from './ApartmentLighting'
 import { ApartmentScene } from './ApartmentScene'
 import { AtmosphereDetails } from './AtmosphereDetails'
+import { InteriorRealismDetails } from './InteriorRealismDetails'
 import { AudioAmbience } from './audio/AudioAmbience'
 import { FaucetDrip } from './effects/FaucetDrip'
 import { BadgeDropScene } from './events/BadgeDropScene'
@@ -49,6 +50,7 @@ export function ApartmentSkeleton({
       <ApartmentScene />
       <ApartmentLighting />
       <ApartmentDetails />
+      <InteriorRealismDetails />
       <AtmosphereDetails />
       <ExteriorRain />
       <FaucetDrip />
