@@ -3,6 +3,7 @@ import {
   checkBackend,
   getPlayerId,
   loadSave,
+  normalizeSaveLocation,
   postTelemetry,
   saveProgress,
 } from './gameApi'
@@ -17,6 +18,7 @@ const MAX_BATCH_SIZE = 500
 
 export function PersistenceManager({ gameStarted }: PersistenceManagerProps) {
   const flags = useGameStore((state) => state.flags)
+  const location = useGameStore((state) => state.location)
   const demoEnded = useGameStore((state) => state.demoEnded)
   const [hydrated, setHydrated] = useState(false)
   const playerId = useRef(getPlayerId())
@@ -41,7 +43,10 @@ export function PersistenceManager({ gameStarted }: PersistenceManagerProps) {
         }
 
         if (save?.flags) {
-          useGameStore.getState().hydrateFlags(save.flags)
+          useGameStore.getState().hydrateProgress(
+            save.flags,
+            normalizeSaveLocation(save),
+          )
         }
       }
 
@@ -76,7 +81,12 @@ export function PersistenceManager({ gameStarted }: PersistenceManagerProps) {
 
     let cancelled = false
     const timeout = window.setTimeout(() => {
-      void saveProgress(playerId.current, flags, getPlaytimeSeconds()).then((saved) => {
+      void saveProgress(
+        playerId.current,
+        flags,
+        location,
+        getPlaytimeSeconds(),
+      ).then((saved) => {
         if (cancelled) {
           return
         }
@@ -91,7 +101,7 @@ export function PersistenceManager({ gameStarted }: PersistenceManagerProps) {
       cancelled = true
       window.clearTimeout(timeout)
     }
-  }, [flags, gameStarted, hydrated])
+  }, [flags, gameStarted, hydrated, location])
 
   useEffect(() => {
     if (!hydrated || !gameStarted) {
@@ -155,6 +165,7 @@ export function PersistenceManager({ gameStarted }: PersistenceManagerProps) {
       const saved = await saveProgress(
         playerId.current,
         latestState.flags,
+        latestState.location,
         getPlaytimeSeconds(),
       )
 
