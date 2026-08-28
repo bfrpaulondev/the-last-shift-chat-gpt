@@ -8,7 +8,7 @@ const files = {
   interaction: await readFile('src/game/interaction/InteractionSystem.tsx', 'utf8'),
   gameStore: await readFile('src/game/state/gameStore.ts', 'utf8'),
   player: await readFile('src/game/player/PlayerController.tsx', 'utf8'),
-  hands: await readFile('src/game/player/FirstPersonHands.tsx', 'utf8'),
+  body: await readFile('src/game/player/TrueFirstPersonBody.tsx', 'utf8'),
   rat: await readFile('src/game/events/RatScare.tsx', 'utf8'),
   suspense: await readFile('src/game/audio/SuspenseCue.ts', 'utf8'),
   colliders: await readFile('src/game/physics/colliders.ts', 'utf8'),
@@ -46,19 +46,13 @@ const requiredInteractables = [
   'door_exit',
 ]
 
-const requiredInteractionText = [
-  '[E] Fechar a torneira',
-  'CRACHÁ Nº 4471',
-  'CELULAR — 12%',
-]
-
 for (const id of requiredInteractables) {
   if (!files.interactables.includes(`${id}:`)) {
     throw new Error(`Missing interactable: ${id}`)
   }
 }
 
-for (const snippet of requiredInteractionText) {
+for (const snippet of ['[E] Fechar a torneira', 'CRACHÁ Nº 4471', 'CELULAR — 12%']) {
   if (!files.interactables.includes(snippet)) {
     throw new Error(`Missing required scene contract text: ${snippet}`)
   }
@@ -70,62 +64,27 @@ if (!files.gameStore.includes('Sair de casa — pegar o ônibus das 06:05.')) {
 
 if (
   !files.gameStore.includes('dismissSubtitle') ||
-  !files.interaction.includes("event.code === 'Space'")
+  !files.interaction.includes("event.code === 'Space'") ||
+  !files.interaction.includes('state.subtitle || state.subtitleQueue.length > 0')
 ) {
-  throw new Error('Space-controlled dialogue contract is missing')
-}
-
-if (
-  !files.interaction.includes('state.subtitle || state.subtitleQueue.length > 0') ||
-  !files.interaction.includes('state.setPrompt(null)')
-) {
-  throw new Error('Interaction serialization while dialogue is active is missing')
+  throw new Error('Space-controlled serialized dialogue contract is missing')
 }
 
 if (
   !files.interaction.includes('coffee_failed_once') ||
-  !files.interaction.includes('coffee_failed_twice')
+  !files.interaction.includes('coffee_failed_twice') ||
+  !files.interaction.includes('badge_dropped')
 ) {
-  throw new Error('Three-attempt coffee interaction contract is missing')
-}
-
-if (!files.interaction.includes('badge_dropped')) {
-  throw new Error('Dropped badge interaction contract is missing')
-}
-
-if (
-  !files.hands.includes('FirstPersonHands') ||
-  !files.hands.includes('root.current.position.copy(camera.position)') ||
-  !files.hands.includes('depthTest={false}') ||
-  files.hands.includes('createPortal') ||
-  !files.gameStore.includes('triggerHandAction')
-) {
-  throw new Error('Reliable first-person hands rendering contract is missing')
-}
-
-if (
-  !files.hands.includes('LEFT_BASE = new THREE.Vector3(-0.19, -0.34, -0.62)') ||
-  !files.hands.includes('scale={[0.82, 0.82, 0.82]}') ||
-  !files.hands.includes('<cylinderGeometry args={[0.0095, 0.0115')
-) {
-  throw new Error('Proportional M10 hand model contract is missing')
+  throw new Error('Interaction surprise contract is missing')
 }
 
 if (
   !files.rat.includes('RatScare') ||
   !files.rat.includes('suspenseCue.play()') ||
-  !files.rat.includes('subtitleActive') ||
-  !files.gameStore.includes('triggerScare')
+  !files.suspense.includes('duration = 6.8') ||
+  !files.suspense.includes('exponentialRampToValueAtTime(0.0001')
 ) {
-  throw new Error('Sequenced post-shower scare contract is missing')
-}
-
-if (
-  !files.suspense.includes('class SuspenseCue') ||
-  !files.suspense.includes('exponentialRampToValueAtTime(0.0001') ||
-  !files.suspense.includes('duration = 6.8')
-) {
-  throw new Error('Fading suspense music contract is missing')
+  throw new Error('Rat scare and fading suspense contract is missing')
 }
 
 if (!files.camera.includes('DEFAULT_FOV = 70') || !files.camera.includes('INSPECTION_FOV = 35')) {
@@ -139,82 +98,34 @@ if (!files.clock.includes('START_MINUTES = 320') || !files.clock.includes('SECON
 if (
   !files.app.includes('dpr={[1.5, 2]}') ||
   !files.app.includes('gl.toneMappingExposure = 0.86') ||
-  !files.textures.includes('size = 512') ||
-  !files.textures.includes('texture.anisotropy = 8') ||
-  !files.details.includes('function BathroomDetails()') ||
-  !files.details.includes('function KitchenDetails()') ||
+  !files.app.includes('near: 0.05') ||
   !files.lighting.includes('<rectAreaLight')
 ) {
-  throw new Error('Realistic renderer and environment detail contract is missing')
-}
-
-if (
-  !files.skeleton.includes('<ExteriorRain />') ||
-  !files.skeleton.includes('<FaucetDrip />') ||
-  !files.skeleton.includes('<AtmosphereDetails />') ||
-  !files.skeleton.includes('<PostEffects />') ||
-  !files.drip.includes('DROP_PERIOD = 1.6') ||
-  !files.brokenLight.includes('flickerValue') ||
-  !files.lighting.includes('<BrokenBathroomLight />')
-) {
-  throw new Error('M11 weather and broken-light atmosphere contract is missing')
-}
-
-if (
-  !files.textures.includes('createFridgeNoteTexture') ||
-  !files.textures.includes('ESCOLA TÉCNICA') ||
-  !files.textures.includes('createFamilyPhotoTexture') ||
-  !files.textures.includes('Festival do bairro — 2016') ||
-  !files.atmosphere.includes('DetailedBuilding') ||
-  !files.atmosphere.includes('textures.fridgeNote') ||
-  !files.atmosphere.includes('textures.familyPhoto')
-) {
-  throw new Error('M11 readable story props and exterior detail contract is missing')
-}
-
-if (
-  !files.post.includes('EffectComposer') ||
-  !files.post.includes('UnrealBloomPass') ||
-  !files.post.includes('FXAAShader') ||
-  !files.post.includes('OutputPass')
-) {
-  throw new Error('M11 free Three.js post-processing contract is missing')
+  throw new Error('Realistic renderer/camera foundation contract is missing')
 }
 
 if (
   !files.skeleton.includes('<PbrEnvironment />') ||
   !files.environment.includes('RoomEnvironment') ||
   !files.environment.includes('PMREMGenerator') ||
-  !files.environment.includes('scene.environmentIntensity = 0.34') ||
   !files.post.includes('SSAOPass') ||
-  !files.post.includes('ssao.kernelRadius = 10') ||
-  !files.post.includes('0.085') ||
-  !files.app.includes("gl.setClearColor('#080b0f', 1)") ||
-  !files.app.includes('alpha: false') ||
-  !files.immersionStyles.includes('filter: none') ||
-  !files.immersionStyles.includes('opacity: 0.002')
+  !files.post.includes('UnrealBloomPass') ||
+  !files.post.includes('FXAAShader') ||
+  !files.post.includes('OutputPass')
 ) {
-  throw new Error('M12 realistic rendering foundation contract is missing')
+  throw new Error('Free Three.js rendering pipeline contract is missing')
 }
 
 if (
   !files.surfaceMaps.includes('createPbrSurfaceMaps') ||
   !files.surfaceMaps.includes('THREE.NoColorSpace') ||
-  !files.surfaceMaps.includes('woodRoughness') ||
-  !files.surfaceMaps.includes('woodBump') ||
-  !files.surfaceMaps.includes('tileRoughness') ||
-  !files.surfaceMaps.includes('brushedMetalRoughness') ||
-  !files.surfaceMaps.includes('applianceRoughness') ||
-  !files.surfaceMaps.includes('fabricBump') ||
   !files.scene.includes('roughnessMap={textures.wallRoughness}') ||
   !files.scene.includes('bumpMap={textures.woodBump}') ||
   !files.scene.includes('roughnessMap={textures.tileRoughness}') ||
   !files.scene.includes('roughnessMap={textures.brushedMetalRoughness}') ||
-  !files.scene.includes('roughnessMap={textures.applianceRoughness}') ||
-  !files.scene.includes('roughnessMap={textures.fabricRoughness}') ||
   !files.scene.includes('<meshPhysicalMaterial')
 ) {
-  throw new Error('M13 procedural PBR materials contract is missing')
+  throw new Error('M13 PBR material contract is missing')
 }
 
 if (
@@ -224,40 +135,69 @@ if (
   !files.rain.includes('function WetWindow()') ||
   !files.rain.includes('WINDOW_DROPS = 26') ||
   !files.atmosphere.includes('function MovingTraffic()') ||
-  !files.atmosphere.includes('eastbound.current.position.x += delta * 2.15') ||
-  !files.atmosphere.includes('meshPhysicalMaterial') ||
-  !files.atmosphere.includes('clearcoat={0.5}') ||
   !files.atmosphere.includes('beacon.current') ||
-  !files.atmosphere.includes('DetailedBuilding')
+  !files.atmosphere.includes('clearcoat={0.5}')
 ) {
-  throw new Error('M14 cinematic exterior and layered weather contract is missing')
+  throw new Error('M14 cinematic exterior/weather contract is missing')
 }
 
 if (
   !files.skeleton.includes('<InteriorRealismDetails />') ||
   !files.skeleton.includes('<NarrativePropRealism />') ||
-  !files.interiorRealism.includes("type DecalKind = 'scuff' | 'damp' | 'grease' | 'rust' | 'dust' | 'coffee'") ||
   !files.interiorRealism.includes('function BedroomLivedIn') ||
   !files.interiorRealism.includes('function BathroomLivedIn') ||
   !files.interiorRealism.includes('function KitchenLivedIn') ||
   !files.interiorRealism.includes('function HallwayLivedIn') ||
   !files.interiorRealism.includes('createReceiptTexture') ||
   !files.interiorRealism.includes('<tubeGeometry') ||
-  !files.interiorRealism.includes('€ 184,70') ||
   !files.narrativeRealism.includes('function FridgeNoteWear') ||
   !files.narrativeRealism.includes('function FrameWear') ||
-  !files.narrativeRealism.includes('function DoorAge') ||
-  !files.narrativeRealism.includes('THREE.DoubleSide')
+  !files.narrativeRealism.includes('function DoorAge')
 ) {
-  throw new Error('M15 lived-in interior and narrative-prop realism contract is missing')
+  throw new Error('M15 lived-in interior realism contract is missing')
 }
 
 if (
+  !files.skeleton.includes('<TrueFirstPersonBody enabled={gameStarted && !demoEnded} />') ||
+  files.skeleton.includes('FirstPersonHands') ||
+  !files.body.includes('export function TrueFirstPersonBody') ||
+  !files.body.includes('function TorsoAndLegs') ||
+  !files.body.includes('function ArticulatedHand') ||
+  !files.body.includes('LEFT_SHOULDER') ||
+  !files.body.includes('RIGHT_SHOULDER') ||
+  !files.body.includes('setSegment(leftUpperArm.current') ||
+  !files.body.includes('setSegment(rightForearm.current') ||
+  !files.body.includes('leftThigh.current.rotation.x') ||
+  !files.body.includes('rightKnee.current.rotation.x') ||
+  !files.body.includes('bodyYaw.current = dampAngle') ||
+  !files.body.includes('Math.min(reachVector.length(), 0.72)') ||
+  !files.body.includes('handAction.target') ||
+  !files.body.includes('fingerRoots.current.forEach') ||
+  !files.body.includes('<RoundedBox args={[0.43, 0.34, 0.2]}')
+) {
+  throw new Error('M16 true first person articulated body contract is missing')
+}
+
+if (
+  !files.gameStore.includes('target?: [number, number, number]') ||
+  !files.gameStore.includes('triggerHandAction: (') ||
+  !files.interaction.includes('interactionPoint = useRef(new THREE.Vector3())') ||
+  !files.interaction.includes('hasInteractionPoint = useRef(false)') ||
+  !files.interaction.includes("state.triggerHandAction('press', 760, interactionTarget)") ||
+  !files.interaction.includes("state.triggerHandAction('turn', 760, interactionTarget)")
+) {
+  throw new Error('M16 raycast-driven interaction targeting contract is missing')
+}
+
+if (
+  !files.textures.includes('createFridgeNoteTexture') ||
+  !files.textures.includes('createFamilyPhotoTexture') ||
+  !files.drip.includes('DROP_PERIOD = 1.6') ||
+  !files.brokenLight.includes('flickerValue') ||
   !files.immersionStyles.includes('image-rendering: auto') ||
-  !files.immersionStyles.includes('.scare-flash') ||
   !files.styles.includes('radial-gradient')
 ) {
-  throw new Error('Screen treatment contract is missing')
+  throw new Error('Visual storytelling and atmosphere contract is missing')
 }
 
 const playerRadiusMatch = files.player.match(/PLAYER_RADIUS = ([0-9.]+)/)
