@@ -178,13 +178,20 @@ export function InteractionSystem() {
         return
       }
 
-      if (event.code === 'Space' && state.subtitle) {
-        event.preventDefault()
-        state.dismissSubtitle()
+      if (state.subtitle || state.subtitleQueue.length > 0) {
+        if (event.code === 'Space' && state.subtitle) {
+          event.preventDefault()
+          state.dismissSubtitle()
+        }
         return
       }
 
-      if (event.code !== 'KeyE' || busy.current || state.demoEnded) {
+      if (
+        event.code !== 'KeyE' ||
+        busy.current ||
+        state.scareActive ||
+        state.demoEnded
+      ) {
         return
       }
 
@@ -210,7 +217,7 @@ export function InteractionSystem() {
       if (definition.mode === 'bed') {
         busy.current = true
         state.setCinematic(true)
-        state.triggerHandAction('brace', 800)
+        state.triggerHandAction('brace', 850)
         if (definition.subtitle) {
           state.say(definition.subtitle)
         }
@@ -235,14 +242,14 @@ export function InteractionSystem() {
 
       if (id === 'coffee') {
         busy.current = true
-        state.triggerHandAction('press', 700)
+        state.triggerHandAction('press', 760)
         state.setPrompt(null)
 
         if (!state.flags.coffee_failed_once) {
           audioEngine.playCoffeeFail(1)
           state.setFlag('coffee_failed_once')
           state.say('Nada. A máquina nem ligou.')
-          releaseBusyAfter(550)
+          releaseBusyAfter(650)
           return
         }
 
@@ -250,11 +257,13 @@ export function InteractionSystem() {
           audioEngine.playCoffeeFail(2)
           state.setFlag('coffee_failed_twice')
           state.say('Sério? Vamos... só preciso que funcione uma vez.')
-          releaseBusyAfter(700)
+          releaseBusyAfter(720)
           return
         }
 
-        audioEngine.playCoffee()
+        window.setTimeout(() => {
+          audioEngine.playCoffee()
+        }, 420)
         window.setTimeout(() => {
           const latest = useGameStore.getState()
           if (definition.flag) {
@@ -264,13 +273,13 @@ export function InteractionSystem() {
             latest.say(definition.subtitle)
           }
           busy.current = false
-        }, 3000)
+        }, 3420)
         return
       }
 
       if (id === 'badge') {
         busy.current = true
-        state.triggerHandAction('grab', 650)
+        state.triggerHandAction('grab', 800)
 
         if (!state.flags.badge_dropped) {
           window.setTimeout(() => {
@@ -279,21 +288,20 @@ export function InteractionSystem() {
             audioEngine.playObjectDrop()
             latest.say('Droga. Caiu no chão.')
             busy.current = false
-          }, 320)
+          }, 520)
           return
         }
 
-        if (definition.flag) {
-          state.setFlag(definition.flag)
-        }
-        if (definition.note) {
-          window.setTimeout(() => {
-            useGameStore.getState().openNote(definition.note!.title, definition.note!.body)
-            busy.current = false
-          }, 280)
-        } else {
+        window.setTimeout(() => {
+          const latest = useGameStore.getState()
+          if (definition.flag) {
+            latest.setFlag(definition.flag)
+          }
+          if (definition.note) {
+            latest.openNote(definition.note.title, definition.note.body)
+          }
           busy.current = false
-        }
+        }, 620)
         return
       }
 
@@ -303,10 +311,15 @@ export function InteractionSystem() {
         }
 
         busy.current = true
-        state.triggerHandAction('turn', 800)
         state.setCinematic(true)
-        state.setBlackout(true)
-        audioEngine.playShower()
+        state.triggerHandAction('turn', 850)
+
+        window.setTimeout(() => {
+          const latest = useGameStore.getState()
+          latest.setBlackout(true)
+          audioEngine.playShower()
+        }, 470)
+
         window.setTimeout(() => {
           const latest = useGameStore.getState()
           if (definition.flag) {
@@ -318,7 +331,7 @@ export function InteractionSystem() {
           latest.setBlackout(false)
           latest.setCinematic(false)
           busy.current = false
-        }, 2000)
+        }, 2470)
         return
       }
 
@@ -346,29 +359,70 @@ export function InteractionSystem() {
       }
 
       if (definition.mode === 'door') {
-        state.triggerHandAction('door', 650)
+        state.triggerHandAction('door', 760)
+
         if (!exitReady(state.flags)) {
           state.say(missingChecklistMessage(state.flags))
           return
         }
 
-        if (definition.flag) {
-          state.setFlag(definition.flag)
-        }
-        audioEngine.setMuted(true)
-        state.endDemo()
-        if (document.pointerLockElement) {
-          document.exitPointerLock()
-        }
+        busy.current = true
+        state.setCinematic(true)
+        window.setTimeout(() => {
+          const latest = useGameStore.getState()
+          if (definition.flag) {
+            latest.setFlag(definition.flag)
+          }
+          audioEngine.setMuted(true)
+          latest.endDemo()
+          if (document.pointerLockElement) {
+            document.exitPointerLock()
+          }
+        }, 620)
         return
       }
 
       if (id === 'faucet_bathroom') {
-        state.triggerHandAction('turn', 700)
-      } else if (id === 'phone' || id === 'fridge_note' || id === 'frame') {
-        state.triggerHandAction('grab', 650)
-      } else {
-        state.triggerHandAction('reach', 600)
+        busy.current = true
+        state.triggerHandAction('turn', 760)
+        window.setTimeout(() => {
+          const latest = useGameStore.getState()
+          if (definition.flag) {
+            latest.setFlag(definition.flag)
+          }
+          if (definition.subtitle) {
+            latest.say(definition.subtitle)
+          }
+          busy.current = false
+        }, 500)
+        return
+      }
+
+      const handKind =
+        id === 'phone' || id === 'fridge_note' || id === 'frame'
+          ? 'grab'
+          : 'reach'
+      const handDuration = handKind === 'grab' ? 760 : 680
+      state.triggerHandAction(handKind, handDuration)
+
+      if (definition.note) {
+        busy.current = true
+        if (definition.afterNoteSubtitle) {
+          state.queueSubtitle(definition.afterNoteSubtitle)
+        }
+        if (definition.objective) {
+          state.setObjective(definition.objective)
+        }
+
+        window.setTimeout(() => {
+          const latest = useGameStore.getState()
+          if (definition.flag) {
+            latest.setFlag(definition.flag)
+          }
+          latest.openNote(definition.note!.title, definition.note!.body)
+          busy.current = false
+        }, 600)
+        return
       }
 
       if (definition.flag) {
@@ -376,12 +430,6 @@ export function InteractionSystem() {
       }
       if (definition.subtitle) {
         state.say(definition.subtitle)
-      }
-      if (definition.note) {
-        state.openNote(definition.note.title, definition.note.body)
-      }
-      if (definition.afterNoteSubtitle) {
-        state.queueSubtitle(definition.afterNoteSubtitle)
       }
       if (definition.objective) {
         state.setObjective(definition.objective)
@@ -395,7 +443,14 @@ export function InteractionSystem() {
   useFrame(() => {
     const state = useGameStore.getState()
 
-    if (state.note || state.cinematic || state.demoEnded) {
+    if (
+      state.note ||
+      state.subtitle ||
+      state.subtitleQueue.length > 0 ||
+      state.cinematic ||
+      state.scareActive ||
+      state.demoEnded
+    ) {
       currentInteractableId.current = null
       state.setPrompt(null)
       return
