@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import * as THREE from 'three'
-import { ApartmentSkeleton } from './game/ApartmentSkeleton'
 import { PersistenceManager } from './game/api/PersistenceManager'
 import { audioEngine } from './game/audio/AudioEngine'
+import { AreaDirector } from './game/flow/AreaDirector'
+import { AreaTransitionOverlay } from './game/flow/AreaTransitionOverlay'
 import { useGameStore } from './game/state/gameStore'
 import { GameHud } from './game/ui/GameHud'
 import { TitleScreen } from './game/ui/TitleScreen'
@@ -15,6 +16,7 @@ export default function App() {
   const [introPhase, setIntroPhase] = useState<IntroPhase>('title')
   const [muted, setMuted] = useState(false)
   const demoEnded = useGameStore((state) => state.demoEnded)
+  const currentArea = useGameStore((state) => state.location.area)
   const gameStarted = introPhase === 'playing'
 
   const startGame = useCallback(() => {
@@ -77,7 +79,7 @@ export default function App() {
         }}
       >
         <color attach="background" args={['#080b0f']} />
-        <ApartmentSkeleton
+        <AreaDirector
           gameStarted={gameStarted}
           isPointerLocked={isPointerLocked}
           onLockChange={setIsPointerLocked}
@@ -85,6 +87,7 @@ export default function App() {
       </Canvas>
 
       {gameStarted && <GameHud isPointerLocked={isPointerLocked} muted={muted} />}
+      <AreaTransitionOverlay />
 
       {!gameStarted && (
         <TitleScreen
@@ -93,7 +96,7 @@ export default function App() {
         />
       )}
 
-      {gameStarted && !isPointerLocked && !demoEnded && (
+      {gameStarted && currentArea === 'apartment' && !isPointerLocked && !demoEnded && (
         <div className="pointer-lock-hint" aria-hidden="true">
           <strong>CLIQUE PARA ENTRAR</strong>
           <span>WASD mover · Shift correr · E interagir · SPACE continuar fala · RMB inspecionar · M áudio · ESC soltar</span>
