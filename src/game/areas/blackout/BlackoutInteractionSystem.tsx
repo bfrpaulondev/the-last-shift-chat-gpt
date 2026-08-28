@@ -6,6 +6,7 @@ import { useGameStore } from '../../state/gameStore'
 const CENTER = new THREE.Vector2(0, 0)
 const RANGE = 2.8
 const STANDING_SPAWN = { x: 0, y: 1.65, z: 2.2, yaw: Math.PI }
+const STAIRWELL_ENTRY_SPAWN = { x: 0, y: 1.65, z: 4.8, yaw: Math.PI }
 
 function findBlackoutInteractable(object: THREE.Object3D | null): string | null {
   let current = object
@@ -21,7 +22,7 @@ function promptFor(id: string): string | null {
   if (id === 'brace-point') return '[E] Apoiar-se e levantar'
   if (id === 'emergency-light') return '[E] Ativar luz de emergência'
   if (id === 'elevator-panel') return '[E] Testar painel do elevador'
-  if (id === 'fire-door') return '[E] Verificar porta corta-fogo'
+  if (id === 'fire-door') return '[E] Abrir porta corta-fogo'
   return null
 }
 
@@ -126,16 +127,21 @@ export function BlackoutInteractionSystem() {
           game.say('Primeiro preciso entender se o elevador ainda funciona.')
           return
         }
-        if (game.flags.blackout_recovery_complete) {
-          game.say('A rota de emergência é por aqui.')
-          return
-        }
 
-        game.setFlag('blackout_fire_door_reached')
-        game.setFlag('blackout_recovery_complete')
-        game.setCheckpoint('blackout-recovered', game.location.spawn)
+        if (!game.flags.blackout_recovery_complete) {
+          game.setFlag('blackout_fire_door_reached')
+          game.setFlag('blackout_recovery_complete')
+          game.setCheckpoint('blackout-recovered', game.location.spawn)
+        }
+        game.setFlag('blackout_left_for_stairwell')
         game.setObjective('Continue pela rota de emergência.')
         game.say('A escada de emergência. É por aqui.')
+        game.requestAreaTransition(
+          'emergency-stairwell',
+          'stairwell-entry',
+          STAIRWELL_ENTRY_SPAWN,
+          1100,
+        )
       }
     }
 
@@ -170,9 +176,7 @@ export function BlackoutInteractionSystem() {
       if (!id) continue
       const prompt = promptFor(id)
       if (!prompt) continue
-
       if (id === 'brace-point' && game.flags.blackout_stood_up) continue
-
       next = id
       point.current.copy(hit.point)
       game.setPrompt(prompt)
