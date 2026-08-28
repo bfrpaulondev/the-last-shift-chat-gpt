@@ -10,7 +10,7 @@ interface PlayerControllerProps {
 }
 
 const EYE_HEIGHT = 1.65
-const PLAYER_RADIUS = 0.3
+const PLAYER_RADIUS = 0.25
 const WALK_SPEED = 2.2
 const SPRINT_SPEED = 3.6
 const GRAVITY = -18
