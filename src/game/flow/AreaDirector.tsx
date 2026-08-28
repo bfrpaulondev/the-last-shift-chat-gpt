@@ -1,0 +1,71 @@
+import { useEffect } from 'react'
+import { useThree } from '@react-three/fiber'
+import * as THREE from 'three'
+import { ApartmentSkeleton } from '../ApartmentSkeleton'
+import { AREA_DEFINITIONS } from './areaTypes'
+import { useGameStore } from '../state/gameStore'
+
+type AreaDirectorProps = {
+  gameStarted: boolean
+  isPointerLocked: boolean
+  onLockChange: (locked: boolean) => void
+}
+
+function AreaCameraSpawn() {
+  const { camera } = useThree()
+  const location = useGameStore((state) => state.location)
+
+  useEffect(() => {
+    const spawn = location.spawn
+    if (!spawn) {
+      return
+    }
+
+    camera.position.set(spawn.x, spawn.y, spawn.z)
+    camera.rotation.set(0, spawn.yaw, 0)
+    camera.updateMatrixWorld()
+  }, [camera, location.area, location.checkpoint, location.spawn])
+
+  return null
+}
+
+function StreamingStandby() {
+  const location = useGameStore((state) => state.location)
+  const definition = AREA_DEFINITIONS[location.area]
+
+  return (
+    <group name={`streaming-standby-${definition.area}`}>
+      <color attach="background" args={['#05070a']} />
+      <fog attach="fog" args={['#05070a', 2, 18]} />
+      <ambientLight color="#8d98a6" intensity={0.08} />
+      <mesh receiveShadow position={[0, -0.06, 0]}>
+        <planeGeometry args={[12, 12]} />
+        <meshStandardMaterial color="#101419" roughness={0.98} />
+      </mesh>
+    </group>
+  )
+}
+
+export function AreaDirector({
+  gameStarted,
+  isPointerLocked,
+  onLockChange,
+}: AreaDirectorProps) {
+  const area = useGameStore((state) => state.location.area)
+
+  return (
+    <>
+      <AreaCameraSpawn />
+      {area === 'apartment' ? (
+        <ApartmentSkeleton
+          key="area-apartment"
+          gameStarted={gameStarted}
+          isPointerLocked={isPointerLocked}
+          onLockChange={onLockChange}
+        />
+      ) : (
+        <StreamingStandby key={`area-${area}`} />
+      )}
+    </>
+  )
+}

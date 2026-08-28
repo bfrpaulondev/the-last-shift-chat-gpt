@@ -6,6 +6,21 @@ import { TelemetryEvent } from './models/TelemetryEvent.js'
 
 const LOCAL_ORIGIN = 'http://localhost:5173'
 const MAX_TELEMETRY_BATCH = 500
+const GAME_PARTS = new Set(['part-1', 'part-2'])
+const GAME_AREAS = new Set([
+  'apartment',
+  'street',
+  'bus-214',
+  'meridian-plaza',
+  'lobby',
+  'locker-b1',
+  'service-elevator',
+  'work-floor-22',
+  'work-floor-30',
+  'cafeteria',
+  'floor-37',
+  'blackout',
+])
 
 async function requireMongo(_request, response, next) {
   if (!isMongoConnected()) {
@@ -22,6 +37,37 @@ async function requireMongo(_request, response, next) {
 
 function isRecord(value) {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function isFiniteNumber(value) {
+  return typeof value === 'number' && Number.isFinite(value)
+}
+
+function isSpawn(value) {
+  if (value === undefined) {
+    return true
+  }
+  return (
+    isRecord(value) &&
+    isFiniteNumber(value.x) &&
+    isFiniteNumber(value.y) &&
+    isFiniteNumber(value.z) &&
+    isFiniteNumber(value.yaw)
+  )
+}
+
+function isGameLocation(value) {
+  if (value === undefined) {
+    return true
+  }
+  return (
+    isRecord(value) &&
+    GAME_PARTS.has(value.part) &&
+    GAME_AREAS.has(value.area) &&
+    typeof value.checkpoint === 'string' &&
+    value.checkpoint.length > 0 &&
+    isSpawn(value.spawn)
+  )
 }
 
 function isTelemetryEvent(value) {
@@ -59,7 +105,14 @@ app.get('/api/health', (_request, response) => {
 })
 
 app.post('/api/save', requireMongo, async (request, response) => {
-  const { playerId, flags, chapter, playtimeSeconds } = request.body ?? {}
+  const {
+    playerId,
+    flags,
+    chapter,
+    location,
+    schemaVersion = 1,
+    playtimeSeconds,
+  } = request.body ?? {}
 
   if (
     typeof playerId !== 'string' ||
@@ -67,6 +120,9 @@ app.post('/api/save', requireMongo, async (request, response) => {
     !isRecord(flags) ||
     typeof chapter !== 'string' ||
     chapter.length === 0 ||
+    !isGameLocation(location) ||
+    !Number.isInteger(schemaVersion) ||
+    schemaVersion < 1 ||
     typeof playtimeSeconds !== 'number' ||
     !Number.isFinite(playtimeSeconds) ||
     playtimeSeconds < 0
@@ -76,15 +132,19 @@ app.post('/api/save', requireMongo, async (request, response) => {
   }
 
   try {
+    const update = {
+      flags,
+      chapter,
+      schemaVersion,
+      playtimeSeconds,
+    }
+    if (location !== undefined) {
+      update.location = location
+    }
+
     const save = await Save.findOneAndUpdate(
       { playerId },
-      {
-        $set: {
-          flags,
-          chapter,
-          playtimeSeconds,
-        },
-      },
+      { $set: update },
       {
         new: true,
         upsert: true,

@@ -1,5 +1,12 @@
 import { create } from 'zustand'
 import { audioEngine } from '../audio/AudioEngine'
+import {
+  INITIAL_LOCATION,
+  locationForArea,
+  type GameArea,
+  type GameLocationSnapshot,
+  type PlayerSpawn,
+} from '../flow/areaTypes'
 
 export interface TelemetryEvent {
   t: number
@@ -35,6 +42,14 @@ export interface HandActionState {
   variant?: HandActionVariant
 }
 
+export interface AreaTransitionState {
+  from: GameArea
+  to: GameArea
+  checkpoint: string
+  startedAt: number
+  durationMs: number
+}
+
 interface NoteState {
   title: string
   body: string
@@ -42,6 +57,8 @@ interface NoteState {
 
 interface GameState {
   flags: Record<string, boolean>
+  location: GameLocationSnapshot
+  areaTransition: AreaTransitionState | null
   subtitle: string | null
   subtitleQueue: string[]
   pendingSubtitle: string | null
@@ -58,7 +75,18 @@ interface GameState {
   progressSaved: boolean
   setFlag: (flag: string) => void
   hydrateFlags: (flags: Record<string, boolean>) => void
+  hydrateProgress: (
+    flags: Record<string, boolean>,
+    location?: GameLocationSnapshot,
+  ) => void
   hasFlag: (flag: string) => boolean
+  setCheckpoint: (checkpoint: string, spawn?: PlayerSpawn) => void
+  requestAreaTransition: (
+    area: GameArea,
+    checkpoint?: string,
+    spawn?: PlayerSpawn,
+    durationMs?: number,
+  ) => void
   say: (text: string, seconds?: number) => void
   dismissSubtitle: () => void
   queueSubtitle: (text: string) => void
@@ -92,25 +120,56 @@ const REQUIRED_EXIT_FLAGS = [
 
 let handActionTimer: number | null = null
 let scareTimer: number | null = null
+let areaSwapTimer: number | null = null
+let areaTransitionTimer: number | null = null
 
 function checklistComplete(flags: Record<string, boolean>): boolean {
   return REQUIRED_EXIT_FLAGS.every((flag) => Boolean(flags[flag]))
 }
 
-function objectiveForFlags(flags: Record<string, boolean>): string {
-  if (!flags.awake) {
-    return 'Levante-se da cama.'
+function objectiveForProgress(
+  flags: Record<string, boolean>,
+  location: GameLocationSnapshot,
+): string {
+  if (location.area === 'apartment') {
+    if (!flags.awake) {
+      return 'Levante-se da cama.'
+    }
+    if (checklistComplete(flags)) {
+      return 'Sair de casa — pegar o ônibus das 06:05.'
+    }
+    return 'Prepare-se: feche a torneira, tome café, pegue o crachá e o celular.'
   }
 
-  if (checklistComplete(flags)) {
-    return 'Sair de casa — pegar o ônibus das 06:05.'
+  switch (location.area) {
+    case 'street':
+      return 'Vá até o ponto e pegue o ônibus 214 para a Meridian Tower.'
+    case 'bus-214':
+      return 'Siga para a Meridian Tower.'
+    case 'meridian-plaza':
+      return 'Entre na Meridian Tower.'
+    case 'lobby':
+      return 'Passe pela portaria e siga para o vestiário.'
+    case 'locker-b1':
+      return 'Vista o uniforme e confirme sua rota de trabalho.'
+    case 'service-elevator':
+      return 'Use o elevador de serviço para seguir a rota.'
+    case 'work-floor-22':
+    case 'work-floor-30':
+      return 'Complete a rotina de limpeza do andar.'
+    case 'cafeteria':
+      return 'Faça a pausa e continue o turno.'
+    case 'floor-37':
+      return 'Limpe o 37.º andar.'
+    case 'blackout':
+      return ''
   }
-
-  return 'Prepare-se: feche a torneira, tome café, pegue o crachá e o celular.'
 }
 
 export const useGameStore = create<GameState>((set, get) => ({
   flags: {},
+  location: INITIAL_LOCATION,
+  areaTransition: null,
   subtitle: null,
   subtitleQueue: [],
   pendingSubtitle: null,
@@ -137,9 +196,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       return {
         flags,
         progressSaved: false,
-        objective: checklistComplete(flags)
-          ? 'Sair de casa — pegar o ônibus das 06:05.'
-          : state.objective,
+        objective: objectiveForProgress(flags, state.location),
       }
     })
 
@@ -148,13 +205,84 @@ export const useGameStore = create<GameState>((set, get) => ({
     }
   },
   hydrateFlags: (flags) => {
+    const location = get().location
     set({
       flags: { ...flags },
-      objective: objectiveForFlags(flags),
+      objective: objectiveForProgress(flags, location),
+      progressSaved: true,
+    })
+  },
+  hydrateProgress: (flags, location = INITIAL_LOCATION) => {
+    set({
+      flags: { ...flags },
+      location,
+      areaTransition: null,
+      objective: objectiveForProgress(flags, location),
+      cinematic: false,
+      blackout: location.area === 'blackout',
+      demoEnded: false,
       progressSaved: true,
     })
   },
   hasFlag: (flag) => Boolean(get().flags[flag]),
+  setCheckpoint: (checkpoint, spawn) => {
+    set((state) => {
+      const location: GameLocationSnapshot = {
+        ...state.location,
+        checkpoint,
+        spawn: spawn ?? state.location.spawn,
+      }
+      return {
+        location,
+        progressSaved: false,
+        objective: objectiveForProgress(state.flags, location),
+      }
+    })
+  },
+  requestAreaTransition: (area, checkpoint, spawn, durationMs = 900) => {
+    if (areaSwapTimer !== null) {
+      window.clearTimeout(areaSwapTimer)
+    }
+    if (areaTransitionTimer !== null) {
+      window.clearTimeout(areaTransitionTimer)
+    }
+
+    const current = get()
+    const target = locationForArea(area, checkpoint, spawn)
+    const startedAt = performance.now()
+    const duration = Math.max(400, durationMs)
+
+    set({
+      areaTransition: {
+        from: current.location.area,
+        to: area,
+        checkpoint: target.checkpoint,
+        startedAt,
+        durationMs: duration,
+      },
+      cinematic: true,
+      interactPrompt: null,
+      handAction: null,
+    })
+
+    areaSwapTimer = window.setTimeout(() => {
+      set((state) => ({
+        location: target,
+        objective: objectiveForProgress(state.flags, target),
+        progressSaved: false,
+        blackout: target.area === 'blackout',
+      }))
+      areaSwapTimer = null
+    }, Math.round(duration * 0.48))
+
+    areaTransitionTimer = window.setTimeout(() => {
+      set({
+        areaTransition: null,
+        cinematic: false,
+      })
+      areaTransitionTimer = null
+    }, duration)
+  },
   say: (text, _seconds) => {
     const current = get()
     if (current.subtitle) {
@@ -202,7 +330,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     set({ objective })
   },
   setPrompt: (interactPrompt) => {
-    if (get().demoEnded) {
+    if (get().demoEnded || get().areaTransition) {
       if (get().interactPrompt !== null) {
         set({ interactPrompt: null })
       }
@@ -269,6 +397,13 @@ export const useGameStore = create<GameState>((set, get) => ({
     set({ progressSaved })
   },
   endDemo: () => {
+    const current = get()
+    if (current.location.area === 'apartment' && current.flags.left_home) {
+      audioEngine.setMuted(false)
+      get().requestAreaTransition('street', 'street-arrival', undefined, 1100)
+      return
+    }
+
     set({
       demoEnded: true,
       interactPrompt: null,
@@ -276,6 +411,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       subtitleQueue: [],
       scareActive: false,
       handAction: null,
+      areaTransition: null,
     })
   },
   logEvent: (event) => {
