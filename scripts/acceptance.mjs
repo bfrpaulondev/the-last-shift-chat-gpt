@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises'
 
 const files = {
+  app: await readFile('src/App.tsx', 'utf8'),
   interactables: await readFile('src/game/data/interactables.tsx', 'utf8'),
   interaction: await readFile('src/game/interaction/InteractionSystem.tsx', 'utf8'),
   gameStore: await readFile('src/game/state/gameStore.ts', 'utf8'),
@@ -11,6 +12,9 @@ const files = {
   colliders: await readFile('src/game/physics/colliders.ts', 'utf8'),
   camera: await readFile('src/game/player/CameraPolish.tsx', 'utf8'),
   clock: await readFile('src/game/ui/GameClock.tsx', 'utf8'),
+  details: await readFile('src/game/ApartmentDetails.tsx', 'utf8'),
+  lighting: await readFile('src/game/ApartmentLighting.tsx', 'utf8'),
+  textures: await readFile('src/game/materials/proceduralTextures.ts', 'utf8'),
   styles: await readFile('src/styles.css', 'utf8'),
   immersionStyles: await readFile('src/immersion.css', 'utf8'),
   server: await readFile('server/app.js', 'utf8'),
@@ -89,6 +93,14 @@ if (
 }
 
 if (
+  !files.hands.includes('LEFT_BASE = new THREE.Vector3(-0.19, -0.34, -0.62)') ||
+  !files.hands.includes('scale={[0.82, 0.82, 0.82]}') ||
+  !files.hands.includes('<capsuleGeometry')
+) {
+  throw new Error('Proportional M10 hand model contract is missing')
+}
+
+if (
   !files.rat.includes('RatScare') ||
   !files.rat.includes('suspenseCue.play()') ||
   !files.rat.includes('subtitleActive') ||
@@ -114,12 +126,25 @@ if (!files.clock.includes('START_MINUTES = 320') || !files.clock.includes('SECON
 }
 
 if (
+  !files.app.includes('dpr={[1.25, 2]}') ||
+  !files.app.includes('gl.toneMappingExposure = 0.96') ||
+  !files.textures.includes('size = 512') ||
+  !files.textures.includes('texture.anisotropy = 8') ||
+  !files.details.includes('function BathroomDetails()') ||
+  !files.details.includes('function KitchenDetails()') ||
+  !files.lighting.includes('intensity={0.11}')
+) {
+  throw new Error('M10 realism and environment detail contract is missing')
+}
+
+if (
   !files.immersionStyles.includes('image-rendering: auto') ||
-  !files.immersionStyles.includes('opacity: 0.018') ||
+  !files.immersionStyles.includes('opacity: 0.008') ||
+  !files.immersionStyles.includes('filter: contrast(1.04)') ||
   !files.immersionStyles.includes('.scare-flash') ||
   !files.styles.includes('radial-gradient')
 ) {
-  throw new Error('Sharper screen effects contract is missing')
+  throw new Error('Cleaner screen treatment contract is missing')
 }
 
 const playerRadiusMatch = files.player.match(/PLAYER_RADIUS = ([0-9.]+)/)
