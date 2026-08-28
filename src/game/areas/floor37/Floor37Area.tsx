@@ -9,6 +9,7 @@ import { useGameStore } from '../../state/gameStore'
 import { useShiftClock } from '../../time/shiftClock'
 import { FLOOR37_COLLIDERS } from './floor37Colliders'
 import { Floor37Audio } from './Floor37Audio'
+import { Floor37BlackoutController } from './Floor37BlackoutController'
 import { Floor37InteractionSystem } from './Floor37InteractionSystem'
 import { Floor37Scene } from './Floor37Scene'
 
@@ -60,6 +61,7 @@ export function Floor37Area({ gameStarted, isPointerLocked, onLockChange }: Floo
       <PbrEnvironment />
       <Floor37Scene />
       <Floor37Audio />
+      <Floor37BlackoutController />
       {gameStarted && <Floor37InteractionSystem />}
       <CameraPolish enabled={enabled} />
       <TrueFirstPersonBody enabled={gameStarted && !demoEnded} />
