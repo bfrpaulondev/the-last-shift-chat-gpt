@@ -61,10 +61,10 @@ if (
 }
 
 if (
-  !files.streetInteractions.includes("state.setFlag('route_214_checked')") ||
-  !files.streetInteractions.includes("state.setFlag('corvus_flyer_seen')") ||
-  !files.streetInteractions.includes("state.setFlag('meridian_puddle_seen')") ||
-  !files.streetInteractions.includes("state.setFlag('bus_boarded')") ||
+  !files.streetInteractions.includes("setFlag('route_214_checked')") ||
+  !files.streetInteractions.includes("setFlag('corvus_flyer_seen')") ||
+  !files.streetInteractions.includes("setFlag('meridian_puddle_seen')") ||
+  !files.streetInteractions.includes("setFlag('bus_boarded')") ||
   !files.streetInteractions.includes("requestAreaTransition(\n            'bus-214'") ||
   !files.streetInteractions.includes('LINHA 214 — BAIRRO NORTE')
 ) {
