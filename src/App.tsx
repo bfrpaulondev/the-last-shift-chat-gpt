@@ -18,6 +18,7 @@ export default function App() {
   const [muted, setMuted] = useState(false)
   const demoEnded = useGameStore((state) => state.demoEnded)
   const currentArea = useGameStore((state) => state.location.area)
+  const areaTransition = useGameStore((state) => state.areaTransition)
   const gameStarted = introPhase === 'playing'
 
   const startGame = useCallback(() => {
@@ -98,12 +99,16 @@ export default function App() {
         />
       )}
 
-      {gameStarted && currentArea === 'apartment' && !isPointerLocked && !demoEnded && (
-        <div className="pointer-lock-hint" aria-hidden="true">
-          <strong>CLIQUE PARA ENTRAR</strong>
-          <span>WASD mover · Shift correr · E interagir · SPACE continuar fala · RMB inspecionar · M áudio · ESC soltar</span>
-        </div>
-      )}
+      {gameStarted &&
+        currentArea !== 'blackout' &&
+        !isPointerLocked &&
+        !demoEnded &&
+        !areaTransition && (
+          <div className="pointer-lock-hint" aria-hidden="true">
+            <strong>CLIQUE PARA ENTRAR</strong>
+            <span>WASD mover · Shift correr · E interagir · SPACE continuar fala · RMB inspecionar · M áudio · ESC soltar</span>
+          </div>
+        )}
     </main>
   )
 }
