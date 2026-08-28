@@ -16,8 +16,15 @@ await request('/api/save', {
   headers: { 'content-type': 'application/json' },
   body: JSON.stringify({
     playerId,
-    flags: { awake: true, coffee_made: true },
-    chapter: 'scene-1',
+    flags: { awake: true, coffee_made: true, left_home: true },
+    chapter: 'part-2-road-to-meridian',
+    location: {
+      part: 'part-2',
+      area: 'street',
+      checkpoint: 'street-arrival',
+      spawn: { x: 0, y: 1.65, z: 2.4, yaw: Math.PI },
+    },
+    schemaVersion: 2,
     playtimeSeconds: 42,
   }),
 })
@@ -25,8 +32,14 @@ await request('/api/save', {
 const saveResponse = await request(`/api/save/${playerId}`)
 const save = await saveResponse.json()
 
-if (save.playerId !== playerId || save.flags?.coffee_made !== true) {
-  throw new Error('Save round-trip validation failed')
+if (
+  save.playerId !== playerId ||
+  save.flags?.coffee_made !== true ||
+  save.location?.area !== 'street' ||
+  save.location?.checkpoint !== 'street-arrival' ||
+  save.schemaVersion !== 2
+) {
+  throw new Error('Save/location round-trip validation failed')
 }
 
 const telemetryResponse = await request('/api/telemetry', {
