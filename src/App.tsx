@@ -27,13 +27,16 @@ export default function App() {
         }}
       >
         <color attach="background" args={['#0d1017']} />
-        <ApartmentSkeleton onLockChange={setIsPointerLocked} />
+        <ApartmentSkeleton
+          isPointerLocked={isPointerLocked}
+          onLockChange={setIsPointerLocked}
+        />
       </Canvas>
 
       {!isPointerLocked && (
         <div className="pointer-lock-hint" aria-hidden="true">
           <strong>CLIQUE PARA ENTRAR</strong>
-          <span>Mova o mouse para olhar · ESC para soltar</span>
+          <span>WASD para mover · Shift para correr · ESC para soltar</span>
         </div>
       )}
     </main>
