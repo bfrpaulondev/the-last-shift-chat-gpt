@@ -68,7 +68,10 @@ export function BlackoutScene() {
 
       <group position={[0.92, 1.28, 6.17]} userData={{ blackoutInteractableId: 'elevator-panel' }}>
         <mesh castShadow><boxGeometry args={[0.36, 0.72, 0.16]} /><meshStandardMaterial color="#252c31" metalness={0.4} roughness={0.5} /></mesh>
-        <mesh position={[0, 0.16, -0.1]}><cylinderGeometry args={[0.07, 0.07, 0.04, 14]} /><meshStandardMaterial color="#303438" roughness={0.48} metalness={0.44} rotation={[Math.PI / 2, 0, 0]} /></mesh>
+        <mesh position={[0, 0.16, -0.1]} rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.07, 0.07, 0.04, 14]} />
+          <meshStandardMaterial color="#303438" roughness={0.48} metalness={0.44} />
+        </mesh>
       </group>
 
       <group position={[0, 1.18, -6.24]} userData={{ blackoutInteractableId: 'fire-door' }}>
