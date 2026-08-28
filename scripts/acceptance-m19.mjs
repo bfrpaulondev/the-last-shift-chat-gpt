@@ -63,7 +63,7 @@ if (
   !files.streetInteractions.includes("state.setFlag('meridian_puddle_seen')") ||
   !files.streetInteractions.includes("state.setFlag('bus_boarded')") ||
   !files.streetInteractions.includes("requestAreaTransition(\n            'bus-214'") ||
-  !files.streetInteractions.includes('Linha 214 — Bairro Norte')
+  !files.streetInteractions.includes('LINHA 214 — BAIRRO NORTE')
 ) {
   throw new Error('M19 street interaction/boarding contract is missing')
 }
