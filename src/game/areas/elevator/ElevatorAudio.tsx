@@ -55,8 +55,23 @@ export function ElevatorAudio() {
     const floor22Complete = Boolean(flags.floor22_routine_complete)
     const ride30Started = Boolean(flags.elevator_ride_to_30_started)
     const arrived30 = Boolean(flags.elevator_arrived_30)
-    const moving = (rideStarted && !arrived22) || (ride30Started && !arrived30)
-    const arrivalSignal = floor22Complete ? arrived30 : arrived22
+    const floor30Complete = Boolean(flags.floor30_routine_complete)
+    const rideCafeteriaStarted = Boolean(flags.elevator_ride_to_cafeteria_started)
+    const arrivedCafeteria = Boolean(flags.elevator_arrived_cafeteria)
+    const cafeteriaComplete = Boolean(flags.cafeteria_break_complete)
+    const ride37Started = Boolean(flags.elevator_ride_to_37_started)
+    const arrived37 = Boolean(flags.elevator_arrived_37)
+
+    const moving =
+      (rideStarted && !arrived22) ||
+      (ride30Started && !arrived30) ||
+      (rideCafeteriaStarted && !arrivedCafeteria) ||
+      (ride37Started && !arrived37)
+
+    let arrivalSignal = arrived22
+    if (floor22Complete) arrivalSignal = arrived30
+    if (floor30Complete) arrivalSignal = arrivedCafeteria
+    if (cafeteriaComplete) arrivalSignal = arrived37
 
     if (moving && !movingRef.current) {
       const motor = context.createOscillator()
