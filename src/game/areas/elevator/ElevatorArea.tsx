@@ -32,6 +32,30 @@ export function ElevatorArea({ gameStarted, isPointerLocked, onLockChange }: Ele
     if (clock.worldMinute < 394) clock.setWorldMinute(394)
 
     const state = useGameStore.getState()
+    if (state.location.checkpoint === 'elevator-after-cafeteria' && !state.flags.elevator_cafeteria_return_seen) {
+      state.setFlag('elevator_cafeteria_return_seen')
+      state.setCheckpoint('elevator-after-cafeteria', state.location.spawn)
+      state.setObjective('Selecione o 37.º andar no elevador de serviço.')
+      window.setTimeout(() => {
+        const latest = useGameStore.getState()
+        if (latest.location.area !== 'service-elevator' || latest.subtitle) return
+        latest.say('Pausa feita. Última parada: 37.º.')
+      }, 650)
+      return
+    }
+
+    if (state.location.checkpoint === 'elevator-after-floor-30' && !state.flags.elevator_floor30_return_seen) {
+      state.setFlag('elevator_floor30_return_seen')
+      state.setCheckpoint('elevator-after-floor-30', state.location.spawn)
+      state.setObjective('Selecione o refeitório no elevador de serviço.')
+      window.setTimeout(() => {
+        const latest = useGameStore.getState()
+        if (latest.location.area !== 'service-elevator' || latest.subtitle) return
+        latest.say('30.º feito. Agora refeitório.')
+      }, 650)
+      return
+    }
+
     if (state.location.checkpoint === 'elevator-after-floor-22' && !state.flags.elevator_floor22_return_seen) {
       state.setFlag('elevator_floor22_return_seen')
       state.setCheckpoint('elevator-after-floor-22', state.location.spawn)
