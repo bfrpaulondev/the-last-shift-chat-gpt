@@ -27,6 +27,7 @@ export function ApartmentSkeleton({
   const awake = useGameStore((state) => Boolean(state.flags.awake))
   const cinematic = useGameStore((state) => state.cinematic)
   const blackout = useGameStore((state) => state.blackout)
+  const scareActive = useGameStore((state) => state.scareActive)
   const demoEnded = useGameStore((state) => state.demoEnded)
   const cameraInteractionEnabled =
     gameStarted &&
@@ -34,6 +35,7 @@ export function ApartmentSkeleton({
     !noteOpen &&
     !cinematic &&
     !blackout &&
+    !scareActive &&
     !demoEnded
 
   return (
