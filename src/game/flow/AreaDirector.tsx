@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { ApartmentSkeleton } from '../ApartmentSkeleton'
+import { StreetArea } from '../areas/street/StreetArea'
 import { AREA_DEFINITIONS } from './areaTypes'
 import { useGameStore } from '../state/gameStore'
 
@@ -56,14 +57,23 @@ export function AreaDirector({
   return (
     <>
       <AreaCameraSpawn />
-      {area === 'apartment' ? (
+      {area === 'apartment' && (
         <ApartmentSkeleton
           key="area-apartment"
           gameStarted={gameStarted}
           isPointerLocked={isPointerLocked}
           onLockChange={onLockChange}
         />
-      ) : (
+      )}
+      {area === 'street' && (
+        <StreetArea
+          key="area-street"
+          gameStarted={gameStarted}
+          isPointerLocked={isPointerLocked}
+          onLockChange={onLockChange}
+        />
+      )}
+      {area !== 'apartment' && area !== 'street' && (
         <StreamingStandby key={`area-${area}`} />
       )}
     </>

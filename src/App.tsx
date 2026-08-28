@@ -6,6 +6,7 @@ import { audioEngine } from './game/audio/AudioEngine'
 import { AreaDirector } from './game/flow/AreaDirector'
 import { AreaTransitionOverlay } from './game/flow/AreaTransitionOverlay'
 import { useGameStore } from './game/state/gameStore'
+import { ShiftClockController } from './game/time/ShiftClockController'
 import { GameHud } from './game/ui/GameHud'
 import { TitleScreen } from './game/ui/TitleScreen'
 
@@ -17,6 +18,7 @@ export default function App() {
   const [muted, setMuted] = useState(false)
   const demoEnded = useGameStore((state) => state.demoEnded)
   const currentArea = useGameStore((state) => state.location.area)
+  const areaTransition = useGameStore((state) => state.areaTransition)
   const gameStarted = introPhase === 'playing'
 
   const startGame = useCallback(() => {
@@ -49,6 +51,7 @@ export default function App() {
   return (
     <main className="game-shell">
       <PersistenceManager gameStarted={gameStarted} />
+      <ShiftClockController enabled={gameStarted && !demoEnded} />
 
       <Canvas
         id="game-canvas"
@@ -96,12 +99,16 @@ export default function App() {
         />
       )}
 
-      {gameStarted && currentArea === 'apartment' && !isPointerLocked && !demoEnded && (
-        <div className="pointer-lock-hint" aria-hidden="true">
-          <strong>CLIQUE PARA ENTRAR</strong>
-          <span>WASD mover · Shift correr · E interagir · SPACE continuar fala · RMB inspecionar · M áudio · ESC soltar</span>
-        </div>
-      )}
+      {gameStarted &&
+        currentArea !== 'blackout' &&
+        !isPointerLocked &&
+        !demoEnded &&
+        !areaTransition && (
+          <div className="pointer-lock-hint" aria-hidden="true">
+            <strong>CLIQUE PARA ENTRAR</strong>
+            <span>WASD mover · Shift correr · E interagir · SPACE continuar fala · RMB inspecionar · M áudio · ESC soltar</span>
+          </div>
+        )}
     </main>
   )
 }
