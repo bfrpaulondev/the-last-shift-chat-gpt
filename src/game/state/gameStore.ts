@@ -397,6 +397,13 @@ export const useGameStore = create<GameState>((set, get) => ({
     set({ progressSaved })
   },
   endDemo: () => {
+    const current = get()
+    if (current.location.area === 'apartment' && current.flags.left_home) {
+      audioEngine.setMuted(false)
+      get().requestAreaTransition('street', 'street-arrival', undefined, 1100)
+      return
+    }
+
     set({
       demoEnded: true,
       interactPrompt: null,
