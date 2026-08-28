@@ -1,3 +1,5 @@
+import { BrokenBathroomLight } from './effects/BrokenBathroomLight'
+
 export function ApartmentLighting() {
   return (
     <>
@@ -30,6 +32,8 @@ export function ApartmentLighting() {
         decay={2}
         position={[0.85, 1.95, 1.65]}
       />
+
+      <BrokenBathroomLight />
     </>
   )
 }
