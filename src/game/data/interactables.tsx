@@ -20,14 +20,14 @@ export const INTERACTABLES: Record<string, InteractableDefinition> = {
     prompt: '[E] Levantar',
     mode: 'bed',
     flag: 'awake',
-    subtitle: 'Cinco e vinte da manhã. Último dia da semana, Bruno. Aguenta firme.',
+    subtitle: '05:20. Se eu perder o ônibus das 06:05, o Rogério vai me matar. Vamos.',
     objective: 'Prepare-se: feche a torneira, tome café, pegue o crachá e o celular.',
   },
   faucet_bathroom: {
     id: 'faucet_bathroom',
-    prompt: '[E] Fechar a torreia',
+    prompt: '[E] Fechar a torneira',
     flag: 'faucet_fixed',
-    subtitle: 'Tudo nessa vida se repete em padrão. Você não precisa ser gênio. Presta atenção no padrão e você prevê qualquer coisa.',
+    subtitle: 'De novo pingando... eu apertei isso ontem. Depois eu troco essa borracha.',
   },
   mirror: {
     id: 'mirror',
@@ -35,7 +35,7 @@ export const INTERACTABLES: Record<string, InteractableDefinition> = {
     flag: 'mirror_seen',
     note: {
       title: 'VOCÊ',
-      body: 'Bruno Paulon, 29 anos. Rosto de quem cresceu cedo demais e dorme pouco há uma década. Dez anos limpando os outros... e ninguém desse prédio sabe seu nome. Sabem seu número. Isso quando sabem.',
+      body: 'Bruno Paulon, 29 anos. Olheiras fundas, barba por fazer. Você parece mais cansado do que ontem. Talvez seja porque dormiu quatro horas.',
     },
   },
   shower: {
@@ -43,7 +43,7 @@ export const INTERACTABLES: Record<string, InteractableDefinition> = {
     prompt: '[E] Tomar banho',
     mode: 'shower',
     flag: 'showered',
-    subtitle: 'Água gelada como sempre. Economia de quem paga conta no vermelho.',
+    subtitle: 'Gelada. Claro. Pelo menos acorda.',
   },
   fridge_note: {
     id: 'fridge_note',
@@ -53,13 +53,13 @@ export const INTERACTABLES: Record<string, InteractableDefinition> = {
       title: 'ESCOLA TÉCNICA — NOTIFICAÇÃO',
       body: 'Prezado Sr. Paulon, infelizmente sua inscrição no CURSO DE VIGIA NOTURNO foi REPROVADA por frequência insuficiente. Agradecemos a preferência.',
     },
-    afterNoteSubtitle: "'Frequência insuficiente'. Trabalhando duas limpezas pra pagar o curso. A vida tem senso de humor.",
+    afterNoteSubtitle: "'Frequência insuficiente'... trabalhar dois turnos e estudar à noite tinha que dar nisso.",
   },
   coffee: {
     id: 'coffee',
-    prompt: '[E] Fazer café',
+    prompt: '[E] Ligar a cafeteira',
     flag: 'coffee_made',
-    subtitle: 'Café ruim, forte, quente. O trio perfeito.',
+    subtitle: 'Finalmente. Forte demais... perfeito.',
   },
   badge: {
     id: 'badge',
@@ -76,20 +76,21 @@ export const INTERACTABLES: Record<string, InteractableDefinition> = {
     flag: 'phone_checked',
     note: {
       title: 'CELULAR — 12%',
-      body: "05:24 — Sem mensagens. Bateria: 12%. 'Desligue apps em segundo plano para economizar'... Num celular de R$180, o que roda em segundo plano é a saudade.",
+      body: '05:24 — Sem mensagens. Bateria: 12%.',
     },
+    afterNoteSubtitle: 'Doze por cento. Vai ter que durar o turno inteiro.',
   },
   window: {
     id: 'window',
     prompt: '[E] Olhar pela janela',
     mode: 'window',
     flag: 'window_seen',
-    subtitle: 'Lá vai ela... quarenta andares de gente que nunca soube meu nome. Hoje eu limpo o 37. Andar de executivo. Nem deve ter sujeira de verdade.',
+    subtitle: 'Meridian Tower... quarenta andares. Hoje é o 37. Quanto antes eu entrar, antes eu saio.',
   },
   clock: {
     id: 'clock',
     prompt: '[E] Ver as horas',
-    subtitle: '05:31. O ônibus das 06:05 não espera faxineiro atrasado. Nem o Rogério.',
+    subtitle: '05:31. Tenho pouco mais de meia hora pro ônibus.',
   },
   frame: {
     id: 'frame',
@@ -97,7 +98,7 @@ export const INTERACTABLES: Record<string, InteractableDefinition> = {
     flag: 'frame_seen',
     note: {
       title: 'QUADRO',
-      body: 'Você e sua mãe, num festival de bairro, dez anos atrás. A moldura quebrou na última mudança. Você nunca colou. Nunca jogou fora.',
+      body: 'Eu e a mãe, na festa do bairro. Dez anos atrás. A moldura quebrou na última mudança e eu nunca consertei.',
     },
   },
   door_exit: {

@@ -13,6 +13,7 @@ export function GameHud({ isPointerLocked, muted }: GameHudProps) {
   const note = useGameStore((state) => state.note)
   const blackout = useGameStore((state) => state.blackout)
   const cinematic = useGameStore((state) => state.cinematic)
+  const scareActive = useGameStore((state) => state.scareActive)
   const demoEnded = useGameStore((state) => state.demoEnded)
   const backendOnline = useGameStore((state) => state.backendOnline)
   const progressSaved = useGameStore((state) => state.progressSaved)
@@ -32,15 +33,20 @@ export function GameHud({ isPointerLocked, muted }: GameHudProps) {
         </div>
       )}
 
-      {isPointerLocked && !note && !cinematic && !demoEnded && (
+      {isPointerLocked && !note && !cinematic && !scareActive && !demoEnded && (
         <div className="crosshair" aria-hidden="true">+</div>
       )}
 
-      {isPointerLocked && prompt && !note && !cinematic && !demoEnded && (
+      {isPointerLocked && prompt && !note && !cinematic && !scareActive && !demoEnded && (
         <div className="interact-prompt">{prompt}</div>
       )}
 
-      {subtitle && !note && !demoEnded && <div className="subtitle">{subtitle}</div>}
+      {subtitle && !note && !demoEnded && (
+        <div className="subtitle">
+          <div>{subtitle}</div>
+          <span className="subtitle-continue">[ESPAÇO] continuar</span>
+        </div>
+      )}
 
       {note && !demoEnded && (
         <div className="note-overlay">
@@ -53,6 +59,7 @@ export function GameHud({ isPointerLocked, muted }: GameHudProps) {
       )}
 
       {blackout && !demoEnded && <div className="scene-blackout" />}
+      {scareActive && !demoEnded && <div className="scare-flash" aria-hidden="true" />}
 
       {demoEnded && (
         <div className="demo-ending">
