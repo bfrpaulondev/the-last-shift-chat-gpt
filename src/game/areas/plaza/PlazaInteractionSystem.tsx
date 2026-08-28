@@ -28,28 +28,53 @@ export function PlazaInteractionSystem() {
   const raycaster = useRef(new THREE.Raycaster())
   const currentId = useRef<string | null>(null)
   const point = useRef(new THREE.Vector3())
+  const busy = useRef(false)
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.defaultPrevented || event.code !== 'KeyE') return
       const game = useGameStore.getState()
-      if (game.note || game.subtitle || game.subtitleQueue.length > 0 || game.cinematic || game.areaTransition || game.demoEnded) return
+
+      if (game.note) {
+        if (event.code === 'KeyE' || event.code === 'Escape') game.closeNote()
+        return
+      }
+      if (game.subtitle || game.subtitleQueue.length > 0) {
+        if (event.code === 'Space' && game.subtitle) {
+          event.preventDefault()
+          game.dismissSubtitle()
+        }
+        return
+      }
+      if (
+        event.defaultPrevented ||
+        event.code !== 'KeyE' ||
+        busy.current ||
+        game.cinematic ||
+        game.areaTransition ||
+        game.demoEnded
+      ) return
 
       const id = currentId.current
       if (!id) return
       const target: [number, number, number] = [point.current.x, point.current.y, point.current.z]
-      const wasFirstTime = !game.flags[`plaza_seen_${id}`]
-      game.logEvent({ t: Date.now(), type: 'interact', objectId: `plaza:${id}`, wasFirstTime })
+      const interactionFlag = `plaza_seen_${id}`
+      const wasFirstTime = !game.flags[interactionFlag]
+      game.logEvent({
+        t: performance.now() / 1000,
+        type: 'interact',
+        objectId: `plaza:${id}`,
+        wasFirstTime,
+      })
+      game.setFlag(interactionFlag)
 
       if (id === 'tower-sign') {
-        game.setFlag('plaza_seen_tower-sign')
         game.triggerHandAction('brace', 650, target, id)
         game.say('MERIDIAN. De perto parece ainda maior.')
         return
       }
 
       if (id === 'security-notice') {
-        game.setFlag('plaza_seen_security-notice')
+        game.triggerHandAction('reach', 650, target, id)
         game.openNote(
           'MERIDIAN — ACESSO DE SERVIÇO',
           'Funcionários terceirizados devem apresentar o crachá na portaria.\n\nAcesso aos andares técnicos somente pelo elevador de serviço.\n\nCORVUS FACILITIES — Procedimento 06-B.',
@@ -58,6 +83,7 @@ export function PlazaInteractionSystem() {
       }
 
       if (id === 'lobby-door') {
+        busy.current = true
         game.setFlag('plaza_entered_tower')
         game.triggerHandAction('door', 900, target, id, 'door-handle')
         game.requestAreaTransition(
