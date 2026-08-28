@@ -137,11 +137,11 @@ function StoryPropTextures() {
       </group>
 
       <group position={[2.75, 1.48, 2.885]} rotation={[0, Math.PI, 0]}>
-        <mesh raycast={() => null} position={[0, 0, -0.036]}>
+        <mesh raycast={() => null} position={[0, 0, 0.041]} renderOrder={4}>
           <planeGeometry args={[0.61, 0.74]} />
           <meshStandardMaterial map={textures.familyPhoto} roughness={0.62} />
         </mesh>
-        <mesh raycast={() => null} position={[0.02, 0.01, -0.041]}>
+        <mesh raycast={() => null} position={[0.02, 0.01, 0.046]} renderOrder={5}>
           <planeGeometry args={[0.58, 0.7]} />
           <meshPhysicalMaterial
             color="#d7e4e8"
