@@ -15,7 +15,10 @@ const files = {
   shiftController: await readFile('src/game/time/ShiftClockController.tsx', 'utf8'),
   gameClock: await readFile('src/game/ui/GameClock.tsx', 'utf8'),
   persistence: await readFile('src/game/api/PersistenceManager.tsx', 'utf8'),
+  gameApi: await readFile('src/game/api/gameApi.ts', 'utf8'),
   saveModel: await readFile('server/models/Save.js', 'utf8'),
+  server: await readFile('server/app.js', 'utf8'),
+  smoke: await readFile('server/smoke.js', 'utf8'),
 }
 
 if (
@@ -88,13 +91,26 @@ if (
 }
 
 if (
-  !files.shiftClock.includes('INITIAL_WORLD_MINUTES') ||
-  !files.shiftController.includes('ShiftClockController') ||
-  !files.gameClock.includes('formatWorldTime') ||
-  !files.persistence.includes('hydrateShiftTime') ||
-  !files.saveModel.includes('shiftTimeSchema')
+  !files.shiftClock.includes('export const ROUTINE_INTERVAL_MINUTES = 15') ||
+  !files.shiftClock.includes('worldMinute % ROUTINE_INTERVAL_MINUTES === 0') ||
+  !files.shiftClock.includes('lastRoutineMinute') ||
+  !files.shiftController.includes('ROUTINE_AREAS') ||
+  !files.shiftController.includes('isRoutineBoundary(targetMinute)') ||
+  !files.shiftController.includes('clock.markRoutineMinute(targetMinute)') ||
+  !files.gameClock.includes('nextRoutineMinute')
 ) {
-  throw new Error('M19 persistent narrative clock contract is missing')
+  throw new Error('M19 15-minute routine cadence contract is missing')
+}
+
+if (
+  !files.persistence.includes('hydrateShiftTime(save.shiftTime)') ||
+  !files.persistence.includes('{ worldMinute, lastRoutineMinute }') ||
+  !files.gameApi.includes('shiftTime?: ShiftTimeSnapshot') ||
+  !files.saveModel.includes('shiftTimeSchema') ||
+  !files.server.includes('function isShiftTime') ||
+  !files.smoke.includes('lastRoutineMinute: 390')
+) {
+  throw new Error('M19 persistent shift-time contract is missing')
 }
 
 if (
@@ -104,4 +120,4 @@ if (
   throw new Error('M19 post-stream spawn/pointer-lock continuity contract is missing')
 }
 
-console.log('M19 street/bus-stop acceptance passed')
+console.log('M19 street/bus-stop + 15-minute routine acceptance passed')
