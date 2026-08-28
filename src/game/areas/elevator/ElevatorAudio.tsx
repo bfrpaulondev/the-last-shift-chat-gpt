@@ -8,8 +8,8 @@ export function ElevatorAudio() {
   const masterRef = useRef<GainNode | null>(null)
   const motorRef = useRef<OscillatorNode | null>(null)
   const motorGainRef = useRef<GainNode | null>(null)
-  const rideStartedRef = useRef(false)
-  const arrivedRef = useRef(false)
+  const movingRef = useRef(false)
+  const arrivalSignalRef = useRef(false)
 
   useEffect(() => {
     const context = new window.AudioContext()
@@ -51,9 +51,14 @@ export function ElevatorAudio() {
 
     const flags = useGameStore.getState().flags
     const rideStarted = Boolean(flags.elevator_ride_started)
-    const arrived = Boolean(flags.elevator_arrived_22)
+    const arrived22 = Boolean(flags.elevator_arrived_22)
+    const floor22Complete = Boolean(flags.floor22_routine_complete)
+    const ride30Started = Boolean(flags.elevator_ride_to_30_started)
+    const arrived30 = Boolean(flags.elevator_arrived_30)
+    const moving = (rideStarted && !arrived22) || (ride30Started && !arrived30)
+    const arrivalSignal = floor22Complete ? arrived30 : arrived22
 
-    if (rideStarted && !rideStartedRef.current) {
+    if (moving && !movingRef.current) {
       const motor = context.createOscillator()
       const motorGain = context.createGain()
       const filter = context.createBiquadFilter()
@@ -73,7 +78,7 @@ export function ElevatorAudio() {
       motorGainRef.current = motorGain
     }
 
-    if (arrived && !arrivedRef.current) {
+    if (!moving && movingRef.current) {
       const now = context.currentTime
       const motorGain = motorGainRef.current
       if (motorGain) {
@@ -86,7 +91,10 @@ export function ElevatorAudio() {
         motorRef.current = null
         motorGainRef.current = null
       }, 500)
+    }
 
+    if (arrivalSignal && !arrivalSignalRef.current) {
+      const now = context.currentTime
       const bell = context.createOscillator()
       const bellGain = context.createGain()
       bell.type = 'sine'
@@ -100,8 +108,8 @@ export function ElevatorAudio() {
       bell.stop(now + 0.68)
     }
 
-    rideStartedRef.current = rideStarted
-    arrivedRef.current = arrived
+    movingRef.current = moving
+    arrivalSignalRef.current = arrivalSignal
   })
 
   return null

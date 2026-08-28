@@ -100,6 +100,7 @@ export const AREA_DEFINITIONS: Record<GameArea, AreaDefinition> = {
     chapter: 'part-2-road-to-meridian',
     label: '22.º Andar',
     defaultCheckpoint: 'floor-22-arrival',
+    defaultSpawn: { x: 0, y: 1.65, z: 6.4, yaw: Math.PI },
   },
   'work-floor-30': {
     area: 'work-floor-30',
