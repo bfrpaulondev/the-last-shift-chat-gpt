@@ -1,13 +1,19 @@
 import { PointerLockControls } from '@react-three/drei'
+import { PlayerController } from './player/PlayerController'
+import { APARTMENT_COLLIDERS } from './physics/colliders'
 
 type ApartmentSkeletonProps = {
+  isPointerLocked: boolean
   onLockChange: (locked: boolean) => void
 }
 
 const WALL_COLOR = '#74777b'
 const FLOOR_COLOR = '#4f5154'
 
-export function ApartmentSkeleton({ onLockChange }: ApartmentSkeletonProps) {
+export function ApartmentSkeleton({
+  isPointerLocked,
+  onLockChange,
+}: ApartmentSkeletonProps) {
   return (
     <>
       <ambientLight color="#aeb8c8" intensity={0.35} />
@@ -46,6 +52,8 @@ export function ApartmentSkeleton({ onLockChange }: ApartmentSkeletonProps) {
           <meshStandardMaterial color={WALL_COLOR} roughness={1} />
         </mesh>
       </group>
+
+      <PlayerController colliders={APARTMENT_COLLIDERS} enabled={isPointerLocked} />
 
       <PointerLockControls
         makeDefault
