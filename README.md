@@ -14,7 +14,20 @@ Jogo 3D de terror/investigação em primeira pessoa para navegador, desenvolvido
 - Iluminação inicial
 - Pointer Lock: clique para capturar o mouse e `ESC` para soltar
 
-As próximas mecânicas do briefing ainda não fazem parte deste milestone.
+### Cena 1 — M2 Player
+
+- Movimento WASD relativo à câmera
+- Velocidade de caminhada: 2.2 m/s
+- Sprint com Shift: 3.6 m/s
+- Aceleração e desaceleração suaves
+- Gravidade simples com chão em y=0 e sem pulo
+- Colisão manual AABB resolvida separadamente nos eixos X/Z
+- Raio do jogador: 0.3m
+- Altura dos olhos: 1.65m
+- Head bob com frequência distinta para caminhada e corrida
+- Passos sintetizados em runtime com Web Audio API
+- Áudio inicializado somente após interação do usuário
+- Movimento interrompido ao liberar o Pointer Lock
 
 ## Executar
 
@@ -32,10 +45,12 @@ npm run build
 npm run preview
 ```
 
-## Controles disponíveis no M1
+## Controles disponíveis
 
 - Mouse: olhar ao redor
 - Clique: capturar o ponteiro
+- `W`, `A`, `S`, `D`: mover
+- `Shift`: correr
 - `ESC`: liberar o ponteiro
 
-WASD, sprint, colisão, áudio, interação e HUD entram nos próximos milestones.
+Interação, HUD, objetos, zoom, mute, ambiente completo e backend entram nos próximos milestones.
