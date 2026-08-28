@@ -56,7 +56,7 @@ export default function App() {
           position: [-1.52, 1.35, -0.45],
           rotation: [-0.087, Math.PI, 0],
           fov: 70,
-          near: 0.08,
+          near: 0.05,
           far: 160,
         }}
         gl={{
