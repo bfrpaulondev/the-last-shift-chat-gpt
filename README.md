@@ -52,7 +52,25 @@ Jogo 3D de terror/investigação em primeira pessoa para navegador, desenvolvido
 - Objetivo muda automaticamente para sair de casa quando o checklist termina
 - Tela final da demo com reinício
 
-Áudio ambiente completo, intro/tela de título e sons específicos entram no M5. Backend de save/telemetria persistente entra no M6.
+### Cena 1 — M5 Áudio + intro
+
+- `AudioEngine` singleton com master gain 0.7
+- Tela de título com texto digitado e `[ PRESSIONE ENTER ]`
+- Alarme sintetizado de 1.5s ao iniciar
+- Fade da tela de título para o gameplay
+- Ambiente urbano contínuo em brown noise
+- Trem distante procedural em intervalos aleatórios de 25–40s
+- Chuva em white noise com highpass e atenuação pela distância da janela
+- Ping da torneira a cada 1.6s com sine 2100Hz, decay, reverb procedural e atenuação pela distância
+- Passos sintetizados com variação aleatória
+- Café de 3s em brown noise + bubbling tonal
+- Chuveiro de 4s com white noise e lowpass dinâmico
+- Tranca da porta com dois cliques metálicos
+- Blip de legenda e som de papel ao abrir notas
+- `M` muta/desmuta o master e mostra o estado no HUD
+- Saída da demo corta o áudio e mantém 3s de silêncio antes do texto final
+
+Backend de save/telemetria persistente entra no M6.
 
 ## Executar
 
@@ -72,9 +90,11 @@ npm run preview
 
 ## Controles
 
+- `Enter`: iniciar na tela de título
 - Mouse: olhar
 - Clique: capturar ponteiro
 - `WASD`: mover
 - `Shift`: correr
 - `E`: interagir / fechar nota
+- `M`: mutar/desmutar áudio
 - `ESC`: soltar ponteiro / fechar nota
