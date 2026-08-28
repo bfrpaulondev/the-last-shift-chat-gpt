@@ -13,6 +13,7 @@ export type GameArea =
   | 'cafeteria'
   | 'floor-37'
   | 'blackout'
+  | 'emergency-stairwell'
 
 export interface PlayerSpawn {
   x: number
@@ -133,6 +134,14 @@ export const AREA_DEFINITIONS: Record<GameArea, AreaDefinition> = {
     label: 'Blackout',
     defaultCheckpoint: 'knocked-out',
     defaultSpawn: { x: 0, y: 0.72, z: 2.2, yaw: Math.PI },
+  },
+  'emergency-stairwell': {
+    area: 'emergency-stairwell',
+    part: 'part-2',
+    chapter: 'part-2-emergency-route',
+    label: 'Escada de Emergência',
+    defaultCheckpoint: 'stairwell-entry',
+    defaultSpawn: { x: 0, y: 1.65, z: 4.8, yaw: Math.PI },
   },
 }
 
