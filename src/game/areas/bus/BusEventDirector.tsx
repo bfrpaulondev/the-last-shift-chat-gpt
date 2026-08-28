@@ -16,19 +16,35 @@ export function BusEventDirector() {
   useEffect(() => {
     const state = useGameStore.getState()
     const clock = useShiftClock.getState()
+    const bus = useBusTriageStore.getState()
+
     if (clock.worldMinute < 365) clock.setWorldMinute(365)
     if (!state.flags.bus_ride_started) {
       state.setFlag('bus_ride_started')
       state.setObjective('Observe a viagem até a Meridian Tower.')
     }
 
+    if (state.flags.bus_alert_started && !state.flags.bus_alert_completed) {
+      bus.startAlert()
+    }
+
+    if (
+      state.flags.pin_qte_started &&
+      !state.flags.pin_protected &&
+      !state.flags.pin_exposed
+    ) {
+      bus.startPinQte()
+    }
+
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.code !== 'KeyE') return
+      if (event.code !== 'KeyE' || event.repeat) return
       const triage = useBusTriageStore.getState()
       if (triage.pinPhase !== 'active') return
 
       event.preventDefault()
+      event.stopImmediatePropagation()
       triage.resolvePin(true)
+      triage.setFeedback('TELA PROTEGIDA.', 1200)
       const latest = useGameStore.getState()
       latest.setFlag('pin_protected')
       latest.triggerHandAction('brace', 850, undefined, 'pin-screen')
@@ -65,6 +81,7 @@ export function BusEventDirector() {
       bus.resolveAlert(false)
       game.setFlag('bus_alert_completed')
       game.setFlag('pickpocket_unmarked')
+      bus.setFeedback('O PADRÃO VOLTOU AO NORMAL.', 1200)
     }
 
     if (
@@ -86,6 +103,7 @@ export function BusEventDirector() {
     ) {
       bus.resolvePin(false)
       game.setFlag('pin_exposed')
+      bus.setFeedback('TARDE DEMAIS.', 1100)
     }
 
     if (
