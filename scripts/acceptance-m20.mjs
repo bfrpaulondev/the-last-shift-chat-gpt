@@ -54,7 +54,7 @@ for (const passengerId of [
 
 if (
   !files.passengers.includes('function Driver()') ||
-  !files.passengers.includes("role='cap'") && !files.passengers.includes('role="cap"') ||
+  (!files.passengers.includes("role='cap'") && !files.passengers.includes('role="cap"')) ||
   files.passengers.includes('passenger-sleeper')
 ) {
   throw new Error('M20 NPC budget/behavior contract is missing')
@@ -137,7 +137,8 @@ if (
 
 if (
   !files.player.includes('speedScale = 1') ||
-  !files.player.includes('speed * Math.max(0, speedScale)') ||
+  !files.player.includes('THREE.MathUtils.clamp(speedScale, 0.1, 1)') ||
+  !files.player.includes('* clampedScale') ||
   !files.colliders.includes('BUS_COLLIDERS')
 ) {
   throw new Error('M20 time-scale/player collision contract is missing')
