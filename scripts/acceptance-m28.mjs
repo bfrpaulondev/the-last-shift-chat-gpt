@@ -7,6 +7,7 @@ const files = {
   floor37Area: await readFile('src/game/areas/floor37/Floor37Area.tsx', 'utf8'),
   floor37Scene: await readFile('src/game/areas/floor37/Floor37Scene.tsx', 'utf8'),
   interactions: await readFile('src/game/areas/floor37/Floor37InteractionSystem.tsx', 'utf8'),
+  blackoutController: await readFile('src/game/areas/floor37/Floor37BlackoutController.tsx', 'utf8'),
   colliders: await readFile('src/game/areas/floor37/floor37Colliders.ts', 'utf8'),
   audio: await readFile('src/game/areas/floor37/Floor37Audio.tsx', 'utf8'),
   elevatorInteractions: await readFile('src/game/areas/elevator/ElevatorInteractionSystem.tsx', 'utf8'),
@@ -33,6 +34,7 @@ if (
   !files.floor37Area.includes('<PbrEnvironment />') ||
   !files.floor37Area.includes('<Floor37Scene />') ||
   !files.floor37Area.includes('<Floor37Audio />') ||
+  !files.floor37Area.includes('<Floor37BlackoutController />') ||
   !files.floor37Area.includes('<TrueFirstPersonBody') ||
   !files.floor37Area.includes('<PlayerController colliders={FLOOR37_COLLIDERS}') ||
   !files.floor37Area.includes('<PostEffects />')
@@ -65,10 +67,13 @@ if (
   !files.interactions.includes("setCheckpoint('floor-37-blackout'") ||
   !files.interactions.includes('triggerScare(1200)') ||
   !files.interactions.includes('setBlackout(true)') ||
-  !files.interactions.includes("'blackout'") ||
-  !files.interactions.includes("'knocked-out'")
+  !files.blackoutController.includes('floor37_blackout_triggered') ||
+  !files.blackoutController.includes("location.area !== 'floor-37'") ||
+  !files.blackoutController.includes("requestAreaTransition(") ||
+  !files.blackoutController.includes("'blackout'") ||
+  !files.blackoutController.includes("'knocked-out'")
 ) {
-  throw new Error('M28 blackout transition contract is missing')
+  throw new Error('M28 reload-safe blackout transition contract is missing')
 }
 
 if (
