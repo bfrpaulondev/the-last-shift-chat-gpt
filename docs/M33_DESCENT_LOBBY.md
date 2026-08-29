@@ -95,7 +95,8 @@ O terminal principal não é implementado neste slice; ao retorno ele deixa de m
 
 ## Tecnologia e performance
 
-- nenhuma dependência npm nova;
+- nenhuma dependência runtime nova;
+- `@vitejs/plugin-react` passa a ser declarado como devDependency porque `vite.config.ts` já o importava, corrigindo uma dívida de build preexistente exposta pela CI;
 - nenhuma textura/áudio binário novo;
 - chuva, rádio, respiração, elevador e ambience via Three.js/Web Audio API;
 - geometria de 39 pisos não existe simultaneamente: apenas um lance streamed é mantido em memória;
