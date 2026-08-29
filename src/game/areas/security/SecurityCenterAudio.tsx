@@ -76,12 +76,12 @@ export function SecurityCenterAudio() {
       alarm.stop(context.currentTime + 2.05)
     }
 
-    window.addEventListener('security:observation', onObservation)
+    window.addEventListener('security:observation-sting', onObservation)
     window.addEventListener('security:override-alarm', onOverrideAlarm)
 
     return () => {
       window.clearInterval(chairTimer)
-      window.removeEventListener('security:observation', onObservation)
+      window.removeEventListener('security:observation-sting', onObservation)
       window.removeEventListener('security:override-alarm', onOverrideAlarm)
       crt.stop()
       server.stop()
