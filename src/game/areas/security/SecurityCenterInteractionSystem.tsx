@@ -6,6 +6,7 @@ import { useGameStore } from '../../state/gameStore'
 const CENTER = new THREE.Vector2(0, 0)
 const RANGE = 3
 const HOLD_MS = 2000
+const DESCENT_SPAWN = { x: 0, y: 1.65, z: 4.13, yaw: Math.PI }
 
 function findInteractable(object: THREE.Object3D | null): string | null {
   let current = object
@@ -27,8 +28,11 @@ function promptFor(id: string, flags: Record<string, boolean>): string | null {
   if (id === 'radio-base') return '[E] Testar rádio base'
   if (id === 'schedule') return '[E] Ver agenda de plantão'
   if (id === 'migration-checklist') return '[E] Ler checklist de migração'
-  if (id === 'terminal-main') return '[E] Verificar terminal principal'
-  if (id === 'corridor-check' && flags.observed_first) return '[E] Verificar corredor externo'
+  if (id === 'terminal-main') return flags.notebook_taken ? null : '[E] Verificar terminal principal'
+  if (id === 'corridor-check') {
+    if (flags.all_doors_released && !flags.notebook_taken) return '[E] Sair e descer a pé até o lobby'
+    if (flags.observed_first && !flags.all_doors_released) return '[E] Verificar corredor externo'
+  }
   return null
 }
 
@@ -158,15 +162,35 @@ export function SecurityCenterInteractionSystem() {
       }
 
       if (id === 'terminal-main') {
+        if (game.flags.notebook_taken) return
         game.triggerHandAction('press', 620, target, id)
         game.setFlag('terminal_blocked_pre_notebook')
         game.openNote('SENTINEL v9.4.1', 'LOGIN BLOQUEADO\nCREDENCIAL DE MANUTENÇÃO NECESSÁRIA')
         return
       }
 
-      if (id === 'corridor-check' && game.flags.observed_first) {
-        game.triggerHandAction('door', 850, target, id, 'door-handle')
-        game.setFlag('observation_corridor_checked')
+      if (id === 'corridor-check') {
+        if (game.flags.all_doors_released && !game.flags.notebook_taken) {
+          game.triggerHandAction('door', 900, target, id, 'door-handle')
+          game.setFlag('descent_route_started')
+          game.setCheckpoint('security-leaving-for-lobby', game.location.spawn)
+          window.setTimeout(() => {
+            const latest = useGameStore.getState()
+            if (latest.location.area !== 'security-center') return
+            latest.requestAreaTransition(
+              'descent-lobby',
+              'descent-floor-39',
+              DESCENT_SPAWN,
+              1100,
+            )
+          }, 420)
+          return
+        }
+
+        if (game.flags.observed_first && !game.flags.all_doors_released) {
+          game.triggerHandAction('door', 850, target, id, 'door-handle')
+          game.setFlag('observation_corridor_checked')
+        }
       }
     }
 
