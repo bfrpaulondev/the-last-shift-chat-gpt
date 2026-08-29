@@ -110,10 +110,17 @@ export function Part4Prelude() {
       if (phase === 'idle') {
         if (event.code !== 'Enter' && event.code !== 'Space') return
         event.preventDefault()
+
         if (game.flags.choice_basement_now || game.flags.clone_confirmed) {
           beginDescent()
           return
         }
+
+        if (game.flags.choice_logs_first) {
+          startQuery('m1')
+          return
+        }
+
         startQuery('m1')
         return
       }
