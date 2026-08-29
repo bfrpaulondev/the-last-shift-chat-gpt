@@ -1,7 +1,12 @@
 import mongoose from 'mongoose'
 
 const spawnSchema = new mongoose.Schema(
-  { x: { type: Number, required: true }, y: { type: Number, required: true }, z: { type: Number, required: true }, yaw: { type: Number, required: true } },
+  {
+    x: { type: Number, required: true },
+    y: { type: Number, required: true },
+    z: { type: Number, required: true },
+    yaw: { type: Number, required: true },
+  },
   { _id: false },
 )
 
@@ -12,8 +17,20 @@ const locationSchema = new mongoose.Schema(
       type: String,
       required: true,
       enum: [
-        'apartment', 'street', 'bus-214', 'meridian-plaza', 'lobby', 'locker-b1', 'service-elevator',
-        'work-floor-22', 'work-floor-30', 'cafeteria', 'floor-37', 'blackout', 'emergency-stairwell', 'security-center',
+        'apartment',
+        'street',
+        'bus-214',
+        'meridian-plaza',
+        'lobby',
+        'locker-b1',
+        'service-elevator',
+        'work-floor-22',
+        'work-floor-30',
+        'cafeteria',
+        'floor-37',
+        'blackout',
+        'emergency-stairwell',
+        'security-center',
       ],
     },
     checkpoint: { type: String, required: true, trim: true },
@@ -23,7 +40,10 @@ const locationSchema = new mongoose.Schema(
 )
 
 const shiftTimeSchema = new mongoose.Schema(
-  { worldMinute: { type: Number, required: true, min: 0 }, lastRoutineMinute: { type: Number, required: false, min: 0, default: null } },
+  {
+    worldMinute: { type: Number, required: true, min: 0 },
+    lastRoutineMinute: { type: Number, required: false, min: 0, default: null },
+  },
   { _id: false },
 )
 
@@ -37,7 +57,11 @@ const saveSchema = new mongoose.Schema(
     schemaVersion: { type: Number, required: true, min: 1, default: 1 },
     playtimeSeconds: { type: Number, required: true, min: 0, default: 0 },
   },
-  { timestamps: true, versionKey: false, collection: 'saves' },
+  {
+    timestamps: true,
+    versionKey: false,
+    collection: 'saves',
+  },
 )
 
 export const Save = mongoose.models.Save || mongoose.model('Save', saveSchema)
