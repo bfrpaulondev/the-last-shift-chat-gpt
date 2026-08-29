@@ -1,13 +1,7 @@
 import { useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
-import * as THREE from 'three'
 import { useGameStore } from '../../state/gameStore'
-import {
-  DESCENT_START_FLOOR,
-  DESCENT_TOP_Z,
-  DESCENT_TRIGGER_Z,
-  descentBaseY,
-} from './descentGeometry'
+import { reachedDescentLanding } from './descentGeometry'
 
 const LOBBY_SPAWN = { x: 0, y: 1.65, z: 4.35, yaw: Math.PI }
 const CHECKPOINT_FLOORS = new Set([36, 33, 30, 27, 24, 21, 18, 15, 13, 12, 9, 6, 3, 1])
@@ -34,7 +28,7 @@ export function DescentProgressController({
       game.note ||
       game.subtitle ||
       game.demoEnded ||
-      camera.position.z > DESCENT_TRIGGER_Z
+      !reachedDescentLanding(floor, camera.position.z)
     ) return
 
     busy.current = true
@@ -59,12 +53,11 @@ export function DescentProgressController({
 
     onFloorChange(nextFloor)
     const spawn = {
-      x: THREE.MathUtils.clamp(camera.position.x, -1.8, 1.8),
-      y: descentBaseY(nextFloor) + 1.65,
-      z: DESCENT_TOP_Z - 0.12,
+      x: camera.position.x,
+      y: camera.position.y,
+      z: camera.position.z,
       yaw: camera.rotation.y,
     }
-    camera.position.set(spawn.x, spawn.y, spawn.z)
 
     if (CHECKPOINT_FLOORS.has(nextFloor)) {
       game.setCheckpoint(`descent-floor-${nextFloor}`, spawn)
@@ -85,6 +78,5 @@ export function DescentProgressController({
     window.setTimeout(() => { busy.current = false }, 180)
   })
 
-  if (floor > DESCENT_START_FLOOR) return null
   return null
 }
