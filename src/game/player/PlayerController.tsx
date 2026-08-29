@@ -8,6 +8,7 @@ interface PlayerControllerProps {
   colliders: Collider[]
   enabled: boolean
   speedScale?: number
+  groundHeight?: (x: number, z: number) => number
 }
 
 const EYE_HEIGHT = 1.65
@@ -36,7 +37,7 @@ function isBlocked(x: number, z: number, colliders: Collider[]): boolean {
   return colliders.some((collider) => intersectsCollider(x, z, collider))
 }
 
-export function PlayerController({ colliders, enabled, speedScale = 1 }: PlayerControllerProps) {
+export function PlayerController({ colliders, enabled, speedScale = 1, groundHeight }: PlayerControllerProps) {
   const { camera } = useThree()
   const pressedKeys = useRef(new Set<string>())
   const velocity = useRef(new THREE.Vector3())
@@ -151,7 +152,8 @@ export function PlayerController({ colliders, enabled, speedScale = 1 }: PlayerC
       currentBob.current = THREE.MathUtils.damp(currentBob.current, 0, 14, safeDelta)
     }
 
-    camera.position.y = feetY.current + EYE_HEIGHT + currentBob.current
+    const floorY = groundHeight ? groundHeight(camera.position.x, camera.position.z) : 0
+    camera.position.y = floorY + feetY.current + EYE_HEIGHT + currentBob.current
   })
 
   return null

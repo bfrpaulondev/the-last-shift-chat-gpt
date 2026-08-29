@@ -69,6 +69,7 @@ export function Part3AnxietyController() {
   const breathingSince = useRef<number | null>(null)
   const breathingApplied = useRef(false)
   const lastBeat = useRef(0)
+  const silenceUntil = useRef(0)
 
   useEffect(() => {
     if (part !== 'part-3') return
@@ -104,11 +105,20 @@ export function Part3AnxietyController() {
       }
     }
 
+    const onTotalSilence = (event: Event) => {
+      const detail = (event as CustomEvent<{ durationMs?: number }>).detail
+      silenceUntil.current = Math.max(
+        silenceUntil.current,
+        performance.now() + (detail?.durationMs ?? 4000),
+      )
+    }
+
     const onPointerDown = () => ensureContext()
 
     window.addEventListener('keydown', onKeyDown)
     window.addEventListener('keyup', onKeyUp)
     window.addEventListener('pointerdown', onPointerDown)
+    window.addEventListener('part3:total-silence', onTotalSilence)
 
     const interval = window.setInterval(() => {
       const current = useGameStore.getState()
@@ -141,11 +151,16 @@ export function Part3AnxietyController() {
         breathingApplied.current = true
         current.adjustBpm(-12)
         current.triggerHandAction('brace', 900, undefined, 'breathing-control')
-        if (contextRef.current) playExhale(contextRef.current)
+        if (contextRef.current && performance.now() >= silenceUntil.current) playExhale(contextRef.current)
       }
 
       const context = contextRef.current
-      if (!context || context.state !== 'running' || current.blackout) return
+      if (
+        !context ||
+        context.state !== 'running' ||
+        current.blackout ||
+        performance.now() < silenceUntil.current
+      ) return
       const bpm = useGameStore.getState().bpm
       const beatEveryMs = 60000 / bpm
       if (performance.now() - lastBeat.current >= beatEveryMs) {
@@ -159,9 +174,11 @@ export function Part3AnxietyController() {
       window.removeEventListener('keydown', onKeyDown)
       window.removeEventListener('keyup', onKeyUp)
       window.removeEventListener('pointerdown', onPointerDown)
+      window.removeEventListener('part3:total-silence', onTotalSilence)
       keys.current.clear()
       breathingSince.current = null
       breathingApplied.current = false
+      silenceUntil.current = 0
       if (contextRef.current) {
         void contextRef.current.close()
         contextRef.current = null

@@ -130,7 +130,8 @@ function canonicalizeLocation(location: GameLocationSnapshot): GameLocationSnaps
   if (
     (location.area === 'blackout' ||
       location.area === 'emergency-stairwell' ||
-      location.area === 'security-center') &&
+      location.area === 'security-center' ||
+      location.area === 'descent-lobby') &&
     location.part !== 'part-3'
   ) {
     return { ...location, part: 'part-3' }
@@ -176,10 +177,19 @@ function objectiveForProgress(flags: Record<string, boolean>, location: GameLoca
       if (flags.stairwell_reached_38) return 'Observe o leitor do 38.º andar.'
       return 'Suba pela escada de emergência até o 39.º andar.'
     case 'security-center':
+      if (flags.elevator_returned_39 && flags.notebook_taken) return 'A caderneta está com você. O terminal principal aguarda.'
       if (flags.all_doors_released) return 'Desça para o lobby e encontre Nascimento.'
       if (flags.observed_first) return "Use o FIREMAN'S OVERRIDE para liberar as portas."
       if (flags.cam02_checked) return 'Feche o feed e observe a sala.'
       return 'Consulte o monitor vivo da Central de Segurança.'
+    case 'descent-lobby':
+      if (flags.elevator_riding) return 'Suba ao 39.º andar.'
+      if (flags.elevator_alone) return 'Entre no elevador de serviço.'
+      if (flags.shadowbyte_contact_1) return 'Aguarde o elevador de serviço.'
+      if (flags.notebook_taken) return 'Ouça o rádio de Nascimento.'
+      if (flags.nascimento_dead) return 'Pegue a caderneta de Nascimento.'
+      if (flags.descent_complete) return 'Vá até Nascimento atrás do balcão.'
+      return 'Desça a pé até o térreo.'
   }
 }
 

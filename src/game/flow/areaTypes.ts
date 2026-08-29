@@ -15,6 +15,7 @@ export type GameArea =
   | 'blackout'
   | 'emergency-stairwell'
   | 'security-center'
+  | 'descent-lobby'
 
 export interface PlayerSpawn {
   x: number
@@ -151,6 +152,14 @@ export const AREA_DEFINITIONS: Record<GameArea, AreaDefinition> = {
     label: 'Central de Segurança — 39.º',
     defaultCheckpoint: 'security-center-entry',
     defaultSpawn: { x: 0, y: 1.65, z: 5.2, yaw: Math.PI },
+  },
+  'descent-lobby': {
+    area: 'descent-lobby',
+    part: 'part-3',
+    chapter: 'part-3-descent-lobby',
+    label: 'Descida + Lobby — 39 → Térreo',
+    defaultCheckpoint: 'descent-floor-39',
+    defaultSpawn: { x: 0, y: 1.65, z: 4.13, yaw: Math.PI },
   },
 }
 
