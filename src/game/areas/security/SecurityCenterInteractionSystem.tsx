@@ -17,13 +17,18 @@ function findInteractable(object: THREE.Object3D | null): string | null {
   return null
 }
 
-function promptFor(id: string): string | null {
+function promptFor(id: string, flags: Record<string, boolean>): string | null {
   if (id === 'cam02') return '[E] Consultar CAM 02 — LOBBY'
-  if (id === 'fire-override') return '[E] Segurar — FIREMAN\'S OVERRIDE'
-  if (id === 'radio-base') return '[E] Chamar no rádio base'
-  if (id === 'duty-schedule') return '[E] Ver agenda de plantão'
+  if (id === 'fireman-override') {
+    if (flags.all_doors_released) return null
+    if (!flags.cam02_viewed || !flags.observed_first) return '[CAM 02 necessária] FIREMAN\'S OVERRIDE'
+    return '[E] Segurar 2s — FIREMAN\'S OVERRIDE'
+  }
+  if (id === 'radio-base') return '[E] Testar rádio base'
+  if (id === 'schedule') return '[E] Ver agenda de plantão'
   if (id === 'migration-checklist') return '[E] Ler checklist de migração'
-  if (id === 'terminal-locked') return '[E] Verificar terminal principal'
+  if (id === 'terminal-main') return '[E] Verificar terminal principal'
+  if (id === 'corridor-check' && flags.observed_first) return '[E] Verificar corredor externo'
   return null
 }
 
@@ -32,87 +37,172 @@ export function SecurityCenterInteractionSystem() {
   const raycaster = useRef(new THREE.Raycaster())
   const currentId = useRef<string | null>(null)
   const point = useRef(new THREE.Vector3())
-  const holdTimer = useRef<number | null>(null)
+  const overrideTimer = useRef<number | null>(null)
+  const overrideHolding = useRef(false)
 
   useEffect(() => {
+    const cancelOverride = () => {
+      if (overrideTimer.current !== null) {
+        window.clearTimeout(overrideTimer.current)
+        overrideTimer.current = null
+      }
+      if (!overrideHolding.current) return
+      overrideHolding.current = false
+      const game = useGameStore.getState()
+      game.setCinematic(false)
+      window.dispatchEvent(new Event('security:override-cancel'))
+      game.logEvent({
+        t: performance.now() / 1000,
+        type: 'interact',
+        objectId: 'security:fireman-override-cancel',
+        wasFirstTime: false,
+      })
+    }
+
+    const completeOverride = () => {
+      overrideTimer.current = null
+      if (!overrideHolding.current) return
+      overrideHolding.current = false
+      const game = useGameStore.getState()
+      if (game.location.area !== 'security-center') return
+      game.setFlag('alarm_amp_cut')
+      game.setFlag('all_doors_released')
+      game.setCheckpoint('security-override-released', game.location.spawn)
+      game.setObjective('Desça para o lobby e encontre Nascimento.')
+      game.setCinematic(false)
+      game.openNote("FIREMAN'S OVERRIDE", 'AUDIO AMP: DISCONNECTED — MANUAL CUT')
+      window.dispatchEvent(new Event('security:override-complete'))
+      game.logEvent({
+        t: performance.now() / 1000,
+        type: 'interact',
+        objectId: 'security:fireman-override-complete',
+        wasFirstTime: true,
+      })
+    }
+
     const onKeyDown = (event: KeyboardEvent) => {
       const game = useGameStore.getState()
-      if (game.note) { if (event.code === 'KeyE' || event.code === 'Escape') game.closeNote(); return }
-      if (game.subtitle || game.subtitleQueue.length > 0) { if (event.code === 'Space' && game.subtitle) { event.preventDefault(); game.dismissSubtitle() }; return }
-      if (event.defaultPrevented || event.code !== 'KeyE' || game.cinematic || game.areaTransition || game.demoEnded) return
+
+      if (game.note) {
+        if (event.code === 'KeyE' || event.code === 'Escape') game.closeNote()
+        return
+      }
+      if (game.subtitle || game.subtitleQueue.length > 0) {
+        if (event.code === 'Space' && game.subtitle) {
+          event.preventDefault()
+          game.dismissSubtitle()
+        }
+        return
+      }
+      if (
+        event.defaultPrevented ||
+        event.code !== 'KeyE' ||
+        event.repeat ||
+        game.cinematic ||
+        game.areaTransition ||
+        game.demoEnded
+      ) return
 
       const id = currentId.current
       if (!id) return
       const target: [number, number, number] = [point.current.x, point.current.y, point.current.z]
       const seenFlag = `security_seen_${id}`
-      game.logEvent({ t: performance.now() / 1000, type: 'interact', objectId: `security:${id}`, wasFirstTime: !game.flags[seenFlag] })
+      game.logEvent({
+        t: performance.now() / 1000,
+        type: 'interact',
+        objectId: `security:${id}`,
+        wasFirstTime: !game.flags[seenFlag],
+      })
       game.setFlag(seenFlag)
 
       if (id === 'cam02') {
         game.triggerHandAction('reach', 720, target, id)
-        game.setFlag('cam02_checked')
+        if (!game.flags.operator_gone) game.setFlag('operator_gone')
+        if (!game.flags.cam02_checked) game.setFlag('cam02_checked')
         game.setCheckpoint('security-camera-seen', game.location.spawn)
         window.dispatchEvent(new Event('security:cam02-open'))
         return
       }
 
-      if (id === 'fire-override') {
-        if (!game.flags.observed_first) { game.say('Primeiro preciso entender o que aconteceu no lobby.'); return }
-        if (game.flags.all_doors_released || holdTimer.current !== null) { if (game.flags.all_doors_released) game.say('As portas já estão liberadas.'); return }
-        game.triggerHandAction('turn', HOLD_MS, target, id)
-        window.dispatchEvent(new Event('security:override-alarm'))
-        holdTimer.current = window.setTimeout(() => {
-          const latest = useGameStore.getState()
-          if (latest.location.area !== 'security-center') return
-          latest.setFlag('alarm_amp_cut')
-          latest.setFlag('all_doors_released')
-          latest.setCheckpoint('security-override-released', latest.location.spawn)
-          latest.setObjective('Desça para o lobby e encontre Nascimento.')
-          latest.say('Cortaram o amplificador manualmente.')
-          holdTimer.current = null
-        }, HOLD_MS)
+      if (id === 'fireman-override') {
+        if (!game.flags.cam02_viewed || !game.flags.observed_first) return
+        if (game.flags.all_doors_released || overrideTimer.current !== null) return
+
+        overrideHolding.current = true
+        game.setCinematic(true)
+        game.triggerHandAction('turn', HOLD_MS, target, 'fireman-override')
+        window.dispatchEvent(new Event('security:override-start'))
+        overrideTimer.current = window.setTimeout(completeOverride, HOLD_MS)
         return
       }
 
       if (id === 'radio-base') {
         game.triggerHandAction('press', 620, target, id)
         game.setFlag('security_radio_checked')
-        game.say('Central para qualquer unidade... alguém responde?')
-        game.queueSubtitle('Só chiado.')
+        window.dispatchEvent(new Event('security:radio-static'))
         return
       }
-      if (id === 'duty-schedule') {
+
+      if (id === 'schedule') {
         game.triggerHandAction('reach', 620, target, id)
         game.setFlag('schedule_scratched')
-        game.openNote('AGENDA DE PLANTÃO', '39.º / CENTRAL\n\n22:00 — DIEGO\n23:00 — DIEGO\n00:00 — [RASURADO À CANETA]\n01:00 — [RASURADO À CANETA]')
+        game.openNote('AGENDA DE PLANTÃO', 'ÚLTIMAS LINHAS\n\n[RASURADO À CANETA]\n[RASURADO À CANETA]')
         return
       }
+
       if (id === 'migration-checklist') {
         game.triggerHandAction('reach', 620, target, id)
         game.setFlag('migration_incomplete')
-        game.openNote('MIGRAÇÃO — CHECKLIST TI-INTERNO', 'STATUS GERAL: 40% CONCLUÍDO\n\n✓ inventário físico\n✓ rede isolada\n○ câmeras — PENDENTE\n○ logs — PENDENTE\n○ relógio/NTP — PENDENTE\n○ failover — PENDENTE')
+        game.openNote('MIGRAÇÃO — CHECKLIST TI-INTERNO', 'CONCLUÍDO: 40%\nPENDENTE: 60%')
         return
       }
-      if (id === 'terminal-locked') {
+
+      if (id === 'terminal-main') {
         game.triggerHandAction('press', 620, target, id)
-        game.say('Pede credencial de operador. Eu não tenho a senha.')
+        game.setFlag('terminal_blocked_pre_notebook')
+        game.openNote('SENTINEL v9.4.1', 'LOGIN BLOQUEADO\nCREDENCIAL DE MANUTENÇÃO NECESSÁRIA')
+        return
+      }
+
+      if (id === 'corridor-check' && game.flags.observed_first) {
+        game.triggerHandAction('door', 850, target, id, 'door-handle')
+        game.setFlag('observation_corridor_checked')
       }
     }
 
+    const onKeyUp = (event: KeyboardEvent) => {
+      if (event.code === 'KeyE' && overrideHolding.current) cancelOverride()
+    }
+
     window.addEventListener('keydown', onKeyDown)
+    window.addEventListener('keyup', onKeyUp)
     return () => {
       window.removeEventListener('keydown', onKeyDown)
-      if (holdTimer.current !== null) window.clearTimeout(holdTimer.current)
+      window.removeEventListener('keyup', onKeyUp)
+      if (overrideTimer.current !== null) window.clearTimeout(overrideTimer.current)
+      if (overrideHolding.current) {
+        overrideHolding.current = false
+        useGameStore.getState().setCinematic(false)
+        window.dispatchEvent(new Event('security:override-cancel'))
+      }
     }
   }, [])
 
   useFrame(() => {
     const game = useGameStore.getState()
-    if (game.note || game.subtitle || game.subtitleQueue.length > 0 || game.cinematic || game.areaTransition || game.demoEnded) {
+    if (
+      game.note ||
+      game.subtitle ||
+      game.subtitleQueue.length > 0 ||
+      game.cinematic ||
+      game.areaTransition ||
+      game.demoEnded
+    ) {
       currentId.current = null
       game.setPrompt(null)
       return
     }
+
     raycaster.current.setFromCamera(CENTER, camera)
     raycaster.current.far = RANGE
     const hits = raycaster.current.intersectObjects(scene.children, true)
@@ -121,7 +211,7 @@ export function SecurityCenterInteractionSystem() {
       if (hit.distance > RANGE) break
       const id = findInteractable(hit.object)
       if (!id) continue
-      const prompt = promptFor(id)
+      const prompt = promptFor(id, game.flags)
       if (!prompt) continue
       next = id
       point.current.copy(hit.point)
