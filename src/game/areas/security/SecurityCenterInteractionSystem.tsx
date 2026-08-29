@@ -28,7 +28,11 @@ function promptFor(id: string, flags: Record<string, boolean>): string | null {
   if (id === 'radio-base') return '[E] Testar rádio base'
   if (id === 'schedule') return '[E] Ver agenda de plantão'
   if (id === 'migration-checklist') return '[E] Ler checklist de migração'
-  if (id === 'terminal-main') return flags.notebook_taken ? null : '[E] Verificar terminal principal'
+  if (id === 'terminal-main') {
+    if (flags.part3_complete) return null
+    if (flags.notebook_taken && flags.elevator_returned_39) return '[E] Sentar no terminal — SENTINEL v9.4.1'
+    return '[E] Verificar terminal principal'
+  }
   if (id === 'corridor-check') {
     if (flags.all_doors_released && !flags.notebook_taken) return '[E] Sair e descer a pé até o lobby'
     if (flags.observed_first && !flags.all_doors_released) return '[E] Verificar corredor externo'
@@ -162,8 +166,11 @@ export function SecurityCenterInteractionSystem() {
       }
 
       if (id === 'terminal-main') {
-        if (game.flags.notebook_taken) return
         game.triggerHandAction('press', 620, target, id)
+        if (game.flags.notebook_taken && game.flags.elevator_returned_39) {
+          window.dispatchEvent(new Event('security:terminal-open'))
+          return
+        }
         game.setFlag('terminal_blocked_pre_notebook')
         game.openNote('SENTINEL v9.4.1', 'LOGIN BLOQUEADO\nCREDENCIAL DE MANUTENÇÃO NECESSÁRIA')
         return
