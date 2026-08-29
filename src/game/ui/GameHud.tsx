@@ -17,6 +17,12 @@ export function GameHud({ isPointerLocked, muted }: GameHudProps) {
   const demoEnded = useGameStore((state) => state.demoEnded)
   const backendOnline = useGameStore((state) => state.backendOnline)
   const progressSaved = useGameStore((state) => state.progressSaved)
+  const location = useGameStore((state) => state.location)
+  const bpm = useGameStore((state) => state.bpm)
+  const noteRead = useGameStore((state) => Boolean(state.flags.note_read))
+  const logVision = useGameStore((state) => Boolean(state.flags.log_vision))
+  const part3 = location.part === 'part-3'
+  const panicStrength = Math.max(0, Math.min(1, (bpm - 72) / 88))
 
   const noteClassName = note?.title.startsWith('CRACHÁ')
     ? 'note-paper badge-note'
@@ -28,9 +34,31 @@ export function GameHud({ isPointerLocked, muted }: GameHudProps) {
 
       {!demoEnded && (
         <div className="hud-status">
-          <GameClock />
+          {part3 ? (
+            <div className="frozen-watch" aria-label="Relógio de pulso parado em 23:47">
+              <span>WRIST</span>
+              <strong>23:47</strong>
+            </div>
+          ) : (
+            <GameClock />
+          )}
           <div className="mute-indicator">{muted ? 'MUDO' : 'SOM'} [M]</div>
         </div>
+      )}
+
+      {part3 && noteRead && !logVision && !demoEnded && (
+        <div className="part3-note-pin">Quem entrou duas vezes, só saiu uma</div>
+      )}
+
+      {part3 && !demoEnded && (
+        <div
+          className="part3-panic-vignette"
+          aria-hidden="true"
+          style={{
+            opacity: 0.08 + panicStrength * 0.34,
+            animationDuration: `${Math.max(0.375, 60 / Math.max(60, bpm))}s`,
+          }}
+        />
       )}
 
       {isPointerLocked && !note && !cinematic && !scareActive && !demoEnded && (
