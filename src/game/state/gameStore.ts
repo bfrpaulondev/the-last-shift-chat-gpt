@@ -74,9 +74,11 @@ interface GameState {
   backendOnline: boolean
   progressSaved: boolean
   bpm: number
+  phoneBattery: number
+  flashlightOn: boolean
   setFlag: (flag: string) => void
   hydrateFlags: (flags: Record<string, boolean>) => void
-  hydrateProgress: (flags: Record<string, boolean>, location?: GameLocationSnapshot) => void
+  hydrateProgress: (flags: Record<string, boolean>, location?: GameLocationSnapshot, phoneBattery?: number) => void
   hasFlag: (flag: string) => boolean
   setCheckpoint: (checkpoint: string, spawn?: PlayerSpawn) => void
   requestAreaTransition: (
@@ -96,6 +98,9 @@ interface GameState {
   setBlackout: (blackout: boolean) => void
   setBpm: (bpm: number) => void
   adjustBpm: (delta: number) => void
+  setPhoneBattery: (value: number) => void
+  adjustPhoneBattery: (delta: number) => void
+  setFlashlightOn: (value: boolean) => void
   triggerHandAction: (
     kind: HandActionKind,
     durationMs?: number,
@@ -126,6 +131,10 @@ function clampBpm(value: number): number {
   return Math.max(60, Math.min(160, value))
 }
 
+function clampBattery(value: number): number {
+  return Math.max(0, Math.min(100, value))
+}
+
 function canonicalizeLocation(location: GameLocationSnapshot): GameLocationSnapshot {
   if (
     (location.area === 'blackout' ||
@@ -135,6 +144,12 @@ function canonicalizeLocation(location: GameLocationSnapshot): GameLocationSnaps
     location.part !== 'part-3'
   ) {
     return { ...location, part: 'part-3' }
+  }
+  if (
+    (location.area === 'basement' || location.area === 'part4-terminal') &&
+    location.part !== 'part-4'
+  ) {
+    return { ...location, part: 'part-4' }
   }
   return location
 }
@@ -190,6 +205,15 @@ function objectiveForProgress(flags: Record<string, boolean>, location: GameLoca
       if (flags.nascimento_dead) return 'Pegue a caderneta de Nascimento.'
       if (flags.descent_complete) return 'Vá até Nascimento atrás do balcão.'
       return 'Desça a pé até o térreo.'
+    case 'basement':
+      if (flags.canary_live || flags.canary_killed) return 'Volte ao 39.º e consulte os registros com o que encontrou.'
+      if (flags.ghost_switch_found && flags.diego_found) return 'Decida o que fazer com o SW-12 não inventariado.'
+      if (flags.hardware_hidden_in_migration && !flags.diego_found) return 'Examine a sala técnica e descubra o que aconteceu com Diego.'
+      if (flags.cam04_frozen) return 'Siga o cabo azul até a origem da anomalia.'
+      return 'Investigue o movimento e a CAM 04 no estacionamento B1.'
+    case 'part4-terminal':
+      if (flags.part4_complete) return 'PARTE 4 CONCLUÍDA — A CONTA ÓRFÃ.'
+      return 'Construa a consulta que separa entradas de saídas.'
   }
 }
 
@@ -212,6 +236,8 @@ export const useGameStore = create<GameState>((set, get) => ({
   backendOnline: false,
   progressSaved: false,
   bpm: 72,
+  phoneBattery: 3,
+  flashlightOn: false,
   setFlag: (flag) => {
     const wasChecklistComplete = checklistComplete(get().flags)
     set((state) => {
@@ -224,9 +250,10 @@ export const useGameStore = create<GameState>((set, get) => ({
     const location = get().location
     set({ flags: { ...flags }, objective: objectiveForProgress(flags, location), progressSaved: true })
   },
-  hydrateProgress: (flags, location = INITIAL_LOCATION) => {
+  hydrateProgress: (flags, location = INITIAL_LOCATION, phoneBattery = 3) => {
     const canonicalLocation = canonicalizeLocation(location)
     const part3Bpm = flags.note_read ? 112 : 128
+    const hydratedBpm = canonicalLocation.part === 'part-4' ? 105 : canonicalLocation.part === 'part-3' ? part3Bpm : 72
     set({
       flags: { ...flags },
       location: canonicalLocation,
@@ -235,7 +262,9 @@ export const useGameStore = create<GameState>((set, get) => ({
       cinematic: false,
       blackout: canonicalLocation.area === 'blackout' && !flags.blackout_vision_returned,
       demoEnded: false,
-      bpm: canonicalLocation.part === 'part-3' ? part3Bpm : 72,
+      bpm: hydratedBpm,
+      phoneBattery: clampBattery(phoneBattery),
+      flashlightOn: canonicalLocation.area === 'basement' && phoneBattery > 0,
       progressSaved: true,
     })
   },
@@ -274,6 +303,7 @@ export const useGameStore = create<GameState>((set, get) => ({
         objective: objectiveForProgress(state.flags, target),
         progressSaved: false,
         blackout: target.area === 'blackout' && !state.flags.blackout_vision_returned,
+        flashlightOn: target.area === 'basement' ? state.phoneBattery > 0 : state.flashlightOn,
       }))
       areaSwapTimer = null
     }, Math.round(duration * 0.48))
@@ -322,6 +352,18 @@ export const useGameStore = create<GameState>((set, get) => ({
   setBlackout: (blackout) => set({ blackout }),
   setBpm: (bpm) => set({ bpm: clampBpm(bpm) }),
   adjustBpm: (delta) => set((state) => ({ bpm: clampBpm(state.bpm + delta) })),
+  setPhoneBattery: (phoneBattery) => set({ phoneBattery: clampBattery(phoneBattery), progressSaved: false }),
+  adjustPhoneBattery: (delta) => set((state) => {
+    const phoneBattery = clampBattery(state.phoneBattery + delta)
+    return {
+      phoneBattery,
+      flashlightOn: phoneBattery <= 0 ? false : state.flashlightOn,
+      progressSaved: false,
+    }
+  }),
+  setFlashlightOn: (flashlightOn) => set((state) => ({
+    flashlightOn: state.phoneBattery <= 0 ? false : flashlightOn,
+  })),
   triggerHandAction: (kind, durationMs = 650, target, objectId, variant = 'generic') => {
     if (handActionTimer !== null) window.clearTimeout(handActionTimer)
     const action: HandActionState = { kind, startedAt: performance.now(), durationMs, target, objectId, variant }
