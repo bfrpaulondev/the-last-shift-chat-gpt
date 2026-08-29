@@ -4,6 +4,7 @@ import { useGameStore } from '../state/gameStore'
 export function AreaTransitionOverlay() {
   const transition = useGameStore((state) => state.areaTransition)
   const overlay = useRef<HTMLDivElement>(null)
+  const basementDescent = transition?.to === 'basement'
 
   useEffect(() => {
     const element = overlay.current
@@ -41,6 +42,14 @@ export function AreaTransitionOverlay() {
         background: '#000',
         opacity: 0,
       }}
-    />
+    >
+      {basementDescent && (
+        <div className="part4-elevator-descent" aria-hidden="true">
+          <span className="part4-elevator-floor floor-t">T</span>
+          <span className="part4-elevator-floor floor-13">13</span>
+          <span className="part4-elevator-floor floor-b1">B1</span>
+        </div>
+      )}
+    </div>
   )
 }

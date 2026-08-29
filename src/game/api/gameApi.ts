@@ -17,6 +17,7 @@ export interface SaveSnapshot {
   chapter: string
   location?: GameLocationSnapshot
   shiftTime?: ShiftTimeSnapshot
+  phoneBattery?: number
   schemaVersion?: number
   playtimeSeconds: number
 }
@@ -94,6 +95,7 @@ export async function saveProgress(
   location: GameLocationSnapshot,
   shiftTime: ShiftTimeSnapshot,
   playtimeSeconds: number,
+  phoneBattery = 3,
 ): Promise<boolean> {
   try {
     const response = await fetch('/api/save', {
@@ -107,6 +109,7 @@ export async function saveProgress(
         chapter: AREA_DEFINITIONS[location.area].chapter,
         location,
         shiftTime,
+        phoneBattery,
         schemaVersion: 2,
         playtimeSeconds,
       }),

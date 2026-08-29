@@ -12,7 +12,7 @@ const spawnSchema = new mongoose.Schema(
 
 const locationSchema = new mongoose.Schema(
   {
-    part: { type: String, required: true, enum: ['part-1', 'part-2', 'part-3'] },
+    part: { type: String, required: true, enum: ['part-1', 'part-2', 'part-3', 'part-4'] },
     area: {
       type: String,
       required: true,
@@ -32,6 +32,8 @@ const locationSchema = new mongoose.Schema(
         'emergency-stairwell',
         'security-center',
         'descent-lobby',
+        'basement',
+        'part4-terminal',
       ],
     },
     checkpoint: { type: String, required: true, trim: true },
@@ -55,6 +57,7 @@ const saveSchema = new mongoose.Schema(
     chapter: { type: String, required: true, default: 'part-1-apartment' },
     location: { type: locationSchema, required: false },
     shiftTime: { type: shiftTimeSchema, required: false },
+    phoneBattery: { type: Number, required: false, min: 0, max: 100, default: 3 },
     schemaVersion: { type: Number, required: true, min: 1, default: 1 },
     playtimeSeconds: { type: Number, required: true, min: 0, default: 0 },
   },

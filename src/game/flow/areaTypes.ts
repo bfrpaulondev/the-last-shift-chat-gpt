@@ -1,4 +1,4 @@
-export type GamePart = 'part-1' | 'part-2' | 'part-3'
+export type GamePart = 'part-1' | 'part-2' | 'part-3' | 'part-4'
 
 export type GameArea =
   | 'apartment'
@@ -16,6 +16,8 @@ export type GameArea =
   | 'emergency-stairwell'
   | 'security-center'
   | 'descent-lobby'
+  | 'basement'
+  | 'part4-terminal'
 
 export interface PlayerSpawn {
   x: number
@@ -161,6 +163,22 @@ export const AREA_DEFINITIONS: Record<GameArea, AreaDefinition> = {
     defaultCheckpoint: 'descent-floor-39',
     defaultSpawn: { x: 0, y: 1.65, z: 4.13, yaw: Math.PI },
   },
+  basement: {
+    area: 'basement',
+    part: 'part-4',
+    chapter: 'part-4-basement',
+    label: 'Porão — B1 / B2',
+    defaultCheckpoint: 'basement-descent',
+    defaultSpawn: { x: 0, y: 1.65, z: 13.4, yaw: Math.PI },
+  },
+  'part4-terminal': {
+    area: 'part4-terminal',
+    part: 'part-4',
+    chapter: 'part-4-basement',
+    label: 'Central de Segurança — Retorno',
+    defaultCheckpoint: 'part4-terminal-return',
+    defaultSpawn: { x: 0, y: 1.65, z: 5.2, yaw: Math.PI },
+  },
 }
 
 export const INITIAL_LOCATION: GameLocationSnapshot = {
@@ -189,5 +207,5 @@ export function isGameArea(value: unknown): value is GameArea {
 }
 
 export function isGamePart(value: unknown): value is GamePart {
-  return value === 'part-1' || value === 'part-2' || value === 'part-3'
+  return value === 'part-1' || value === 'part-2' || value === 'part-3' || value === 'part-4'
 }

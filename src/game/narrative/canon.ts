@@ -1,0 +1,7 @@
+export const CANON_CURRENT_DATE_ISO = '2025-09-12'
+export const CANON_CURRENT_DATE_PT = '12/09/2025'
+export const CANON_CURRENT_WEEKDAY = 'sexta-feira'
+export const CANON_BOARD_MEETING_DATE_ISO = '2025-09-13'
+export const CANON_BOARD_MEETING_WEEKDAY = 'sábado'
+export const CANON_REMOTE_DISMISSAL_DATE_ISO = '2024-11-08'
+export const CANON_REMOTE_DISMISSAL_DATE_PT = '08/11/2024'

@@ -2,6 +2,8 @@ import { useEffect } from 'react'
 import { useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { ApartmentSkeleton } from '../ApartmentSkeleton'
+import { BasementArea } from '../areas/basement/BasementArea'
+import { Part4TerminalArea } from '../areas/basement/Part4TerminalArea'
 import { BlackoutArea } from '../areas/blackout/BlackoutArea'
 import { BusArea } from '../areas/bus/BusArea'
 import { CafeteriaArea } from '../areas/cafeteria/CafeteriaArea'
@@ -78,7 +80,9 @@ export function AreaDirector({ gameStarted, isPointerLocked, onLockChange }: Are
       {area === 'emergency-stairwell' && <StairwellArea key="area-emergency-stairwell" gameStarted={gameStarted} isPointerLocked={isPointerLocked} onLockChange={onLockChange} />}
       {area === 'security-center' && <SecurityCenterArea key="area-security-center" gameStarted={gameStarted} isPointerLocked={isPointerLocked} onLockChange={onLockChange} />}
       {area === 'descent-lobby' && <DescentLobbyArea key="area-descent-lobby" gameStarted={gameStarted} isPointerLocked={isPointerLocked} onLockChange={onLockChange} />}
-      {area !== 'apartment' && area !== 'street' && area !== 'bus-214' && area !== 'meridian-plaza' && area !== 'lobby' && area !== 'locker-b1' && area !== 'service-elevator' && area !== 'work-floor-22' && area !== 'work-floor-30' && area !== 'cafeteria' && area !== 'floor-37' && area !== 'blackout' && area !== 'emergency-stairwell' && area !== 'security-center' && area !== 'descent-lobby' && (
+      {area === 'basement' && <BasementArea key="area-basement" gameStarted={gameStarted} isPointerLocked={isPointerLocked} onLockChange={onLockChange} />}
+      {area === 'part4-terminal' && <Part4TerminalArea key="area-part4-terminal" gameStarted={gameStarted} isPointerLocked={isPointerLocked} onLockChange={onLockChange} />}
+      {area !== 'apartment' && area !== 'street' && area !== 'bus-214' && area !== 'meridian-plaza' && area !== 'lobby' && area !== 'locker-b1' && area !== 'service-elevator' && area !== 'work-floor-22' && area !== 'work-floor-30' && area !== 'cafeteria' && area !== 'floor-37' && area !== 'blackout' && area !== 'emergency-stairwell' && area !== 'security-center' && area !== 'descent-lobby' && area !== 'basement' && area !== 'part4-terminal' && (
         <StreamingStandby key={`area-${area}`} />
       )}
     </>

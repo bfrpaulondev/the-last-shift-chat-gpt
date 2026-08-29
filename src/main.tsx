@@ -4,6 +4,7 @@ import App from './App'
 import './styles.css'
 import './immersion.css'
 import './game/part3.css'
+import './game/part4.css'
 import './game/areas/bus/bus.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(

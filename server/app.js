@@ -6,7 +6,7 @@ import { TelemetryEvent } from './models/TelemetryEvent.js'
 
 const LOCAL_ORIGIN = 'http://localhost:5173'
 const MAX_TELEMETRY_BATCH = 500
-const GAME_PARTS = new Set(['part-1', 'part-2', 'part-3'])
+const GAME_PARTS = new Set(['part-1', 'part-2', 'part-3', 'part-4'])
 const GAME_AREAS = new Set([
   'apartment',
   'street',
@@ -23,6 +23,8 @@ const GAME_AREAS = new Set([
   'emergency-stairwell',
   'security-center',
   'descent-lobby',
+  'basement',
+  'part4-terminal',
 ])
 
 async function requireMongo(_request, response, next) {
@@ -79,6 +81,11 @@ function isShiftTime(value) {
   )
 }
 
+function isPhoneBattery(value) {
+  if (value === undefined) return true
+  return isFiniteNumber(value) && value >= 0 && value <= 100
+}
+
 function isTelemetryEvent(value) {
   return (
     isRecord(value) &&
@@ -119,6 +126,7 @@ app.post('/api/save', requireMongo, async (request, response) => {
     chapter,
     location,
     shiftTime,
+    phoneBattery,
     schemaVersion = 1,
     playtimeSeconds,
   } = request.body ?? {}
@@ -131,6 +139,7 @@ app.post('/api/save', requireMongo, async (request, response) => {
     chapter.length === 0 ||
     !isGameLocation(location) ||
     !isShiftTime(shiftTime) ||
+    !isPhoneBattery(phoneBattery) ||
     !Number.isInteger(schemaVersion) ||
     schemaVersion < 1 ||
     typeof playtimeSeconds !== 'number' ||
@@ -150,6 +159,7 @@ app.post('/api/save', requireMongo, async (request, response) => {
     }
     if (location !== undefined) update.location = location
     if (shiftTime !== undefined) update.shiftTime = shiftTime
+    if (phoneBattery !== undefined) update.phoneBattery = phoneBattery
 
     const save = await Save.findOneAndUpdate(
       { playerId },

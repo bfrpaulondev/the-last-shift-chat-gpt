@@ -19,9 +19,14 @@ export function GameHud({ isPointerLocked, muted }: GameHudProps) {
   const progressSaved = useGameStore((state) => state.progressSaved)
   const location = useGameStore((state) => state.location)
   const bpm = useGameStore((state) => state.bpm)
+  const phoneBattery = useGameStore((state) => state.phoneBattery)
+  const flashlightOn = useGameStore((state) => state.flashlightOn)
   const noteRead = useGameStore((state) => Boolean(state.flags.note_read))
   const logVision = useGameStore((state) => Boolean(state.flags.log_vision))
+  const part4Started = useGameStore((state) => Boolean(state.flags.part4_started))
   const part3 = location.part === 'part-3'
+  const part4 = location.part === 'part-4' || part4Started
+  const panicBiome = part3 || part4
   const panicStrength = Math.max(0, Math.min(1, (bpm - 72) / 88))
 
   const noteClassName = note?.title.startsWith('CRACHÁ')
@@ -42,6 +47,13 @@ export function GameHud({ isPointerLocked, muted }: GameHudProps) {
           ) : (
             <GameClock />
           )}
+          {part4 && (
+            <div className="phone-battery" aria-label={`Bateria do celular ${Math.round(phoneBattery)} por cento`}>
+              <span>PHONE · B.</span>
+              <strong>{Math.round(phoneBattery)}%</strong>
+              <small>{flashlightOn ? 'LIGHT' : 'DARK'} [F]</small>
+            </div>
+          )}
           <div className="mute-indicator">{muted ? 'MUDO' : 'SOM'} [M]</div>
         </div>
       )}
@@ -50,7 +62,7 @@ export function GameHud({ isPointerLocked, muted }: GameHudProps) {
         <div className="part3-note-pin">Quem entrou duas vezes, só saiu uma</div>
       )}
 
-      {part3 && !demoEnded && (
+      {panicBiome && !demoEnded && (
         <div
           className="part3-panic-vignette"
           aria-hidden="true"
