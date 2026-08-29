@@ -110,7 +110,7 @@ export async function saveProgress(
         location,
         shiftTime,
         phoneBattery,
-        schemaVersion: 3,
+        schemaVersion: 2,
         playtimeSeconds,
       }),
     })
