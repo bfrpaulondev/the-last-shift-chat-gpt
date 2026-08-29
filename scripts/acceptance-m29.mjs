@@ -20,56 +20,12 @@ if (!files.package.includes('acceptance-m28.mjs && node scripts/acceptance-m29.m
 
 if (
   !files.areaTypes.includes("area: 'blackout'") ||
+  !files.areaTypes.includes("part: 'part-3'") ||
   !files.areaTypes.includes("defaultCheckpoint: 'knocked-out'") ||
-  !files.areaTypes.includes('defaultSpawn: { x: 0, y: 0.72, z: 2.2') ||
   !files.areaDirector.includes("area === 'blackout'") ||
-  !files.areaDirector.includes('<BlackoutArea') ||
-  !files.areaDirector.includes("area !== 'blackout'")
+  !files.areaDirector.includes('<BlackoutArea')
 ) {
-  throw new Error('M29 streamed blackout area contract is missing')
-}
-
-if (
-  !files.area.includes('<BlackoutScene />') ||
-  !files.area.includes('<BlackoutAudio />') ||
-  !files.area.includes('<BlackoutRecoveryController />') ||
-  !files.area.includes('<TrueFirstPersonBody') ||
-  !files.area.includes('<PlayerController colliders={BLACKOUT_COLLIDERS}') ||
-  !files.area.includes('<PostEffects />')
-) {
-  throw new Error('M29 true-first-person blackout runtime contract is missing')
-}
-
-for (const id of ['brace-point', 'emergency-light', 'elevator-panel', 'fire-door']) {
-  if (!files.scene.includes(`blackoutInteractableId: '${id}'`)) {
-    throw new Error(`M29 blackout interactable missing: ${id}`)
-  }
-}
-
-if (
-  !files.recovery.includes("setFlag('blackout_recovery_started')") ||
-  !files.recovery.includes("setCheckpoint('blackout-unconscious'") ||
-  !files.recovery.includes("setFlag('blackout_vision_returned')") ||
-  !files.recovery.includes("setCheckpoint('blackout-waking'") ||
-  !files.recovery.includes('setBlackout(false)') ||
-  !files.recovery.includes('restoreRecoveryObjective')
-) {
-  throw new Error('M29 persistent wake/reload recovery contract is missing')
-}
-
-if (
-  !files.interactions.includes("objectId: `blackout:${id}`") ||
-  !files.interactions.includes("setFlag('blackout_stood_up')") ||
-  !files.interactions.includes("setCheckpoint('blackout-standing'") ||
-  !files.interactions.includes("setFlag('blackout_emergency_light_on')") ||
-  !files.interactions.includes("setCheckpoint('blackout-emergency-light'") ||
-  !files.interactions.includes("setFlag('blackout_elevator_checked')") ||
-  !files.interactions.includes("setCheckpoint('blackout-elevator-dead'") ||
-  !files.interactions.includes("setFlag('blackout_fire_door_reached')") ||
-  !files.interactions.includes("setFlag('blackout_recovery_complete')") ||
-  !files.interactions.includes("setCheckpoint('blackout-recovered'")
-) {
-  throw new Error('M29 recovery progression/persistence contract is missing')
+  throw new Error('M29/M31 canonical streamed awakening contract is missing')
 }
 
 if (
@@ -77,35 +33,52 @@ if (
   !files.floor37Blackout.includes("'knocked-out'") ||
   !files.floor37Blackout.includes('floor37_blackout_triggered')
 ) {
-  throw new Error('M29 must preserve M28 reload-safe blackout handoff')
+  throw new Error('M28 reload-safe knockout handoff must remain intact')
 }
 
 if (
-  !files.app.includes('const blackout = useGameStore') ||
-  !files.app.includes('!blackout &&') ||
-  !files.area.includes('!blackout && (')
+  !files.recovery.includes("setFlag('knocked_out')") ||
+  !files.recovery.includes("setFlag('badge_stolen')") ||
+  !files.recovery.includes("setFlag('cup_missing')") ||
+  !files.recovery.includes("setCheckpoint('awakening-unconscious'") ||
+  !files.recovery.includes("setFlag('blackout_vision_returned')") ||
+  !files.recovery.includes("setBpm(128)")
 ) {
-  throw new Error('M29 pointer-lock recovery after vision return is missing')
-}
-
-if (!files.colliders.includes('BLACKOUT_COLLIDERS') || !files.colliders.includes("../../physics/colliders")) {
-  throw new Error('M29 blackout collision contract is missing')
+  throw new Error('Canonical awakening/reload contract is missing')
 }
 
 if (
-  !files.audio.includes('AudioContext') ||
-  !files.audio.includes('audioEngine.isMuted()') ||
-  !files.audio.includes('createOscillator') ||
-  !files.audio.includes('emergencyLightOn')
+  !files.area.includes('<PbrEnvironment />') ||
+  !files.area.includes('<TrueFirstPersonBody') ||
+  !files.area.includes('<PlayerController colliders={BLACKOUT_COLLIDERS}') ||
+  !files.area.includes('<PostEffects />')
 ) {
-  throw new Error('M29 procedural blackout audio contract is missing')
+  throw new Error('True First Person awakening runtime contract is missing')
+}
+
+for (const id of ['shadow-note', 'phone-37', 'fallen-bucket', 'ceo-door-night', 'door37-reader', 'emergency-route-door']) {
+  if (!files.scene.includes(`blackoutInteractableId: '${id}'`)) {
+    throw new Error(`Canonical awakening interactable missing: ${id}`)
+  }
 }
 
 if (
-  !files.interactions.includes('subtitleQueue.length > 0') ||
-  !files.interactions.includes('dismissSubtitle')
+  files.scene.includes("blackoutInteractableId: 'emergency-light'") ||
+  files.scene.includes("blackoutInteractableId: 'elevator-panel'")
 ) {
-  throw new Error('M29 dialogue serialization guard is missing')
+  throw new Error('Superseded generic M29 corridor must not remain active')
 }
 
-console.log('M29 Blackout Recovery acceptance passed')
+if (!files.colliders.includes('BLACKOUT_COLLIDERS') || !files.audio.includes('3997') || !files.audio.includes('4003')) {
+  throw new Error('Awakening physical/audio contract is missing')
+}
+
+if (!files.interactions.includes('subtitleQueue.length > 0') || !files.interactions.includes('dismissSubtitle')) {
+  throw new Error('Dialogue serialization guard must remain intact')
+}
+
+if (!files.app.includes('<Part3AnxietyController />')) {
+  throw new Error('Part 3 anxiety runtime must be mounted')
+}
+
+console.log('M29 canonical awakening compatibility acceptance passed')
