@@ -21,6 +21,7 @@ export function PersistenceManager({ gameStarted }: PersistenceManagerProps) {
   const flags = useGameStore((state) => state.flags)
   const location = useGameStore((state) => state.location)
   const demoEnded = useGameStore((state) => state.demoEnded)
+  const phoneBattery = useGameStore((state) => state.phoneBattery)
   const worldMinute = useShiftClock((state) => state.worldMinute)
   const lastRoutineMinute = useShiftClock((state) => state.lastRoutineMinute)
   const [hydrated, setHydrated] = useState(false)
@@ -49,6 +50,7 @@ export function PersistenceManager({ gameStarted }: PersistenceManagerProps) {
           useGameStore.getState().hydrateProgress(
             save.flags,
             normalizeSaveLocation(save),
+            save.phoneBattery,
           )
           useShiftClock.getState().hydrateShiftTime(save.shiftTime)
         }
@@ -91,6 +93,7 @@ export function PersistenceManager({ gameStarted }: PersistenceManagerProps) {
         location,
         { worldMinute, lastRoutineMinute },
         getPlaytimeSeconds(),
+        phoneBattery,
       ).then((saved) => {
         if (cancelled) {
           return
@@ -106,7 +109,7 @@ export function PersistenceManager({ gameStarted }: PersistenceManagerProps) {
       cancelled = true
       window.clearTimeout(timeout)
     }
-  }, [flags, gameStarted, hydrated, lastRoutineMinute, location, worldMinute])
+  }, [flags, gameStarted, hydrated, lastRoutineMinute, location, phoneBattery, worldMinute])
 
   useEffect(() => {
     if (!hydrated || !gameStarted) {
@@ -177,6 +180,7 @@ export function PersistenceManager({ gameStarted }: PersistenceManagerProps) {
           lastRoutineMinute: clock.lastRoutineMinute,
         },
         getPlaytimeSeconds(),
+        latestState.phoneBattery,
       )
 
       latestState.setBackendOnline(saved)
