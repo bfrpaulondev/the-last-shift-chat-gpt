@@ -5,6 +5,7 @@ import { ApartmentSkeleton } from '../ApartmentSkeleton'
 import { BlackoutArea } from '../areas/blackout/BlackoutArea'
 import { BusArea } from '../areas/bus/BusArea'
 import { CafeteriaArea } from '../areas/cafeteria/CafeteriaArea'
+import { DescentLobbyArea } from '../areas/descentLobby/DescentLobbyArea'
 import { ElevatorArea } from '../areas/elevator/ElevatorArea'
 import { Floor22Area } from '../areas/floor22/Floor22Area'
 import { Floor30Area } from '../areas/floor30/Floor30Area'
@@ -76,7 +77,8 @@ export function AreaDirector({ gameStarted, isPointerLocked, onLockChange }: Are
       {area === 'blackout' && <BlackoutArea key="area-blackout" gameStarted={gameStarted} isPointerLocked={isPointerLocked} onLockChange={onLockChange} />}
       {area === 'emergency-stairwell' && <StairwellArea key="area-emergency-stairwell" gameStarted={gameStarted} isPointerLocked={isPointerLocked} onLockChange={onLockChange} />}
       {area === 'security-center' && <SecurityCenterArea key="area-security-center" gameStarted={gameStarted} isPointerLocked={isPointerLocked} onLockChange={onLockChange} />}
-      {area !== 'apartment' && area !== 'street' && area !== 'bus-214' && area !== 'meridian-plaza' && area !== 'lobby' && area !== 'locker-b1' && area !== 'service-elevator' && area !== 'work-floor-22' && area !== 'work-floor-30' && area !== 'cafeteria' && area !== 'floor-37' && area !== 'blackout' && area !== 'emergency-stairwell' && area !== 'security-center' && (
+      {area === 'descent-lobby' && <DescentLobbyArea key="area-descent-lobby" gameStarted={gameStarted} isPointerLocked={isPointerLocked} onLockChange={onLockChange} />}
+      {area !== 'apartment' && area !== 'street' && area !== 'bus-214' && area !== 'meridian-plaza' && area !== 'lobby' && area !== 'locker-b1' && area !== 'service-elevator' && area !== 'work-floor-22' && area !== 'work-floor-30' && area !== 'cafeteria' && area !== 'floor-37' && area !== 'blackout' && area !== 'emergency-stairwell' && area !== 'security-center' && area !== 'descent-lobby' && (
         <StreamingStandby key={`area-${area}`} />
       )}
     </>
