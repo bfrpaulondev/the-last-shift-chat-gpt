@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { PointerLockControls } from '@react-three/drei'
+import { Part4Prelude } from '../basement/Part4Prelude'
 import { CameraPolish } from '../../player/CameraPolish'
 import { PlayerController } from '../../player/PlayerController'
 import { TrueFirstPersonBody } from '../../player/TrueFirstPersonBody'
@@ -69,6 +70,7 @@ export function SecurityCenterArea({ gameStarted, isPointerLocked, onLockChange 
       <SecurityCenterAudio />
       {gameStarted && <SecurityCenterInteractionSystem />}
       {gameStarted && <SentinelTerminal />}
+      {gameStarted && <Part4Prelude />}
       <CameraPolish enabled={enabled} />
       <TrueFirstPersonBody enabled={gameStarted && !demoEnded} />
       <PlayerController colliders={SECURITY_CENTER_COLLIDERS} enabled={enabled} />
