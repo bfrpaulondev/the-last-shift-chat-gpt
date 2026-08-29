@@ -2,8 +2,10 @@ import { readFile } from 'node:fs/promises'
 
 const files = {
   package: await readFile('package.json', 'utf8'),
+  canon: await readFile('src/game/narrative/canon.ts', 'utf8'),
   areaTypes: await readFile('src/game/flow/areaTypes.ts', 'utf8'),
   director: await readFile('src/game/flow/AreaDirector.tsx', 'utf8'),
+  transition: await readFile('src/game/flow/AreaTransitionOverlay.tsx', 'utf8'),
   store: await readFile('src/game/state/gameStore.ts', 'utf8'),
   persistence: await readFile('src/game/api/PersistenceManager.tsx', 'utf8'),
   gameApi: await readFile('src/game/api/gameApi.ts', 'utf8'),
@@ -19,6 +21,7 @@ const files = {
   direct: await readFile('src/game/areas/basement/DirectRouteRecovery.tsx', 'utf8'),
   cat: await readFile('src/game/areas/basement/JudasCat.tsx', 'utf8'),
   terminal: await readFile('src/game/areas/basement/Part4Terminal.tsx', 'utf8'),
+  terminalAudio: await readFile('src/game/areas/basement/Part4TerminalAudio.tsx', 'utf8'),
   terminalArea: await readFile('src/game/areas/basement/Part4TerminalArea.tsx', 'utf8'),
   player: await readFile('src/game/player/PlayerController.tsx', 'utf8'),
   hud: await readFile('src/game/ui/GameHud.tsx', 'utf8'),
@@ -26,6 +29,18 @@ const files = {
 
 if (!files.package.includes('acceptance-m34.mjs && node scripts/acceptance-m35.mjs')) {
   throw new Error('M35 must append to the complete M1-M34 acceptance chain')
+}
+
+for (const canonLine of [
+  "CANON_CURRENT_DATE_ISO = '2025-09-12'",
+  "CANON_CURRENT_DATE_PT = '12/09/2025'",
+  "CANON_CURRENT_WEEKDAY = 'sexta-feira'",
+  "CANON_BOARD_MEETING_DATE_ISO = '2025-09-13'",
+  "CANON_BOARD_MEETING_WEEKDAY = 'sábado'",
+  "CANON_REMOTE_DISMISSAL_DATE_ISO = '2024-11-08'",
+  "CANON_REMOTE_DISMISSAL_DATE_PT = '08/11/2024'",
+]) {
+  if (!files.canon.includes(canonLine)) throw new Error(`Canonical date contract missing: ${canonLine}`)
 }
 
 if (
@@ -38,18 +53,20 @@ if (
   throw new Error('Part 4 streaming areas are not registered end-to-end')
 }
 
+for (const line of [
+  "transition?.to === 'basement'",
+  'floor-13',
+  'floor-b1',
+]) {
+  if (!files.transition.includes(line)) throw new Error(`Canonical basement descent cue missing: ${line}`)
+}
+
 for (const flag of [
-  'log_vision',
   'choice_basement_now',
   'choice_logs_first',
-  'reader38_green',
-  'migration_incomplete',
-  'operator_gone',
-  'seven_seconds_seen',
 ]) {
-  if (!files.prelude.includes(flag) && !files.direct.includes(flag) && !files.interactions.includes(flag)) {
-    if (flag === 'log_vision' || flag === 'reader38_green' || flag === 'migration_incomplete' || flag === 'operator_gone' || flag === 'seven_seconds_seen') continue
-    throw new Error(`Part 3 continuity flag missing from Part 4 transition: ${flag}`)
+  if (!files.prelude.includes(flag) && !files.direct.includes(flag)) {
+    throw new Error(`Part 3 route flag missing from Part 4 transition: ${flag}`)
   }
 }
 
@@ -100,9 +117,23 @@ if (
   !files.player.includes('crouchEnabled') ||
   !files.player.includes("keys.has('KeyC')") ||
   !files.basement.includes('crouchEnabled') ||
+  !files.interactions.includes("window.addEventListener('game:crouch'") ||
   !files.interactions.includes("'basement-cable'")
 ) {
   throw new Error('Crouched physical cable-following interaction is incomplete')
+}
+
+for (const choreography of [
+  "'coffee', 'coffee-press'",
+  "'door_exit', 'door-handle'",
+  "'phone', 'phone-lift'",
+  "'badge', 'badge-pickup'",
+  "'basement-cat'",
+  "'basement-switch'",
+]) {
+  if (!files.interactions.includes(choreography)) {
+    throw new Error(`Part 4 True FP choreography missing: ${choreography}`)
+  }
 }
 
 for (const evidence of [
@@ -120,24 +151,29 @@ for (const evidence of [
   if (!files.interactions.includes(evidence)) throw new Error(`Basement canonical evidence missing: ${evidence}`)
 }
 
+if (!files.scene.includes('SW-12') || !files.scene.includes('MIGRAÇÃO — NÃO DESCARTAR')) {
+  throw new Error('Legitimate migration hardware and ghost twin are not both represented')
+}
+
+const realLightCount = (files.scene.match(/<pointLight/g) ?? []).length + (files.basement.match(/<spotLight/g) ?? []).length
+if (realLightCount > 4) {
+  throw new Error(`Basement exceeds real-light budget: ${realLightCount} > 4`)
+}
+
 if (
   !files.cat.includes('judas-cat') ||
   !files.cat.includes('false_positive_cat') ||
   !files.interactions.includes("setFlag('cat_friend')") ||
   !files.interactions.includes("setFlag('cat_looks_up')") ||
   !files.interactions.includes("new Event('basement:cat-purr')") ||
-  !files.systems.includes('catDistance <= 3')
+  !files.systems.includes('catDistance <= 3') ||
+  !files.audio.includes('scheduleMeow')
 ) {
-  throw new Error('Judas companion / anti-BPM / navigation contract is incomplete')
+  throw new Error('Judas companion / anti-BPM / navigation / audio contract is incomplete')
 }
 
 if (
-  !files.interactions.includes("setFlag('canary_live')") &&
-  !files.interactions.includes("const flag = leaveOnline ? 'canary_live' : 'canary_killed'")
-) {
-  throw new Error('Canary branch is missing')
-}
-if (
+  !files.interactions.includes("const flag = leaveOnline ? 'canary_live' : 'canary_killed'") ||
   !files.interactions.includes('LEAVE ONLINE — MONITOR ITS EDITS') ||
   !files.interactions.includes('DISCONNECT') ||
   !files.terminal.includes('3 events rewritten in last 5 min — signature: SW-12')
@@ -189,6 +225,15 @@ for (const line of [
 }
 
 if (
+  !files.terminalArea.includes('<Part4TerminalAudio />') ||
+  !files.terminalAudio.includes("window.addEventListener('basement:shadowbyte'") ||
+  !files.terminalAudio.includes("filter.type = 'bandpass'") ||
+  !files.terminalAudio.includes('Math.random() < 0.03')
+) {
+  throw new Error('ShadowByte procedural terminal voice chain is incomplete')
+}
+
+if (
   !files.terminal.includes('ELEVATOR CAM — 00:15:34') ||
   !files.terminal.includes('CABIN: EMPTY') ||
   !files.terminal.includes('BUTTON: B1 — LIT') ||
@@ -211,6 +256,8 @@ for (const audioContract of [
   'playWetSteps',
   'playYank',
   'playPurr',
+  'scheduleMeow',
+  'plantedCanTimer',
   'deathSilence',
   'playShadowByte',
 ]) {
