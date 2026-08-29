@@ -1,5 +1,5 @@
 import { useFrame, useThree } from '@react-three/fiber'
-import { useMemo, useRef } from 'react'
+import { useMemo, useRef, type MutableRefObject } from 'react'
 import * as THREE from 'three'
 import { useGameStore } from '../../state/gameStore'
 
@@ -32,11 +32,14 @@ export function JudasCat() {
     toTarget: new THREE.Vector3(),
     frustum: new THREE.Frustum(),
     matrix: new THREE.Matrix4(),
+    direction: new THREE.Vector3(),
   }), [])
 
   useFrame((state, delta) => {
     const cat = root.current
     if (!cat) return
+    cat.visible = Boolean(flags.false_positive_cat)
+    if (!cat.visible) return
 
     const target = targetFor(flags)
     scratch.target.copy(target)
@@ -76,17 +79,34 @@ export function JudasCat() {
         8,
         Math.min(delta, 0.05),
       )
-      head.current.rotation.y = moving ? Math.sin(state.clock.elapsedTime * 1.6) * 0.08 : Math.sin(state.clock.elapsedTime * 0.7) * 0.18
+      head.current.rotation.y = moving
+        ? Math.sin(state.clock.elapsedTime * 1.6) * 0.08
+        : Math.sin(state.clock.elapsedTime * 0.7) * 0.18
     }
 
     scratch.matrix.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse)
     scratch.frustum.setFromProjectionMatrix(scratch.matrix)
     if (!scratch.frustum.containsPoint(cat.position) && distance > 5.5) {
-      const direction = scratch.toTarget.lengthSq() > 0.001 ? scratch.toTarget.normalize() : new THREE.Vector3(0, 0, -1)
-      cat.position.copy(camera.position).addScaledVector(direction, 4)
+      scratch.direction.copy(target).sub(camera.position)
+      scratch.direction.y = 0
+      if (scratch.direction.lengthSq() > 0.001) scratch.direction.normalize()
+      else scratch.direction.set(0, 0, -1)
+      cat.position.copy(camera.position).addScaledVector(scratch.direction, 4)
       cat.position.y = 0.22
     }
   })
+
+  const legs: Array<[
+    string,
+    number,
+    number,
+    MutableRefObject<THREE.Group | null>,
+  ]> = [
+    ['frontLeft', -0.2, 0.26, frontLeft],
+    ['frontRight', 0.2, 0.26, frontRight],
+    ['backLeft', -0.2, -0.3, backLeft],
+    ['backRight', 0.2, -0.3, backRight],
+  ]
 
   return (
     <group
@@ -135,13 +155,8 @@ export function JudasCat() {
           <meshStandardMaterial color="#101113" roughness={0.88} />
         </mesh>
       </group>
-      {[
-        ['frontLeft', -0.2, 0.26, frontLeft],
-        ['frontRight', 0.2, 0.26, frontRight],
-        ['backLeft', -0.2, -0.3, backLeft],
-        ['backRight', 0.2, -0.3, backRight],
-      ].map(([key, x, z, ref]) => (
-        <group key={String(key)} ref={ref as React.MutableRefObject<THREE.Group | null>} position={[Number(x), -0.13, Number(z)]}>
+      {legs.map(([key, x, z, ref]) => (
+        <group key={key} ref={ref} position={[x, -0.13, z]}>
           <mesh position={[0, -0.22, 0]} castShadow>
             <cylinderGeometry args={[0.045, 0.055, 0.44, 7]} />
             <meshStandardMaterial color="#111214" roughness={0.88} />
