@@ -6,7 +6,7 @@ import { TelemetryEvent } from './models/TelemetryEvent.js'
 
 const LOCAL_ORIGIN = 'http://localhost:5173'
 const MAX_TELEMETRY_BATCH = 500
-const GAME_PARTS = new Set(['part-1', 'part-2'])
+const GAME_PARTS = new Set(['part-1', 'part-2', 'part-3'])
 const GAME_AREAS = new Set([
   'apartment',
   'street',
@@ -20,12 +20,11 @@ const GAME_AREAS = new Set([
   'cafeteria',
   'floor-37',
   'blackout',
+  'emergency-stairwell',
 ])
 
 async function requireMongo(_request, response, next) {
-  if (!isMongoConnected()) {
-    await connectMongo()
-  }
+  if (!isMongoConnected()) await connectMongo()
 
   if (!isMongoConnected()) {
     response.status(503).json({ ok: false })
