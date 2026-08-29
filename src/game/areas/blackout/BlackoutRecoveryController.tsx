@@ -1,44 +1,27 @@
 import { useEffect } from 'react'
 import { useGameStore } from '../../state/gameStore'
 
-const KNOCKED_OUT_SPAWN = { x: 0, y: 0.72, z: 2.2, yaw: Math.PI }
-
-function restoreRecoveryObjective() {
-  const game = useGameStore.getState()
-  if (game.flags.blackout_recovery_complete) {
-    game.setObjective('Continue pela rota de emergência.')
-    return
-  }
-  if (!game.flags.blackout_stood_up) {
-    game.setObjective('Levante-se do chão.')
-    return
-  }
-  if (!game.flags.blackout_emergency_light_on) {
-    game.setObjective('Encontre e ative a luz de emergência.')
-    return
-  }
-  if (!game.flags.blackout_elevator_checked) {
-    game.setObjective('Verifique se o elevador de serviço responde.')
-    return
-  }
-  game.setObjective('Procure uma saída pelo corredor de emergência.')
-}
+const UNCONSCIOUS_SPAWN = { x: 0, y: 0.72, z: 2.2, yaw: Math.PI }
 
 export function BlackoutRecoveryController() {
   useEffect(() => {
     const state = useGameStore.getState()
     if (state.location.area !== 'blackout') return
 
+    if (!state.flags.knocked_out) state.setFlag('knocked_out')
+    if (!state.flags.badge_stolen) state.setFlag('badge_stolen')
+    if (!state.flags.cup_missing) state.setFlag('cup_missing')
+
     if (state.flags.blackout_vision_returned) {
       state.setBlackout(false)
-      restoreRecoveryObjective()
+      if (!state.flags.note_read) state.setObjective('Leia o bilhete sobre o seu peito.')
       return
     }
 
     state.setBlackout(true)
-    if (!state.flags.blackout_recovery_started) {
-      state.setFlag('blackout_recovery_started')
-      state.setCheckpoint('blackout-unconscious', KNOCKED_OUT_SPAWN)
+    if (!state.flags.part3_awakening_started) {
+      state.setFlag('part3_awakening_started')
+      state.setCheckpoint('awakening-unconscious', UNCONSCIOUS_SPAWN)
     }
 
     const wakeTimer = window.setTimeout(() => {
@@ -46,11 +29,11 @@ export function BlackoutRecoveryController() {
       if (latest.location.area !== 'blackout' || latest.flags.blackout_vision_returned) return
 
       latest.setFlag('blackout_vision_returned')
-      latest.setCheckpoint('blackout-waking', KNOCKED_OUT_SPAWN)
+      latest.setCheckpoint('awakening-vision', UNCONSCIOUS_SPAWN)
       latest.setBlackout(false)
-      latest.setObjective('Levante-se do chão.')
-      latest.say('Minha cabeça... o que aconteceu?')
-    }, 1500)
+      latest.setBpm(128)
+      latest.setObjective('Leia o bilhete sobre o seu peito.')
+    }, 1350)
 
     return () => window.clearTimeout(wakeTimer)
   }, [])
