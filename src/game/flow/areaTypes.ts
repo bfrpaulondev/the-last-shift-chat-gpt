@@ -1,4 +1,4 @@
-export type GamePart = 'part-1' | 'part-2'
+export type GamePart = 'part-1' | 'part-2' | 'part-3'
 
 export type GameArea =
   | 'apartment'
@@ -129,18 +129,18 @@ export const AREA_DEFINITIONS: Record<GameArea, AreaDefinition> = {
   },
   blackout: {
     area: 'blackout',
-    part: 'part-2',
-    chapter: 'part-2-road-to-meridian',
-    label: 'Blackout',
+    part: 'part-3',
+    chapter: 'part-3-awakening',
+    label: '37.º Andar — 23:47',
     defaultCheckpoint: 'knocked-out',
     defaultSpawn: { x: 0, y: 0.72, z: 2.2, yaw: Math.PI },
   },
   'emergency-stairwell': {
     area: 'emergency-stairwell',
-    part: 'part-2',
-    chapter: 'part-2-emergency-route',
-    label: 'Escada de Emergência',
-    defaultCheckpoint: 'stairwell-entry',
+    part: 'part-3',
+    chapter: 'part-3-awakening',
+    label: 'Escada de Emergência — 37 → 39',
+    defaultCheckpoint: 'stairwell-floor-37',
     defaultSpawn: { x: 0, y: 1.65, z: 4.8, yaw: Math.PI },
   },
 }
@@ -171,5 +171,5 @@ export function isGameArea(value: unknown): value is GameArea {
 }
 
 export function isGamePart(value: unknown): value is GamePart {
-  return value === 'part-1' || value === 'part-2'
+  return value === 'part-1' || value === 'part-2' || value === 'part-3'
 }
