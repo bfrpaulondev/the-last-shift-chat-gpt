@@ -1,0 +1,1 @@
+The focused acceptance script acceptance-bus-boarding-reachability.mjs is diagnostic support. The enforced regression assertion also lives in acceptance-m19.mjs, which is already part of npm run check:acceptance.

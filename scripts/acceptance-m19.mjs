@@ -72,6 +72,16 @@ if (
 }
 
 if (
+  !files.streetInteractions.includes('const BUS_BOARDING_RANGE = 3.25') ||
+  !files.streetInteractions.includes("id === 'bus-door' ? BUS_BOARDING_RANGE : RANGE") ||
+  !files.streetInteractions.includes('raycaster.current.far = BUS_BOARDING_RANGE') ||
+  !files.streetInteractions.includes('hit.distance > rangeFor(id)') ||
+  !files.streetColliders.includes('minZ: -1.28, maxZ: -0.94')
+) {
+  throw new Error('M19 bus boarding must remain reachable from behind the curb collider')
+}
+
+if (
   !files.streetArea.includes('<PlayerController colliders={STREET_COLLIDERS}') ||
   !files.streetArea.includes('<TrueFirstPersonBody') ||
   !files.streetArea.includes('<PostEffects />') ||
