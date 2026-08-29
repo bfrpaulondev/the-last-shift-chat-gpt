@@ -11,9 +11,10 @@ function makeNoiseBuffer(context: AudioContext, seconds: number): AudioBuffer {
   return buffer
 }
 
-function makeDistortionCurve(amount: number): Float32Array {
+function makeDistortionCurve(amount: number): Float32Array<ArrayBuffer> {
   const samples = 512
-  const curve = new Float32Array(samples)
+  const buffer = new ArrayBuffer(samples * Float32Array.BYTES_PER_ELEMENT)
+  const curve = new Float32Array(buffer)
   for (let index = 0; index < samples; index += 1) {
     const x = (index * 2) / (samples - 1) - 1
     curve[index] = ((3 + amount) * x * 20 * (Math.PI / 180)) / (Math.PI + amount * Math.abs(x))
