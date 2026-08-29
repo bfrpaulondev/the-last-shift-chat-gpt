@@ -9,12 +9,15 @@ interface PlayerControllerProps {
   enabled: boolean
   speedScale?: number
   groundHeight?: (x: number, z: number) => number
+  crouchEnabled?: boolean
 }
 
 const EYE_HEIGHT = 1.65
+const CROUCH_EYE_HEIGHT = 1.05
 const PLAYER_RADIUS = 0.25
 const WALK_SPEED = 2.2
 const SPRINT_SPEED = 3.6
+const CROUCH_SPEED = 1.25
 const GRAVITY = -18
 const WALK_BOB_FREQUENCY = 8
 const SPRINT_BOB_FREQUENCY = 11
@@ -37,7 +40,13 @@ function isBlocked(x: number, z: number, colliders: Collider[]): boolean {
   return colliders.some((collider) => intersectsCollider(x, z, collider))
 }
 
-export function PlayerController({ colliders, enabled, speedScale = 1, groundHeight }: PlayerControllerProps) {
+export function PlayerController({
+  colliders,
+  enabled,
+  speedScale = 1,
+  groundHeight,
+  crouchEnabled = false,
+}: PlayerControllerProps) {
   const { camera } = useThree()
   const pressedKeys = useRef(new Set<string>())
   const velocity = useRef(new THREE.Vector3())
@@ -50,6 +59,8 @@ export function PlayerController({ colliders, enabled, speedScale = 1, groundHei
   const bobPhase = useRef(0)
   const previousStepIndex = useRef(0)
   const currentBob = useRef(0)
+  const currentEyeHeight = useRef(EYE_HEIGHT)
+  const wasCrouching = useRef(false)
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -102,8 +113,14 @@ export function PlayerController({ colliders, enabled, speedScale = 1, groundHei
     const keys = pressedKeys.current
     const forwardInput = Number(keys.has('KeyW')) - Number(keys.has('KeyS'))
     const rightInput = Number(keys.has('KeyD')) - Number(keys.has('KeyA'))
-    const running = keys.has('ShiftLeft') || keys.has('ShiftRight')
-    const speed = (running ? SPRINT_SPEED : WALK_SPEED) * clampedScale
+    const crouching = crouchEnabled && keys.has('KeyC')
+    const running = !crouching && (keys.has('ShiftLeft') || keys.has('ShiftRight'))
+    const speed = (crouching ? CROUCH_SPEED : running ? SPRINT_SPEED : WALK_SPEED) * clampedScale
+
+    if (crouching !== wasCrouching.current) {
+      wasCrouching.current = crouching
+      window.dispatchEvent(new CustomEvent('game:crouch', { detail: { crouching } }))
+    }
 
     camera.getWorldDirection(forward.current)
     forward.current.y = 0
@@ -139,7 +156,8 @@ export function PlayerController({ colliders, enabled, speedScale = 1, groundHei
     if (moving) {
       const bobFrequency = (running ? SPRINT_BOB_FREQUENCY : WALK_BOB_FREQUENCY) * clampedScale
       bobPhase.current += safeDelta * bobFrequency
-      const targetBob = Math.sin(bobPhase.current) * BOB_AMPLITUDE * Math.max(0.55, clampedScale)
+      const crouchBobScale = crouching ? 0.42 : 1
+      const targetBob = Math.sin(bobPhase.current) * BOB_AMPLITUDE * Math.max(0.55, clampedScale) * crouchBobScale
       currentBob.current = THREE.MathUtils.damp(currentBob.current, targetBob, 18, safeDelta)
 
       const stepIndex = Math.floor(bobPhase.current / Math.PI)
@@ -152,8 +170,15 @@ export function PlayerController({ colliders, enabled, speedScale = 1, groundHei
       currentBob.current = THREE.MathUtils.damp(currentBob.current, 0, 14, safeDelta)
     }
 
+    currentEyeHeight.current = THREE.MathUtils.damp(
+      currentEyeHeight.current,
+      crouching ? CROUCH_EYE_HEIGHT : EYE_HEIGHT,
+      12,
+      safeDelta,
+    )
+
     const floorY = groundHeight ? groundHeight(camera.position.x, camera.position.z) : 0
-    camera.position.y = floorY + feetY.current + EYE_HEIGHT + currentBob.current
+    camera.position.y = floorY + feetY.current + currentEyeHeight.current + currentBob.current
   })
 
   return null
