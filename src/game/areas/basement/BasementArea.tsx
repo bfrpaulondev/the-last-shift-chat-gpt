@@ -13,6 +13,7 @@ import { BasementInteractionSystem } from './BasementInteractionSystem'
 import { BasementScene } from './BasementScene'
 import { BasementSystems } from './BasementSystems'
 import { BASEMENT_COLLIDERS } from './basementColliders'
+import { DirectRouteRecovery } from './DirectRouteRecovery'
 
 type BasementAreaProps = {
   gameStarted: boolean
@@ -98,6 +99,7 @@ export function BasementArea({ gameStarted, isPointerLocked, onLockChange }: Bas
       <BasementFlashlight />
       <BasementAudio />
       <BasementSystems />
+      <DirectRouteRecovery />
       {gameStarted && <BasementInteractionSystem />}
       <CameraPolish enabled={enabled} />
       <TrueFirstPersonBody enabled={gameStarted && !demoEnded} />
