@@ -36,15 +36,38 @@ export function StairwellInteractionSystem() {
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       const game = useGameStore.getState()
-      if (game.note) { if (event.code === 'KeyE' || event.code === 'Escape') game.closeNote(); return }
-      if (game.subtitle || game.subtitleQueue.length > 0) { if (event.code === 'Space' && game.subtitle) { event.preventDefault(); game.dismissSubtitle() }; return }
-      if (event.defaultPrevented || event.code !== 'KeyE' || busy.current || game.cinematic || game.areaTransition || game.demoEnded) return
+
+      if (game.note) {
+        if (event.code === 'KeyE' || event.code === 'Escape') game.closeNote()
+        return
+      }
+      if (game.subtitle || game.subtitleQueue.length > 0) {
+        if (event.code === 'Space' && game.subtitle) {
+          event.preventDefault()
+          game.dismissSubtitle()
+        }
+        return
+      }
+      if (
+        event.defaultPrevented ||
+        event.code !== 'KeyE' ||
+        busy.current ||
+        game.cinematic ||
+        game.areaTransition ||
+        game.demoEnded
+      ) return
 
       const id = currentId.current
       if (!id) return
       const target: [number, number, number] = [point.current.x, point.current.y, point.current.z]
       const interactionFlag = `stairwell_seen_${id}`
-      game.logEvent({ t: performance.now() / 1000, type: 'interact', objectId: `stairwell:${id}`, wasFirstTime: !game.flags[interactionFlag] })
+      const wasFirstTime = !game.flags[interactionFlag]
+      game.logEvent({
+        t: performance.now() / 1000,
+        type: 'interact',
+        objectId: `stairwell:${id}`,
+        wasFirstTime,
+      })
       game.setFlag(interactionFlag)
 
       if (id === 'flight-to-38') {
@@ -53,7 +76,12 @@ export function StairwellInteractionSystem() {
         game.triggerHandAction('brace', 980, target, id)
         game.setFlag('stairwell_reached_38')
         game.setCheckpoint('stairwell-floor-38', FLOOR38_SPAWN)
-        game.requestAreaTransition('emergency-stairwell', 'stairwell-floor-38', FLOOR38_SPAWN, 1050)
+        game.requestAreaTransition(
+          'emergency-stairwell',
+          'stairwell-floor-38',
+          FLOOR38_SPAWN,
+          1050,
+        )
         window.setTimeout(() => { busy.current = false }, 1100)
         return
       }
@@ -64,21 +92,33 @@ export function StairwellInteractionSystem() {
         game.triggerHandAction('brace', 980, target, id)
         game.setFlag('stairwell_reached_39')
         game.setCheckpoint('stairwell-floor-39', FLOOR39_SPAWN)
-        game.requestAreaTransition('emergency-stairwell', 'stairwell-floor-39', FLOOR39_SPAWN, 1050)
+        game.requestAreaTransition(
+          'emergency-stairwell',
+          'stairwell-floor-39',
+          FLOOR39_SPAWN,
+          1050,
+        )
         window.setTimeout(() => { busy.current = false }, 1100)
         return
       }
 
       if (id === 'door-39') {
         if (!game.flags.stairwell_reached_39) return
-        busy.current = true
         game.triggerHandAction('door', 900, target, id, 'door-handle')
-        if (!game.flags.sc39_open) game.setFlag('sc39_open')
-        game.setCheckpoint('stairwell-floor-39-ready', game.location.spawn)
+        if (!game.flags.sc39_open) {
+          game.setFlag('sc39_open')
+          game.setCheckpoint('stairwell-floor-39-ready', game.location.spawn)
+        }
+        busy.current = true
         window.setTimeout(() => {
           const latest = useGameStore.getState()
           if (latest.location.area !== 'emergency-stairwell') return
-          latest.requestAreaTransition('security-center', 'security-center-entry', SECURITY_CENTER_SPAWN, 1100)
+          latest.requestAreaTransition(
+            'security-center',
+            'security-center-entry',
+            SECURITY_CENTER_SPAWN,
+            1100,
+          )
         }, 450)
       }
     }
@@ -89,19 +129,29 @@ export function StairwellInteractionSystem() {
 
   useFrame(() => {
     const game = useGameStore.getState()
-    if (game.note || game.subtitle || game.subtitleQueue.length > 0 || game.cinematic || game.areaTransition || game.demoEnded) {
+    if (
+      game.note ||
+      game.subtitle ||
+      game.subtitleQueue.length > 0 ||
+      game.cinematic ||
+      game.areaTransition ||
+      game.demoEnded
+    ) {
       currentId.current = null
       game.setPrompt(null)
       return
     }
+
     raycaster.current.setFromCamera(CENTER, camera)
     raycaster.current.far = RANGE
     const hits = raycaster.current.intersectObjects(scene.children, true)
     let next: string | null = null
+
     for (const hit of hits) {
       if (hit.distance > RANGE) break
       const id = findStairwellInteractable(hit.object)
-      if (!id || id === 'reader-38') continue
+      if (!id) continue
+      if (id === 'reader-38') continue
       if (id === 'flight-to-38' && game.flags.stairwell_reached_38) continue
       if (id === 'flight-to-39' && (!game.flags.reader38_green || game.flags.stairwell_reached_39)) continue
       if (id === 'door-39' && !game.flags.stairwell_reached_39) continue
@@ -112,6 +162,7 @@ export function StairwellInteractionSystem() {
       game.setPrompt(prompt)
       break
     }
+
     if (!next) game.setPrompt(null)
     currentId.current = next
   })
