@@ -74,22 +74,22 @@ export function SecurityCenterAudio() {
       const now = context.currentTime
       const envelope = context.createGain()
       envelope.gain.setValueAtTime(1, now)
-      envelope.gain.setValueAtTime(1, now + 1.799)
-      envelope.gain.setValueAtTime(0.0001, now + 1.8)
+      envelope.gain.setValueAtTime(1, now + 1.999)
+      envelope.gain.setValueAtTime(0.0001, now + 2)
       envelope.connect(alarmBus)
 
       const oscillators = [-4, 4].map((detune) => {
         const oscillator = context.createOscillator()
         oscillator.type = 'sawtooth'
         oscillator.frequency.setValueAtTime(650 + detune, now)
-        oscillator.frequency.linearRampToValueAtTime(850 + detune, now + 1.8)
+        oscillator.frequency.linearRampToValueAtTime(850 + detune, now + 2)
         oscillator.connect(envelope)
         oscillator.start(now)
-        oscillator.stop(now + 1.805)
+        oscillator.stop(now + 2.005)
         return oscillator
       })
       siren = { oscillators, envelope }
-      window.setTimeout(() => { siren = null }, 1850)
+      window.setTimeout(() => { siren = null }, 2050)
     }
 
     const playObservationSting = () => {
@@ -145,6 +145,7 @@ export function SecurityCenterAudio() {
     window.addEventListener('security:radio-static', playRadioStatic)
     window.addEventListener('security:override-start', startSiren)
     window.addEventListener('security:override-cancel', stopSiren)
+    window.addEventListener('security:override-complete', stopSiren)
 
     return () => {
       window.clearInterval(chairTimer)
@@ -154,6 +155,7 @@ export function SecurityCenterAudio() {
       window.removeEventListener('security:radio-static', playRadioStatic)
       window.removeEventListener('security:override-start', startSiren)
       window.removeEventListener('security:override-cancel', stopSiren)
+      window.removeEventListener('security:override-complete', stopSiren)
       stopSiren()
       crt.stop()
       server.stop()
