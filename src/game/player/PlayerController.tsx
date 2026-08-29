@@ -107,9 +107,7 @@ export function PlayerController({ colliders, enabled, speedScale = 1 }: PlayerC
     camera.getWorldDirection(forward.current)
     forward.current.y = 0
 
-    if (forward.current.lengthSq() > 0) {
-      forward.current.normalize()
-    }
+    if (forward.current.lengthSq() > 0) forward.current.normalize()
 
     right.current.crossVectors(forward.current, UP).normalize()
     desiredVelocity.current
@@ -118,44 +116,21 @@ export function PlayerController({ colliders, enabled, speedScale = 1 }: PlayerC
       .addScaledVector(right.current, rightInput)
 
     const hasMovementInput = desiredVelocity.current.lengthSq() > 0
-
-    if (hasMovementInput) {
-      desiredVelocity.current.normalize().multiplyScalar(speed)
-    }
+    if (hasMovementInput) desiredVelocity.current.normalize().multiplyScalar(speed)
 
     const damping = hasMovementInput ? ACCELERATION : DECELERATION
-    velocity.current.x = THREE.MathUtils.damp(
-      velocity.current.x,
-      desiredVelocity.current.x,
-      damping,
-      safeDelta,
-    )
-    velocity.current.z = THREE.MathUtils.damp(
-      velocity.current.z,
-      desiredVelocity.current.z,
-      damping,
-      safeDelta,
-    )
+    velocity.current.x = THREE.MathUtils.damp(velocity.current.x, desiredVelocity.current.x, damping, safeDelta)
+    velocity.current.z = THREE.MathUtils.damp(velocity.current.z, desiredVelocity.current.z, damping, safeDelta)
 
-    movement.current.set(
-      velocity.current.x * safeDelta,
-      0,
-      velocity.current.z * safeDelta,
-    )
+    movement.current.set(velocity.current.x * safeDelta, 0, velocity.current.z * safeDelta)
 
     const nextX = camera.position.x + movement.current.x
-    if (!isBlocked(nextX, camera.position.z, colliders)) {
-      camera.position.x = nextX
-    } else {
-      velocity.current.x = 0
-    }
+    if (!isBlocked(nextX, camera.position.z, colliders)) camera.position.x = nextX
+    else velocity.current.x = 0
 
     const nextZ = camera.position.z + movement.current.z
-    if (!isBlocked(camera.position.x, nextZ, colliders)) {
-      camera.position.z = nextZ
-    } else {
-      velocity.current.z = 0
-    }
+    if (!isBlocked(camera.position.x, nextZ, colliders)) camera.position.z = nextZ
+    else velocity.current.z = 0
 
     const horizontalSpeed = Math.hypot(velocity.current.x, velocity.current.z)
     const moving = horizontalSpeed > 0.08
@@ -170,6 +145,7 @@ export function PlayerController({ colliders, enabled, speedScale = 1 }: PlayerC
       if (stepIndex !== previousStepIndex.current) {
         previousStepIndex.current = stepIndex
         audioEngine.playFootstep(running)
+        window.dispatchEvent(new CustomEvent('game:footstep', { detail: { running } }))
       }
     } else {
       currentBob.current = THREE.MathUtils.damp(currentBob.current, 0, 14, safeDelta)
