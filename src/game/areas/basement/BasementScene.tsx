@@ -1,7 +1,5 @@
 import { Text } from '@react-three/drei'
 import { useMemo } from 'react'
-import * as THREE from 'three'
-import { useGameStore } from '../../state/gameStore'
 import { JudasCat } from './JudasCat'
 
 function ConcreteBox({
@@ -150,6 +148,15 @@ function TechnicalRoom() {
       <Text position={[2.5, 1.36, -1.66]} rotation={[-0.18, 0, 0]} fontSize={0.075} maxWidth={1.05} color="#9ab6a0">
         {'MIGRAÇÃO INTERNA\nCHECKLIST 60% PENDENTE\nSW-12 — NÃO CHEGOU'}
       </Text>
+      <group position={[1.45, 0.92, -1.48]}>
+        <mesh castShadow>
+          <boxGeometry args={[0.84, 0.18, 0.56]} />
+          <meshStandardMaterial color="#292d30" roughness={0.6} metalness={0.44} />
+        </mesh>
+        <Text position={[0, 0.1, 0.05]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.075} color="#ddd8c9">
+          SW-12
+        </Text>
+      </group>
       <mesh position={[0.9, 0.9, -1.1]} castShadow userData={{ basementInteractableId: 'outlet' }}>
         <boxGeometry args={[0.26, 0.42, 0.08]} />
         <meshStandardMaterial color="#d3d0c5" roughness={0.8} />
@@ -165,7 +172,7 @@ function TechnicalRoom() {
         </mesh>
         <mesh position={[0.48, 0.34, 0.12]} rotation={[1.2, 0.1, -0.3]} castShadow>
           <boxGeometry args={[0.18, 0.36, 0.035]} />
-          <meshStandardMaterial color="#15191c" roughness={0.52} />
+          <meshStandardMaterial color="#11161a" emissive="#182a31" emissiveIntensity={0.45} roughness={0.42} />
         </mesh>
         <mesh position={[-0.46, 0.12, 0.34]} rotation={[-Math.PI / 2, 0, 0]}>
           <planeGeometry args={[0.35, 0.22]} />
@@ -247,14 +254,12 @@ function ArchiveRoom() {
 }
 
 function BasementLights() {
-  const flashlightOn = useGameStore((state) => state.flashlightOn)
   return (
     <>
       <ambientLight intensity={0.045} color="#7d8790" />
       <pointLight position={[-6, 2.4, 9]} intensity={0.72} distance={9} color="#d5ddb8" />
       <pointLight position={[5, 2.3, 4]} intensity={0.55} distance={8} color="#cfd6b8" />
       <pointLight position={[4.5, 2.1, -3]} intensity={0.45} distance={7} color="#8aa58c" />
-      {flashlightOn && <spotLight position={[0, 1.65, 0]} intensity={2.2} distance={11} angle={0.32} penumbra={0.72} color="#e5e2cf" />}
     </>
   )
 }
