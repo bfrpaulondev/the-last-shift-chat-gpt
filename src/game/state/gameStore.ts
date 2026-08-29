@@ -73,6 +73,7 @@ interface GameState {
   demoEnded: boolean
   backendOnline: boolean
   progressSaved: boolean
+  bpm: number
   setFlag: (flag: string) => void
   hydrateFlags: (flags: Record<string, boolean>) => void
   hydrateProgress: (flags: Record<string, boolean>, location?: GameLocationSnapshot) => void
@@ -93,6 +94,8 @@ interface GameState {
   setPrompt: (prompt: string | null) => void
   setCinematic: (cinematic: boolean) => void
   setBlackout: (blackout: boolean) => void
+  setBpm: (bpm: number) => void
+  adjustBpm: (delta: number) => void
   triggerHandAction: (
     kind: HandActionKind,
     durationMs?: number,
@@ -117,6 +120,20 @@ let areaTransitionTimer: number | null = null
 
 function checklistComplete(flags: Record<string, boolean>): boolean {
   return REQUIRED_EXIT_FLAGS.every((flag) => Boolean(flags[flag]))
+}
+
+function clampBpm(value: number): number {
+  return Math.max(60, Math.min(160, value))
+}
+
+function canonicalizeLocation(location: GameLocationSnapshot): GameLocationSnapshot {
+  if (
+    (location.area === 'blackout' || location.area === 'emergency-stairwell') &&
+    location.part !== 'part-3'
+  ) {
+    return { ...location, part: 'part-3' }
+  }
+  return location
 }
 
 function objectiveForProgress(flags: Record<string, boolean>, location: GameLocationSnapshot): string {
@@ -147,12 +164,15 @@ function objectiveForProgress(flags: Record<string, boolean>, location: GameLoca
     case 'floor-37':
       return 'Limpe o 37.º andar.'
     case 'blackout':
-      return ''
+      if (flags.door37_locked) return 'Siga pelo corredor de emergência até a escada.'
+      if (flags.note_read) return 'Tente sair do 37.º andar.'
+      return 'Leia o bilhete sobre o seu peito.'
     case 'emergency-stairwell':
-      if (flags.stairwell_route_complete) return 'Continue descendo — próximo patamar.'
-      if (flags.stairwell_phone_checked) return 'Continue descendo pela escada de emergência.'
-      if (flags.stairwell_first_descent) return 'Verifique o patamar inferior e continue pela rota de emergência.'
-      return 'Siga pela escada de emergência.'
+      if (flags.sc39_open) return 'Entre no 39.º andar pela porta escorada.'
+      if (flags.stairwell_reached_39) return 'Verifique a porta do 39.º andar.'
+      if (flags.reader38_green) return 'Suba até o 39.º andar.'
+      if (flags.stairwell_reached_38) return 'Observe o leitor do 38.º andar.'
+      return 'Suba pela escada de emergência até o 39.º andar.'
   }
 }
 
@@ -174,6 +194,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   demoEnded: false,
   backendOnline: false,
   progressSaved: false,
+  bpm: 72,
   setFlag: (flag) => {
     const wasChecklistComplete = checklistComplete(get().flags)
     set((state) => {
@@ -187,14 +208,17 @@ export const useGameStore = create<GameState>((set, get) => ({
     set({ flags: { ...flags }, objective: objectiveForProgress(flags, location), progressSaved: true })
   },
   hydrateProgress: (flags, location = INITIAL_LOCATION) => {
+    const canonicalLocation = canonicalizeLocation(location)
+    const part3Bpm = flags.note_read ? 112 : 128
     set({
       flags: { ...flags },
-      location,
+      location: canonicalLocation,
       areaTransition: null,
-      objective: objectiveForProgress(flags, location),
+      objective: objectiveForProgress(flags, canonicalLocation),
       cinematic: false,
-      blackout: location.area === 'blackout',
+      blackout: canonicalLocation.area === 'blackout' && !flags.blackout_vision_returned,
       demoEnded: false,
+      bpm: canonicalLocation.part === 'part-3' ? part3Bpm : 72,
       progressSaved: true,
     })
   },
@@ -232,7 +256,7 @@ export const useGameStore = create<GameState>((set, get) => ({
         location: target,
         objective: objectiveForProgress(state.flags, target),
         progressSaved: false,
-        blackout: target.area === 'blackout',
+        blackout: target.area === 'blackout' && !state.flags.blackout_vision_returned,
       }))
       areaSwapTimer = null
     }, Math.round(duration * 0.48))
@@ -279,6 +303,8 @@ export const useGameStore = create<GameState>((set, get) => ({
   },
   setCinematic: (cinematic) => set({ cinematic }),
   setBlackout: (blackout) => set({ blackout }),
+  setBpm: (bpm) => set({ bpm: clampBpm(bpm) }),
+  adjustBpm: (delta) => set((state) => ({ bpm: clampBpm(state.bpm + delta) })),
   triggerHandAction: (kind, durationMs = 650, target, objectId, variant = 'generic') => {
     if (handActionTimer !== null) window.clearTimeout(handActionTimer)
     const action: HandActionState = { kind, startedAt: performance.now(), durationMs, target, objectId, variant }
@@ -292,6 +318,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     if (scareTimer !== null) window.clearTimeout(scareTimer)
     audioEngine.playScareSting()
     audioEngine.playHeartbeat()
+    get().adjustBpm(25)
     get().triggerHandAction('startle', Math.min(durationMs, 1300))
     set({ scareActive: true })
     scareTimer = window.setTimeout(() => {

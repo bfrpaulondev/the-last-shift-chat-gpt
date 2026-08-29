@@ -6,7 +6,6 @@ import { TrueFirstPersonBody } from '../../player/TrueFirstPersonBody'
 import { PbrEnvironment } from '../../render/PbrEnvironment'
 import { PostEffects } from '../../render/PostEffects'
 import { useGameStore } from '../../state/gameStore'
-import { useShiftClock } from '../../time/shiftClock'
 import { STAIRWELL_COLLIDERS } from './stairwellColliders'
 import { StairwellAudio } from './StairwellAudio'
 import { StairwellInteractionSystem } from './StairwellInteractionSystem'
@@ -27,31 +26,17 @@ export function StairwellArea({ gameStarted, isPointerLocked, onLockChange }: St
   const areaTransition = useGameStore((state) => state.areaTransition)
 
   useEffect(() => {
-    const clock = useShiftClock.getState()
-    if (clock.worldMinute < 418) clock.setWorldMinute(418)
-
     const state = useGameStore.getState()
     if (!state.flags.stairwell_entry_seen) {
       state.setFlag('stairwell_entry_seen')
       state.setCheckpoint(state.location.checkpoint, state.location.spawn)
-      state.setObjective('Siga pela escada de emergência.')
-      window.setTimeout(() => {
-        const latest = useGameStore.getState()
-        if (latest.location.area !== 'emergency-stairwell' || latest.subtitle) return
-        latest.say('Sem elevador. Só a escada.')
-      }, 650)
-      return
     }
 
-    if (state.flags.stairwell_route_complete) {
-      state.setObjective('Continue descendo — próximo patamar.')
-    } else if (state.flags.stairwell_phone_checked) {
-      state.setObjective('Continue descendo pela escada de emergência.')
-    } else if (state.flags.stairwell_first_descent) {
-      state.setObjective('Verifique o patamar inferior e continue pela rota de emergência.')
-    } else {
-      state.setObjective('Siga pela escada de emergência.')
-    }
+    if (state.flags.sc39_open) state.setObjective('Entre no 39.º andar pela porta escorada.')
+    else if (state.flags.stairwell_reached_39) state.setObjective('Verifique a porta do 39.º andar.')
+    else if (state.flags.reader38_green) state.setObjective('Suba até o 39.º andar.')
+    else if (state.flags.stairwell_reached_38) state.setObjective('Observe o leitor do 38.º andar.')
+    else state.setObjective('Suba pela escada de emergência até o 39.º andar.')
   }, [])
 
   const enabled =
