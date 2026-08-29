@@ -40,20 +40,118 @@ export interface AreaDefinition {
 }
 
 export const AREA_DEFINITIONS: Record<GameArea, AreaDefinition> = {
-  apartment: { area: 'apartment', part: 'part-1', chapter: 'part-1-apartment', label: 'Apartamento', defaultCheckpoint: 'apartment-bed', defaultSpawn: { x: -1.52, y: 1.35, z: -0.45, yaw: Math.PI } },
-  street: { area: 'street', part: 'part-2', chapter: 'part-2-road-to-meridian', label: 'Rua / Ponto 214', defaultCheckpoint: 'street-arrival', defaultSpawn: { x: 0, y: 1.65, z: 2.4, yaw: Math.PI } },
-  'bus-214': { area: 'bus-214', part: 'part-2', chapter: 'part-2-road-to-meridian', label: 'Ônibus 214', defaultCheckpoint: 'bus-boarded', defaultSpawn: { x: 0, y: 1.65, z: 1.55, yaw: Math.PI } },
-  'meridian-plaza': { area: 'meridian-plaza', part: 'part-2', chapter: 'part-2-road-to-meridian', label: 'Praça Meridian', defaultCheckpoint: 'plaza-arrival', defaultSpawn: { x: 0, y: 1.65, z: 6.2, yaw: Math.PI } },
-  lobby: { area: 'lobby', part: 'part-2', chapter: 'part-2-road-to-meridian', label: 'Portaria / Lobby', defaultCheckpoint: 'lobby-entry', defaultSpawn: { x: 0, y: 1.65, z: 4.8, yaw: Math.PI } },
-  'locker-b1': { area: 'locker-b1', part: 'part-2', chapter: 'part-2-road-to-meridian', label: 'Vestiário B1', defaultCheckpoint: 'locker-entry', defaultSpawn: { x: 0, y: 1.65, z: 4.2, yaw: Math.PI } },
-  'service-elevator': { area: 'service-elevator', part: 'part-2', chapter: 'part-2-road-to-meridian', label: 'Elevador de Serviço', defaultCheckpoint: 'elevator-cabin', defaultSpawn: { x: 0, y: 1.65, z: 1.2, yaw: Math.PI } },
-  'work-floor-22': { area: 'work-floor-22', part: 'part-2', chapter: 'part-2-road-to-meridian', label: '22.º Andar', defaultCheckpoint: 'floor-22-arrival', defaultSpawn: { x: 0, y: 1.65, z: 6.4, yaw: Math.PI } },
-  'work-floor-30': { area: 'work-floor-30', part: 'part-2', chapter: 'part-2-road-to-meridian', label: '30.º Andar', defaultCheckpoint: 'floor-30-arrival', defaultSpawn: { x: 0, y: 1.65, z: 4.6, yaw: Math.PI } },
-  cafeteria: { area: 'cafeteria', part: 'part-2', chapter: 'part-2-road-to-meridian', label: 'Refeitório', defaultCheckpoint: 'cafeteria-arrival', defaultSpawn: { x: 0, y: 1.65, z: 5.2, yaw: Math.PI } },
-  'floor-37': { area: 'floor-37', part: 'part-2', chapter: 'part-2-road-to-meridian', label: '37.º Andar', defaultCheckpoint: 'floor-37-arrival', defaultSpawn: { x: 0, y: 1.65, z: 4.8, yaw: Math.PI } },
-  blackout: { area: 'blackout', part: 'part-3', chapter: 'part-3-awakening', label: '37.º Andar — 23:47', defaultCheckpoint: 'knocked-out', defaultSpawn: { x: 0, y: 0.72, z: 2.2, yaw: Math.PI } },
-  'emergency-stairwell': { area: 'emergency-stairwell', part: 'part-3', chapter: 'part-3-awakening', label: 'Escada de Emergência — 37 → 39', defaultCheckpoint: 'stairwell-floor-37', defaultSpawn: { x: 0, y: 1.65, z: 4.8, yaw: Math.PI } },
-  'security-center': { area: 'security-center', part: 'part-3', chapter: 'part-3-security-center', label: 'Central de Segurança — 39.º', defaultCheckpoint: 'security-center-entry', defaultSpawn: { x: 0, y: 1.65, z: 5.2, yaw: Math.PI } },
+  apartment: {
+    area: 'apartment',
+    part: 'part-1',
+    chapter: 'part-1-apartment',
+    label: 'Apartamento',
+    defaultCheckpoint: 'apartment-bed',
+    defaultSpawn: { x: -1.52, y: 1.35, z: -0.45, yaw: Math.PI },
+  },
+  street: {
+    area: 'street',
+    part: 'part-2',
+    chapter: 'part-2-road-to-meridian',
+    label: 'Rua / Ponto 214',
+    defaultCheckpoint: 'street-arrival',
+    defaultSpawn: { x: 0, y: 1.65, z: 2.4, yaw: Math.PI },
+  },
+  'bus-214': {
+    area: 'bus-214',
+    part: 'part-2',
+    chapter: 'part-2-road-to-meridian',
+    label: 'Ônibus 214',
+    defaultCheckpoint: 'bus-boarded',
+    defaultSpawn: { x: 0, y: 1.65, z: 1.55, yaw: Math.PI },
+  },
+  'meridian-plaza': {
+    area: 'meridian-plaza',
+    part: 'part-2',
+    chapter: 'part-2-road-to-meridian',
+    label: 'Praça Meridian',
+    defaultCheckpoint: 'plaza-arrival',
+    defaultSpawn: { x: 0, y: 1.65, z: 6.2, yaw: Math.PI },
+  },
+  lobby: {
+    area: 'lobby',
+    part: 'part-2',
+    chapter: 'part-2-road-to-meridian',
+    label: 'Portaria / Lobby',
+    defaultCheckpoint: 'lobby-entry',
+    defaultSpawn: { x: 0, y: 1.65, z: 4.8, yaw: Math.PI },
+  },
+  'locker-b1': {
+    area: 'locker-b1',
+    part: 'part-2',
+    chapter: 'part-2-road-to-meridian',
+    label: 'Vestiário B1',
+    defaultCheckpoint: 'locker-entry',
+    defaultSpawn: { x: 0, y: 1.65, z: 4.2, yaw: Math.PI },
+  },
+  'service-elevator': {
+    area: 'service-elevator',
+    part: 'part-2',
+    chapter: 'part-2-road-to-meridian',
+    label: 'Elevador de Serviço',
+    defaultCheckpoint: 'elevator-cabin',
+    defaultSpawn: { x: 0, y: 1.65, z: 1.2, yaw: Math.PI },
+  },
+  'work-floor-22': {
+    area: 'work-floor-22',
+    part: 'part-2',
+    chapter: 'part-2-road-to-meridian',
+    label: '22.º Andar',
+    defaultCheckpoint: 'floor-22-arrival',
+    defaultSpawn: { x: 0, y: 1.65, z: 6.4, yaw: Math.PI },
+  },
+  'work-floor-30': {
+    area: 'work-floor-30',
+    part: 'part-2',
+    chapter: 'part-2-road-to-meridian',
+    label: '30.º Andar',
+    defaultCheckpoint: 'floor-30-arrival',
+    defaultSpawn: { x: 0, y: 1.65, z: 4.6, yaw: Math.PI },
+  },
+  cafeteria: {
+    area: 'cafeteria',
+    part: 'part-2',
+    chapter: 'part-2-road-to-meridian',
+    label: 'Refeitório',
+    defaultCheckpoint: 'cafeteria-arrival',
+    defaultSpawn: { x: 0, y: 1.65, z: 5.2, yaw: Math.PI },
+  },
+  'floor-37': {
+    area: 'floor-37',
+    part: 'part-2',
+    chapter: 'part-2-road-to-meridian',
+    label: '37.º Andar',
+    defaultCheckpoint: 'floor-37-arrival',
+    defaultSpawn: { x: 0, y: 1.65, z: 4.8, yaw: Math.PI },
+  },
+  blackout: {
+    area: 'blackout',
+    part: 'part-3',
+    chapter: 'part-3-awakening',
+    label: '37.º Andar — 23:47',
+    defaultCheckpoint: 'knocked-out',
+    defaultSpawn: { x: 0, y: 0.72, z: 2.2, yaw: Math.PI },
+  },
+  'emergency-stairwell': {
+    area: 'emergency-stairwell',
+    part: 'part-3',
+    chapter: 'part-3-awakening',
+    label: 'Escada de Emergência — 37 → 39',
+    defaultCheckpoint: 'stairwell-floor-37',
+    defaultSpawn: { x: 0, y: 1.65, z: 4.8, yaw: Math.PI },
+  },
+  'security-center': {
+    area: 'security-center',
+    part: 'part-3',
+    chapter: 'part-3-security-center',
+    label: 'Central de Segurança — 39.º',
+    defaultCheckpoint: 'security-center-entry',
+    defaultSpawn: { x: 0, y: 1.65, z: 5.2, yaw: Math.PI },
+  },
 }
 
 export const INITIAL_LOCATION: GameLocationSnapshot = {
@@ -63,9 +161,18 @@ export const INITIAL_LOCATION: GameLocationSnapshot = {
   spawn: AREA_DEFINITIONS.apartment.defaultSpawn,
 }
 
-export function locationForArea(area: GameArea, checkpoint?: string, spawn?: PlayerSpawn): GameLocationSnapshot {
+export function locationForArea(
+  area: GameArea,
+  checkpoint?: string,
+  spawn?: PlayerSpawn,
+): GameLocationSnapshot {
   const definition = AREA_DEFINITIONS[area]
-  return { part: definition.part, area, checkpoint: checkpoint ?? definition.defaultCheckpoint, spawn: spawn ?? definition.defaultSpawn }
+  return {
+    part: definition.part,
+    area,
+    checkpoint: checkpoint ?? definition.defaultCheckpoint,
+    spawn: spawn ?? definition.defaultSpawn,
+  }
 }
 
 export function isGameArea(value: unknown): value is GameArea {
