@@ -7,7 +7,7 @@ import { PbrEnvironment } from '../../render/PbrEnvironment'
 import { PostEffects } from '../../render/PostEffects'
 import { useGameStore } from '../../state/gameStore'
 import { AreaKAudio } from './AreaKAudio'
-import { DESCENT_COLLIDERS, NIGHT_LOBBY_COLLIDERS } from './descentLobbyColliders'
+import { descentCollidersForFloor, NIGHT_LOBBY_COLLIDERS } from './descentLobbyColliders'
 import { DescentProgressController } from './DescentProgressController'
 import { DescentStairwellScene } from './DescentStairwellScene'
 import { descentGroundHeight, floorFromCheckpoint } from './descentGeometry'
@@ -57,8 +57,9 @@ export function DescentLobbyArea({ gameStarted, isPointerLocked, onLockChange }:
   }, [])
 
   const inLobby = floor === 0 || flags.descent_complete
+  const descentColliders = useMemo(() => descentCollidersForFloor(floor), [floor])
   const groundHeight = useMemo(
-    () => (x: number, z: number) => descentGroundHeight(floor, z) + x * 0,
+    () => (_x: number, z: number) => descentGroundHeight(floor, z),
     [floor],
   )
   const enabled =
@@ -82,7 +83,7 @@ export function DescentLobbyArea({ gameStarted, isPointerLocked, onLockChange }:
       <CameraPolish enabled={enabled} />
       <TrueFirstPersonBody enabled={gameStarted && !demoEnded} />
       <PlayerController
-        colliders={inLobby ? NIGHT_LOBBY_COLLIDERS : DESCENT_COLLIDERS}
+        colliders={inLobby ? NIGHT_LOBBY_COLLIDERS : descentColliders}
         enabled={enabled}
         groundHeight={inLobby ? undefined : groundHeight}
       />
