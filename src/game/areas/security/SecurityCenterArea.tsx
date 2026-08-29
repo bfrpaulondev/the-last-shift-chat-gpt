@@ -33,9 +33,16 @@ export function SecurityCenterArea({ gameStarted, isPointerLocked, onLockChange 
       state.setCheckpoint('security-center-entry', state.location.spawn)
     }
 
-    if (state.flags.all_doors_released) state.setObjective('Desça para o lobby e encontre Nascimento.')
-    else if (state.flags.observed_first) state.setObjective("Use o FIREMAN'S OVERRIDE para liberar as portas.")
-    else state.setObjective('Consulte o monitor vivo da Central de Segurança.')
+    if (state.flags.elevator_returned_39 && state.flags.notebook_taken) {
+      state.setCheckpoint('security-center-return', state.location.spawn)
+      state.setObjective('A caderneta está com você. O terminal principal aguarda.')
+    } else if (state.flags.all_doors_released) {
+      state.setObjective('Desça para o lobby e encontre Nascimento.')
+    } else if (state.flags.observed_first) {
+      state.setObjective("Use o FIREMAN'S OVERRIDE para liberar as portas.")
+    } else {
+      state.setObjective('Consulte o monitor vivo da Central de Segurança.')
+    }
   }, [])
 
   const enabled =
