@@ -65,6 +65,10 @@ export function BasementAudio() {
     ventilation.connect(ventGain).connect(master)
     ventilation.start()
 
+    const resume = () => {
+      if (context.state === 'suspended') void context.resume()
+    }
+
     const playDrop = () => {
       if (context.state === 'closed' || audioEngine.isMuted()) return
       const now = context.currentTime
@@ -105,7 +109,10 @@ export function BasementAudio() {
     const ledTimer = window.setInterval(() => {
       const state = useGameStore.getState()
       if (state.location.area !== 'basement' || state.flags.canary_killed) return
-      playTick(); window.setTimeout(() => playTick(), 180); window.setTimeout(() => playTick(), 360); window.setTimeout(() => playTick(), 920)
+      playTick()
+      window.setTimeout(() => playTick(), 180)
+      window.setTimeout(() => playTick(), 360)
+      window.setTimeout(() => playTick(), 920)
     }, 2300)
 
     const makeBurst = (frequency: number, duration: number, volume: number, type: BiquadFilterType = 'bandpass') => {
@@ -177,6 +184,29 @@ export function BasementAudio() {
       source.stop(now + 2.2)
     }
 
+    const playMeow = () => {
+      const state = useGameStore.getState()
+      if (!state.flags.false_positive_cat || state.scareActive || audioEngine.isMuted()) return
+      const now = context.currentTime
+      ;[
+        { frequency: 520, gain: 0.024 },
+        { frequency: 1040, gain: 0.012 },
+        { frequency: 1560, gain: 0.006 },
+      ].forEach(({ frequency, gain: volume }) => {
+        const oscillator = context.createOscillator()
+        const gain = context.createGain()
+        oscillator.type = 'sawtooth'
+        oscillator.frequency.setValueAtTime(frequency, now)
+        oscillator.frequency.exponentialRampToValueAtTime(frequency * 0.76, now + 0.42)
+        gain.gain.setValueAtTime(0.0001, now)
+        gain.gain.linearRampToValueAtTime(volume, now + 0.04)
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.5)
+        oscillator.connect(gain).connect(master)
+        oscillator.start(now)
+        oscillator.stop(now + 0.52)
+      })
+    }
+
     const playWetSteps = () => {
       window.setTimeout(() => makeBurst(210, 0.18, 0.11, 'lowpass'), 500)
       window.setTimeout(() => makeBurst(230, 0.18, 0.09, 'lowpass'), 900)
@@ -198,22 +228,37 @@ export function BasementAudio() {
       }
     }
 
-    const onKeyDown = () => {
-      if (context.state === 'suspended') void context.resume()
+    let ventStartTimer: number | null = null
+    let ventCycleTimer: number | null = null
+    const stopVentilation = () => {
       const now = context.currentTime
       ventGain.gain.cancelScheduledValues(now)
       ventGain.gain.linearRampToValueAtTime(0.0001, now + 0.12)
     }
-    let ventStartTimer: number | null = null
+    const runVentCycle = () => {
+      if (context.state === 'closed') return
+      const now = context.currentTime
+      ventGain.gain.cancelScheduledValues(now)
+      ventGain.gain.linearRampToValueAtTime(0.045, now + 1.2)
+      ventGain.gain.setValueAtTime(0.045, now + 20)
+      ventGain.gain.linearRampToValueAtTime(0.0001, now + 21)
+      ventCycleTimer = window.setTimeout(runVentCycle, 60_000)
+    }
+    const onKeyDown = (event: KeyboardEvent) => {
+      resume()
+      if (!['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(event.code)) return
+      if (ventStartTimer !== null) window.clearTimeout(ventStartTimer)
+      if (ventCycleTimer !== null) window.clearTimeout(ventCycleTimer)
+      ventStartTimer = null
+      ventCycleTimer = null
+      stopVentilation()
+    }
     const onKeyUp = (event: KeyboardEvent) => {
       if (!['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(event.code)) return
       if (ventStartTimer !== null) window.clearTimeout(ventStartTimer)
       ventStartTimer = window.setTimeout(() => {
-        const now = context.currentTime
-        ventGain.gain.cancelScheduledValues(now)
-        ventGain.gain.linearRampToValueAtTime(0.045, now + 1.2)
-        ventGain.gain.setValueAtTime(0.045, now + 20)
-        ventGain.gain.linearRampToValueAtTime(0.0001, now + 21)
+        runVentCycle()
+        ventStartTimer = null
       }, 2000)
     }
 
@@ -225,30 +270,56 @@ export function BasementAudio() {
       ballastGain.gain.linearRampToValueAtTime(0.018, now + 1.55)
     }
 
+    const playCardboard = () => makeBurst(900, 0.36, 0.08)
+    const playCrackedPhone = () => playTick(1200, 0.03)
+    const playMonitorStatic = () => makeBurst(2600, 1.1, 0.08, 'highpass')
+
+    const plantedCanTimer = window.setTimeout(() => {
+      const state = useGameStore.getState()
+      if (state.location.area === 'basement' && !state.flags.false_positive_cat) playCan()
+    }, 18_000)
+
+    let meowTimer = 0
+    const scheduleMeow = () => {
+      meowTimer = window.setTimeout(() => {
+        playMeow()
+        scheduleMeow()
+      }, 480_000 + Math.random() * 240_000)
+    }
+    scheduleMeow()
+
+    window.addEventListener('pointerdown', resume)
     window.addEventListener('keydown', onKeyDown)
     window.addEventListener('keyup', onKeyUp)
     window.addEventListener('basement:can-roll', playCan)
-    window.addEventListener('basement:cardboard', () => makeBurst(900, 0.36, 0.08))
+    window.addEventListener('basement:cardboard', playCardboard)
     window.addEventListener('basement:connector-yank', playYank)
-    window.addEventListener('basement:cracked-phone', () => playTick(1200, 0.03))
+    window.addEventListener('basement:cracked-phone', playCrackedPhone)
     window.addEventListener('basement:cat-purr', playPurr)
     window.addEventListener('basement:wet-steps', playWetSteps)
     window.addEventListener('basement:circuit-drop', onCircuitDrop)
-    window.addEventListener('basement:monitor-static', () => makeBurst(2600, 1.1, 0.08, 'highpass'))
+    window.addEventListener('basement:monitor-static', playMonitorStatic)
     window.addEventListener('basement:diego-silence', deathSilence)
     window.addEventListener('basement:shadowbyte', playShadowByte)
 
     return () => {
       window.clearTimeout(dripTimer)
+      window.clearTimeout(plantedCanTimer)
+      window.clearTimeout(meowTimer)
       window.clearInterval(ledTimer)
       if (ventStartTimer !== null) window.clearTimeout(ventStartTimer)
+      if (ventCycleTimer !== null) window.clearTimeout(ventCycleTimer)
+      window.removeEventListener('pointerdown', resume)
       window.removeEventListener('keydown', onKeyDown)
       window.removeEventListener('keyup', onKeyUp)
       window.removeEventListener('basement:can-roll', playCan)
+      window.removeEventListener('basement:cardboard', playCardboard)
       window.removeEventListener('basement:connector-yank', playYank)
+      window.removeEventListener('basement:cracked-phone', playCrackedPhone)
       window.removeEventListener('basement:cat-purr', playPurr)
       window.removeEventListener('basement:wet-steps', playWetSteps)
       window.removeEventListener('basement:circuit-drop', onCircuitDrop)
+      window.removeEventListener('basement:monitor-static', playMonitorStatic)
       window.removeEventListener('basement:diego-silence', deathSilence)
       window.removeEventListener('basement:shadowbyte', playShadowByte)
       try { room.stop() } catch { /* already stopped */ }
