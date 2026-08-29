@@ -2,6 +2,7 @@ import { PointerLockControls } from '@react-three/drei'
 import { CameraPolish } from '../../player/CameraPolish'
 import { PlayerController } from '../../player/PlayerController'
 import { TrueFirstPersonBody } from '../../player/TrueFirstPersonBody'
+import { PbrEnvironment } from '../../render/PbrEnvironment'
 import { PostEffects } from '../../render/PostEffects'
 import { useGameStore } from '../../state/gameStore'
 import { BLACKOUT_COLLIDERS } from './blackoutColliders'
@@ -23,11 +24,11 @@ export function BlackoutArea({ gameStarted, isPointerLocked, onLockChange }: Bla
   const scareActive = useGameStore((state) => state.scareActive)
   const demoEnded = useGameStore((state) => state.demoEnded)
   const areaTransition = useGameStore((state) => state.areaTransition)
-  const stoodUp = useGameStore((state) => Boolean(state.flags.blackout_stood_up))
+  const noteRead = useGameStore((state) => Boolean(state.flags.note_read))
 
   const enabled =
     gameStarted &&
-    stoodUp &&
+    noteRead &&
     isPointerLocked &&
     !noteOpen &&
     !cinematic &&
@@ -38,6 +39,7 @@ export function BlackoutArea({ gameStarted, isPointerLocked, onLockChange }: Bla
 
   return (
     <>
+      <PbrEnvironment />
       <BlackoutScene />
       <BlackoutAudio />
       <BlackoutRecoveryController />
