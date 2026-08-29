@@ -18,12 +18,16 @@ function findInteractable(object: THREE.Object3D | null): string | null {
   return null
 }
 
-function promptFor(id: string, flags: Record<string, boolean>): string | null {
+function promptFor(id: string, flags: Record<string, boolean>, crouching: boolean): string | null {
   if (id === 'cam04-monitor') return flags.cam04_frozen ? '[REGISTRO] CAM 04 — FRAME 23:50:07' : '[E] Reconectar monitor CFTV — CAM 04'
   if (id === 'ceo-car') return flags.charger_found ? '[REGISTRO] VAGA 07 — BRANDÃO, O.' : '[E] Verificar mala no banco traseiro'
-  if (id === 'blue-cable') return flags.hardware_hidden_in_migration ? '[REGISTRO] CABO AZUL — PORTA 37' : flags.cam04_frozen ? '[E] Agachar e seguir o cabo azul' : null
-  if (id === 'migration-box') return flags.hardware_hidden_in_migration && !flags.ghost_switch_found ? '[E] Abrir caixa de migração' : null
-  if (id === 'diego-phone') return flags.diego_found ? (flags.closed_eyes_2 ? '[REGISTRO] DIEGO — 0527' : '[E] Fechar os olhos de Diego') : '[E] Examinar Diego e o celular'
+  if (id === 'blue-cable') {
+    if (flags.hardware_hidden_in_migration) return '[REGISTRO] CABO AZUL — PORTA 37'
+    if (!flags.cam04_frozen) return null
+    return crouching ? '[E] Apalpar rodapé e seguir o cabo azul' : '[C] Agachar para seguir o cabo azul'
+  }
+  if (id === 'migration-box') return flags.hardware_hidden_in_migration && !flags.ghost_switch_found ? '[E] Levantar aba da caixa de migração' : null
+  if (id === 'diego-phone') return flags.diego_found ? (flags.closed_eyes_2 ? '[REGISTRO] DIEGO — 0527' : '[E] Fechar os olhos de Diego') : '[E] Pegar o celular da mão de Diego'
   if (id === 'ghost-switch') {
     if (!flags.ghost_switch_found) return null
     if (flags.canary_live || flags.canary_killed) return '[REGISTRO] SW-12 — DECISÃO TOMADA'
@@ -47,6 +51,7 @@ export function BasementInteractionSystem() {
   const currentId = useRef<string | null>(null)
   const point = useRef(new THREE.Vector3())
   const cableStage = useRef(0)
+  const crouching = useRef(false)
   const falsePositiveArmed = useRef(false)
   const catLookTimer = useRef<number | null>(null)
   const [canaryChoosing, setCanaryChoosing] = useState(false)
@@ -83,6 +88,11 @@ export function BasementInteractionSystem() {
   }
 
   useEffect(() => {
+    const onCrouch = (event: Event) => {
+      const detail = (event as CustomEvent<{ crouching?: boolean }>).detail
+      crouching.current = Boolean(detail?.crouching)
+    }
+
     const onKeyDown = (event: KeyboardEvent) => {
       const game = useGameStore.getState()
 
@@ -121,7 +131,7 @@ export function BasementInteractionSystem() {
       game.setFlag(`basement_seen_${id}`)
 
       if (id === 'cam04-monitor') {
-        game.triggerHandAction('grab', 1150, target, 'cam04-monitor')
+        game.triggerHandAction('press', 1150, target, 'coffee', 'coffee-press')
         if (!game.flags.cam04_frozen) {
           game.setFlag('cam04_frozen')
           game.setCheckpoint('basement-cam04-frozen', game.location.spawn)
@@ -145,6 +155,10 @@ export function BasementInteractionSystem() {
 
       if (id === 'blue-cable') {
         if (!game.flags.cam04_frozen || game.flags.hardware_hidden_in_migration) return
+        if (!crouching.current) {
+          game.say('Preciso baixar. O cabo some no rodapé.')
+          return
+        }
         cableStage.current += 1
         game.triggerHandAction('reach', 1350, target, 'basement-cable')
         if (cableStage.current === 1) {
@@ -163,7 +177,7 @@ export function BasementInteractionSystem() {
 
       if (id === 'migration-box') {
         if (!game.flags.hardware_hidden_in_migration || game.flags.ghost_switch_found) return
-        game.triggerHandAction('grab', 1200, target, 'migration-box')
+        game.triggerHandAction('door', 1200, target, 'door_exit', 'door-handle')
         window.dispatchEvent(new Event('basement:cardboard'))
         game.setFlag('ghost_switch_found')
         game.setFlag('mitre_persistence')
@@ -175,7 +189,7 @@ export function BasementInteractionSystem() {
 
       if (id === 'diego-phone') {
         if (!game.flags.diego_found) {
-          game.triggerHandAction('grab', 1650, target, 'diego-phone')
+          game.triggerHandAction('grab', 1650, target, 'phone', 'phone-lift')
           game.setFlag('diego_found')
           game.setFlag('last_message_rog')
           game.setCheckpoint('basement-diego-found', game.location.spawn)
@@ -185,9 +199,9 @@ export function BasementInteractionSystem() {
           game.queueSubtitle('Ele VIU. Ele viu o switch e foi avisar... o Rogério.')
           game.queueSubtitle('Todo mundo que anota as coisas direito acaba parando no meio de uma frase.')
         } else if (!game.flags.closed_eyes_2) {
+          telemetry('basement:closed-eyes-2', 'closed_eyes_2')
           game.triggerHandAction('reach', 1350, target, 'diego-eyes')
           game.setFlag('closed_eyes_2')
-          telemetry('basement:closed-eyes-2', 'closed_eyes_2')
         }
         return
       }
@@ -201,7 +215,7 @@ export function BasementInteractionSystem() {
       }
 
       if (id === 'vale-dossier') {
-        game.triggerHandAction('grab', 1150, target, 'archive-paper')
+        game.triggerHandAction('grab', 1150, target, 'badge', 'badge-pickup')
         if (!game.flags.vale_dossier) {
           game.setFlag('vale_dossier')
           game.openNote('CORVUS FACILITY GROUP — REESTRUTURAÇÃO 08/11/2024 — LOTE 12', '14 nomes. 13: INDENIZAÇÃO PAGA.\n\nVALE, E. — Assistente Técnico N3 — 6 anos de casa\n\nNÃO PAGO — ERRO OPERACIONAL')
@@ -228,7 +242,7 @@ export function BasementInteractionSystem() {
       }
 
       if (id === 'outlet') {
-        game.triggerHandAction('press', 850, target, 'outlet')
+        game.triggerHandAction('press', 850, target, 'coffee', 'coffee-press')
         game.setFlashlightOn(false)
         window.dispatchEvent(new Event('basement:charging-start'))
         game.say('Tomada viva. Tela morta. Se eu ficar parado... cinco minutos por um por cento.')
@@ -244,8 +258,10 @@ export function BasementInteractionSystem() {
       }
     }
 
+    window.addEventListener('game:crouch', onCrouch)
     window.addEventListener('keydown', onKeyDown, true)
     return () => {
+      window.removeEventListener('game:crouch', onCrouch)
       window.removeEventListener('keydown', onKeyDown, true)
       if (catLookTimer.current !== null) window.clearTimeout(catLookTimer.current)
     }
@@ -311,7 +327,7 @@ export function BasementInteractionSystem() {
       if (hit.distance > RANGE) break
       const id = findInteractable(hit.object)
       if (!id) continue
-      const prompt = promptFor(id, game.flags)
+      const prompt = promptFor(id, game.flags, crouching.current)
       if (!prompt) continue
       next = id
       point.current.copy(hit.point)
