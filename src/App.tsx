@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import * as THREE from 'three'
+import { Part3AnxietyController } from './game/anxiety/Part3AnxietyController'
 import { PersistenceManager } from './game/api/PersistenceManager'
 import { BusTriageOverlay } from './game/areas/bus/BusTriageOverlay'
 import { audioEngine } from './game/audio/AudioEngine'
@@ -25,9 +26,7 @@ export default function App() {
 
   const startGame = useCallback(() => {
     setIntroPhase((current) => {
-      if (current !== 'title') {
-        return current
-      }
+      if (current !== 'title') return current
 
       window.setTimeout(() => {
         setIntroPhase('playing')
@@ -39,10 +38,7 @@ export default function App() {
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.code !== 'KeyM') {
-        return
-      }
-
+      if (event.code !== 'KeyM') return
       setMuted(audioEngine.toggleMute())
     }
 
@@ -54,6 +50,7 @@ export default function App() {
     <main className="game-shell">
       <PersistenceManager gameStarted={gameStarted} />
       <ShiftClockController enabled={gameStarted && !demoEnded} />
+      {gameStarted && !demoEnded && <Part3AnxietyController />}
 
       <Canvas
         id="game-canvas"
@@ -109,7 +106,7 @@ export default function App() {
         !areaTransition && (
           <div className="pointer-lock-hint" aria-hidden="true">
             <strong>CLIQUE PARA ENTRAR</strong>
-            <span>WASD mover · Shift correr · E interagir · SPACE continuar fala · RMB inspecionar · M áudio · ESC soltar</span>
+            <span>WASD mover · Shift correr · E interagir · SPACE continuar fala / respirar · RMB inspecionar · M áudio · ESC soltar</span>
           </div>
         )}
     </main>
