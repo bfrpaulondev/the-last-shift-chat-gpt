@@ -10,6 +10,7 @@ import { BlackoutAudio } from './BlackoutAudio'
 import { BlackoutInteractionSystem } from './BlackoutInteractionSystem'
 import { BlackoutRecoveryController } from './BlackoutRecoveryController'
 import { BlackoutScene } from './BlackoutScene'
+import { BreakroomDoorTension } from './BreakroomDoorTension'
 import { WristBpmReadout } from './WristBpmReadout'
 
 type BlackoutAreaProps = {
@@ -42,6 +43,7 @@ export function BlackoutArea({ gameStarted, isPointerLocked, onLockChange }: Bla
     <>
       <PbrEnvironment />
       <BlackoutScene />
+      <BreakroomDoorTension />
       <BlackoutAudio />
       <BlackoutRecoveryController />
       <WristBpmReadout />
