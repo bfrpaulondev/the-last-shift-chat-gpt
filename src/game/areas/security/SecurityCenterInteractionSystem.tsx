@@ -18,7 +18,7 @@ function findInteractable(object: THREE.Object3D | null): string | null {
 }
 
 function promptFor(id: string): string | null {
-  if (id === 'cam-02') return '[E] Consultar CAM 02 — LOBBY'
+  if (id === 'cam02') return '[E] Consultar CAM 02 — LOBBY'
   if (id === 'fire-override') return '[E] Segurar — FIREMAN\'S OVERRIDE'
   if (id === 'radio-base') return '[E] Chamar no rádio base'
   if (id === 'duty-schedule') return '[E] Ver agenda de plantão'
@@ -33,58 +33,12 @@ export function SecurityCenterInteractionSystem() {
   const currentId = useRef<string | null>(null)
   const point = useRef(new THREE.Vector3())
   const holdTimer = useRef<number | null>(null)
-  const cameraZoomTimer = useRef<number | null>(null)
 
   useEffect(() => {
-    const triggerObservation = () => {
-      const game = useGameStore.getState()
-      if (game.flags.observed_first) return
-      game.setFlag('observed_first')
-      game.adjustBpm(25)
-      game.setCheckpoint('security-observed-first', game.location.spawn)
-      window.dispatchEvent(new Event('security:observation'))
-      game.say('...')
-    }
-
-    const closeCamera = () => {
-      const game = useGameStore.getState()
-      game.closeNote()
-      window.setTimeout(triggerObservation, 500)
-    }
-
     const onKeyDown = (event: KeyboardEvent) => {
       const game = useGameStore.getState()
-
-      if (game.note?.title === 'CAM 02 — LOBBY — 23:52:07') {
-        if (event.code === 'Escape') {
-          event.preventDefault()
-          closeCamera()
-          return
-        }
-        if (event.code === 'KeyE' && !event.repeat && cameraZoomTimer.current === null) {
-          event.preventDefault()
-          cameraZoomTimer.current = window.setTimeout(() => {
-            const latest = useGameStore.getState()
-            if (!latest.note || latest.note.title !== 'CAM 02 — LOBBY — 23:52:07') return
-            latest.setFlag('cam02_zoomed')
-            latest.adjustBpm(8)
-            latest.say('Não está respirando.')
-          }, 700)
-        }
-        return
-      }
-
-      if (game.note) {
-        if (event.code === 'KeyE' || event.code === 'Escape') game.closeNote()
-        return
-      }
-      if (game.subtitle || game.subtitleQueue.length > 0) {
-        if (event.code === 'Space' && game.subtitle) {
-          event.preventDefault()
-          game.dismissSubtitle()
-        }
-        return
-      }
+      if (game.note) { if (event.code === 'KeyE' || event.code === 'Escape') game.closeNote(); return }
+      if (game.subtitle || game.subtitleQueue.length > 0) { if (event.code === 'Space' && game.subtitle) { event.preventDefault(); game.dismissSubtitle() }; return }
       if (event.defaultPrevented || event.code !== 'KeyE' || game.cinematic || game.areaTransition || game.demoEnded) return
 
       const id = currentId.current
@@ -94,29 +48,17 @@ export function SecurityCenterInteractionSystem() {
       game.logEvent({ t: performance.now() / 1000, type: 'interact', objectId: `security:${id}`, wasFirstTime: !game.flags[seenFlag] })
       game.setFlag(seenFlag)
 
-      if (id === 'cam-02') {
+      if (id === 'cam02') {
         game.triggerHandAction('reach', 720, target, id)
-        if (!game.flags.operator_gone) game.setFlag('operator_gone')
-        if (!game.flags.clock_mismatch) game.setFlag('clock_mismatch')
         game.setFlag('cam02_checked')
         game.setCheckpoint('security-camera-seen', game.location.spawn)
-        game.openNote(
-          'CAM 02 — LOBBY — 23:52:07',
-          'LOBBY / VISTA SUPERIOR\n\nNascimento está caído atrás do balcão. O rádio está ao lado da mão. A caderneta está aberta.\n\nRELÓGIO DO FEED: 23:52:07\nRELÓGIO DO PULSO: 23:47\n\n[SEGURE E] zoom digital · [ESC] fechar feed',
-        )
-        game.queueSubtitle('Cinco minutos. Quem tá mentindo?')
+        window.dispatchEvent(new Event('security:cam02-open'))
         return
       }
 
       if (id === 'fire-override') {
-        if (!game.flags.observed_first) {
-          game.say('Primeiro preciso entender o que aconteceu no lobby.')
-          return
-        }
-        if (game.flags.all_doors_released || holdTimer.current !== null) {
-          if (game.flags.all_doors_released) game.say('As portas já estão liberadas.')
-          return
-        }
+        if (!game.flags.observed_first) { game.say('Primeiro preciso entender o que aconteceu no lobby.'); return }
+        if (game.flags.all_doors_released || holdTimer.current !== null) { if (game.flags.all_doors_released) game.say('As portas já estão liberadas.'); return }
         game.triggerHandAction('turn', HOLD_MS, target, id)
         window.dispatchEvent(new Event('security:override-alarm'))
         holdTimer.current = window.setTimeout(() => {
@@ -139,41 +81,28 @@ export function SecurityCenterInteractionSystem() {
         game.queueSubtitle('Só chiado.')
         return
       }
-
       if (id === 'duty-schedule') {
         game.triggerHandAction('reach', 620, target, id)
         game.setFlag('schedule_scratched')
         game.openNote('AGENDA DE PLANTÃO', '39.º / CENTRAL\n\n22:00 — DIEGO\n23:00 — DIEGO\n00:00 — [RASURADO À CANETA]\n01:00 — [RASURADO À CANETA]')
         return
       }
-
       if (id === 'migration-checklist') {
         game.triggerHandAction('reach', 620, target, id)
         game.setFlag('migration_incomplete')
         game.openNote('MIGRAÇÃO — CHECKLIST TI-INTERNO', 'STATUS GERAL: 40% CONCLUÍDO\n\n✓ inventário físico\n✓ rede isolada\n○ câmeras — PENDENTE\n○ logs — PENDENTE\n○ relógio/NTP — PENDENTE\n○ failover — PENDENTE')
         return
       }
-
       if (id === 'terminal-locked') {
         game.triggerHandAction('press', 620, target, id)
         game.say('Pede credencial de operador. Eu não tenho a senha.')
       }
     }
 
-    const onKeyUp = (event: KeyboardEvent) => {
-      if (event.code === 'KeyE' && cameraZoomTimer.current !== null) {
-        window.clearTimeout(cameraZoomTimer.current)
-        cameraZoomTimer.current = null
-      }
-    }
-
     window.addEventListener('keydown', onKeyDown)
-    window.addEventListener('keyup', onKeyUp)
     return () => {
       window.removeEventListener('keydown', onKeyDown)
-      window.removeEventListener('keyup', onKeyUp)
       if (holdTimer.current !== null) window.clearTimeout(holdTimer.current)
-      if (cameraZoomTimer.current !== null) window.clearTimeout(cameraZoomTimer.current)
     }
   }, [])
 
@@ -184,7 +113,6 @@ export function SecurityCenterInteractionSystem() {
       game.setPrompt(null)
       return
     }
-
     raycaster.current.setFromCamera(CENTER, camera)
     raycaster.current.far = RANGE
     const hits = raycaster.current.intersectObjects(scene.children, true)
