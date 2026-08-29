@@ -47,11 +47,11 @@ export function PersistenceManager({ gameStarted }: PersistenceManagerProps) {
         }
 
         if (save?.flags) {
-          useGameStore.getState().hydrateProgress(
-            save.flags,
-            normalizeSaveLocation(save),
-            save.phoneBattery,
-          )
+          const state = useGameStore.getState()
+          state.hydrateProgress(save.flags, normalizeSaveLocation(save))
+          if (typeof save.phoneBattery === 'number') {
+            state.setPhoneBattery(save.phoneBattery)
+          }
           useShiftClock.getState().hydrateShiftTime(save.shiftTime)
         }
       }
