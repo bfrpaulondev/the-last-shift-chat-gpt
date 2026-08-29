@@ -10,6 +10,8 @@ import { SECURITY_CENTER_COLLIDERS } from './securityCenterColliders'
 import { SecurityCenterAudio } from './SecurityCenterAudio'
 import { SecurityCenterInteractionSystem } from './SecurityCenterInteractionSystem'
 import { SecurityCenterScene } from './SecurityCenterScene'
+import { SentinelHardware } from './SentinelHardware'
+import { SentinelTerminal } from './SentinelTerminal'
 
 type SecurityCenterAreaProps = {
   gameStarted: boolean
@@ -33,7 +35,11 @@ export function SecurityCenterArea({ gameStarted, isPointerLocked, onLockChange 
       state.setCheckpoint('security-center-entry', state.location.spawn)
     }
 
-    if (state.flags.elevator_returned_39 && state.flags.notebook_taken) {
+    if (state.flags.part3_complete) {
+      state.setObjective('PARTE 3 CONCLUÍDA — próximo: O Porão.')
+    } else if (state.flags.log_vision) {
+      state.setObjective('Conclua o pacto com o SENTINEL.')
+    } else if (state.flags.elevator_returned_39 && state.flags.notebook_taken) {
       state.setCheckpoint('security-center-return', state.location.spawn)
       state.setObjective('A caderneta está com você. O terminal principal aguarda.')
     } else if (state.flags.all_doors_released) {
@@ -59,8 +65,10 @@ export function SecurityCenterArea({ gameStarted, isPointerLocked, onLockChange 
     <>
       <PbrEnvironment />
       <SecurityCenterScene />
+      <SentinelHardware />
       <SecurityCenterAudio />
       {gameStarted && <SecurityCenterInteractionSystem />}
+      {gameStarted && <SentinelTerminal />}
       <CameraPolish enabled={enabled} />
       <TrueFirstPersonBody enabled={gameStarted && !demoEnded} />
       <PlayerController colliders={SECURITY_CENTER_COLLIDERS} enabled={enabled} />
