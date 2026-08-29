@@ -31,6 +31,7 @@ const locationSchema = new mongoose.Schema(
         'blackout',
         'emergency-stairwell',
         'security-center',
+        'descent-lobby',
       ],
     },
     checkpoint: { type: String, required: true, trim: true },
