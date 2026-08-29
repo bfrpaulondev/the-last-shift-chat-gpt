@@ -7,6 +7,7 @@ const CENTER = new THREE.Vector2(0, 0)
 const RANGE = 2.9
 const FLOOR38_SPAWN = { x: 0, y: 1.65, z: 0.9, yaw: Math.PI }
 const FLOOR39_SPAWN = { x: 0, y: 1.65, z: -4.8, yaw: 0 }
+const SECURITY_CENTER_SPAWN = { x: 0, y: 1.65, z: 5.2, yaw: Math.PI }
 
 function findStairwellInteractable(object: THREE.Object3D | null): string | null {
   let current = object
@@ -108,6 +109,17 @@ export function StairwellInteractionSystem() {
           game.setFlag('sc39_open')
           game.setCheckpoint('stairwell-floor-39-ready', game.location.spawn)
         }
+        busy.current = true
+        window.setTimeout(() => {
+          const latest = useGameStore.getState()
+          if (latest.location.area !== 'emergency-stairwell') return
+          latest.requestAreaTransition(
+            'security-center',
+            'security-center-entry',
+            SECURITY_CENTER_SPAWN,
+            1100,
+          )
+        }, 450)
       }
     }
 

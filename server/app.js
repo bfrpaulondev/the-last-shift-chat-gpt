@@ -21,6 +21,7 @@ const GAME_AREAS = new Set([
   'floor-37',
   'blackout',
   'emergency-stairwell',
+  'security-center',
 ])
 
 async function requireMongo(_request, response, next) {

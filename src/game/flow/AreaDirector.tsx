@@ -12,6 +12,7 @@ import { Floor37Area } from '../areas/floor37/Floor37Area'
 import { LobbyArea } from '../areas/lobby/LobbyArea'
 import { LockerArea } from '../areas/locker/LockerArea'
 import { PlazaArea } from '../areas/plaza/PlazaArea'
+import { SecurityCenterArea } from '../areas/security/SecurityCenterArea'
 import { StairwellArea } from '../areas/stairwell/StairwellArea'
 import { StreetArea } from '../areas/street/StreetArea'
 import { AREA_DEFINITIONS } from './areaTypes'
@@ -74,7 +75,8 @@ export function AreaDirector({ gameStarted, isPointerLocked, onLockChange }: Are
       {area === 'floor-37' && <Floor37Area key="area-floor-37" gameStarted={gameStarted} isPointerLocked={isPointerLocked} onLockChange={onLockChange} />}
       {area === 'blackout' && <BlackoutArea key="area-blackout" gameStarted={gameStarted} isPointerLocked={isPointerLocked} onLockChange={onLockChange} />}
       {area === 'emergency-stairwell' && <StairwellArea key="area-emergency-stairwell" gameStarted={gameStarted} isPointerLocked={isPointerLocked} onLockChange={onLockChange} />}
-      {area !== 'apartment' && area !== 'street' && area !== 'bus-214' && area !== 'meridian-plaza' && area !== 'lobby' && area !== 'locker-b1' && area !== 'service-elevator' && area !== 'work-floor-22' && area !== 'work-floor-30' && area !== 'cafeteria' && area !== 'floor-37' && area !== 'blackout' && area !== 'emergency-stairwell' && (
+      {area === 'security-center' && <SecurityCenterArea key="area-security-center" gameStarted={gameStarted} isPointerLocked={isPointerLocked} onLockChange={onLockChange} />}
+      {area !== 'apartment' && area !== 'street' && area !== 'bus-214' && area !== 'meridian-plaza' && area !== 'lobby' && area !== 'locker-b1' && area !== 'service-elevator' && area !== 'work-floor-22' && area !== 'work-floor-30' && area !== 'cafeteria' && area !== 'floor-37' && area !== 'blackout' && area !== 'emergency-stairwell' && area !== 'security-center' && (
         <StreamingStandby key={`area-${area}`} />
       )}
     </>

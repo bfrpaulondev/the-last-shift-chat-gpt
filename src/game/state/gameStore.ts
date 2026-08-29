@@ -128,7 +128,9 @@ function clampBpm(value: number): number {
 
 function canonicalizeLocation(location: GameLocationSnapshot): GameLocationSnapshot {
   if (
-    (location.area === 'blackout' || location.area === 'emergency-stairwell') &&
+    (location.area === 'blackout' ||
+      location.area === 'emergency-stairwell' ||
+      location.area === 'security-center') &&
     location.part !== 'part-3'
   ) {
     return { ...location, part: 'part-3' }
@@ -173,6 +175,11 @@ function objectiveForProgress(flags: Record<string, boolean>, location: GameLoca
       if (flags.reader38_green) return 'Suba até o 39.º andar.'
       if (flags.stairwell_reached_38) return 'Observe o leitor do 38.º andar.'
       return 'Suba pela escada de emergência até o 39.º andar.'
+    case 'security-center':
+      if (flags.all_doors_released) return 'Desça para o lobby e encontre Nascimento.'
+      if (flags.observed_first) return "Use o FIREMAN'S OVERRIDE para liberar as portas."
+      if (flags.cam02_checked) return 'Feche o feed e observe a sala.'
+      return 'Consulte o monitor vivo da Central de Segurança.'
   }
 }
 
