@@ -10,6 +10,7 @@ import { SECURITY_CENTER_COLLIDERS } from './securityCenterColliders'
 import { SecurityCenterAudio } from './SecurityCenterAudio'
 import { SecurityCenterInteractionSystem } from './SecurityCenterInteractionSystem'
 import { SecurityCenterScene } from './SecurityCenterScene'
+import { SentinelHardware } from './SentinelHardware'
 import { SentinelTerminal } from './SentinelTerminal'
 
 type SecurityCenterAreaProps = {
@@ -64,6 +65,7 @@ export function SecurityCenterArea({ gameStarted, isPointerLocked, onLockChange 
     <>
       <PbrEnvironment />
       <SecurityCenterScene />
+      <SentinelHardware />
       <SecurityCenterAudio />
       {gameStarted && <SecurityCenterInteractionSystem />}
       {gameStarted && <SentinelTerminal />}
