@@ -39,9 +39,11 @@ if (
   !files.serverApp.includes("'part-3'") ||
   !files.serverApp.includes("'emergency-stairwell'") ||
   !files.saveModel.includes("enum: ['part-1', 'part-2', 'part-3']") ||
-  !files.saveModel.includes("'emergency-stairwell'")
+  !files.saveModel.includes("'emergency-stairwell'") ||
+  !files.store.includes('canonicalizeLocation') ||
+  !files.store.includes("location.area === 'emergency-stairwell'")
 ) {
-  throw new Error('Part 3 Mongo/API persistence contract is missing')
+  throw new Error('Part 3 Mongo/API persistence or legacy-save migration contract is missing')
 }
 
 if (
