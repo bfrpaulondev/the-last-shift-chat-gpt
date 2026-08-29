@@ -126,6 +126,16 @@ function clampBpm(value: number): number {
   return Math.max(60, Math.min(160, value))
 }
 
+function canonicalizeLocation(location: GameLocationSnapshot): GameLocationSnapshot {
+  if (
+    (location.area === 'blackout' || location.area === 'emergency-stairwell') &&
+    location.part !== 'part-3'
+  ) {
+    return { ...location, part: 'part-3' }
+  }
+  return location
+}
+
 function objectiveForProgress(flags: Record<string, boolean>, location: GameLocationSnapshot): string {
   if (location.area === 'apartment') {
     if (!flags.awake) return 'Levante-se da cama.'
@@ -198,16 +208,17 @@ export const useGameStore = create<GameState>((set, get) => ({
     set({ flags: { ...flags }, objective: objectiveForProgress(flags, location), progressSaved: true })
   },
   hydrateProgress: (flags, location = INITIAL_LOCATION) => {
+    const canonicalLocation = canonicalizeLocation(location)
     const part3Bpm = flags.note_read ? 112 : 128
     set({
       flags: { ...flags },
-      location,
+      location: canonicalLocation,
       areaTransition: null,
-      objective: objectiveForProgress(flags, location),
+      objective: objectiveForProgress(flags, canonicalLocation),
       cinematic: false,
-      blackout: location.area === 'blackout' && !flags.blackout_vision_returned,
+      blackout: canonicalLocation.area === 'blackout' && !flags.blackout_vision_returned,
       demoEnded: false,
-      bpm: location.part === 'part-3' ? part3Bpm : 72,
+      bpm: canonicalLocation.part === 'part-3' ? part3Bpm : 72,
       progressSaved: true,
     })
   },
