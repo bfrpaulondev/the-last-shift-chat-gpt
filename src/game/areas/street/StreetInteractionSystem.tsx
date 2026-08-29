@@ -7,6 +7,7 @@ import { useShiftClock } from '../../time/shiftClock'
 
 const CENTER = new THREE.Vector2(0, 0)
 const RANGE = 2.45
+const BUS_BOARDING_RANGE = 3.25
 
 type StreetInteractable = 'route-214' | 'corvus-flyer' | 'tower-puddle' | 'bus-door'
 
@@ -38,6 +39,10 @@ function promptFor(id: StreetInteractable, flags: Record<string, boolean>): stri
     case 'bus-door':
       return flags.bus_arrived ? '[E] Embarcar no 214' : null
   }
+}
+
+function rangeFor(id: StreetInteractable): number {
+  return id === 'bus-door' ? BUS_BOARDING_RANGE : RANGE
 }
 
 export function StreetInteractionSystem() {
@@ -146,14 +151,14 @@ export function StreetInteractionSystem() {
     }
 
     raycaster.current.setFromCamera(CENTER, camera)
-    raycaster.current.far = RANGE
+    raycaster.current.far = BUS_BOARDING_RANGE
     const hits = raycaster.current.intersectObjects(scene.children, true)
     let next: StreetInteractable | null = null
 
     for (const hit of hits) {
-      if (hit.distance > RANGE) break
+      if (hit.distance > BUS_BOARDING_RANGE) break
       const id = findStreetInteractable(hit.object)
-      if (!id) continue
+      if (!id || hit.distance > rangeFor(id)) continue
       const prompt = promptFor(id, state.flags)
       if (!prompt) continue
       next = id
