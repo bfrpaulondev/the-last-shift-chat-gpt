@@ -28,6 +28,51 @@
   font-size: 8px;
 }
 
+.part4-elevator-descent {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #c6d8c7;
+  font-family: "Courier New", monospace;
+  font-size: 24px;
+  letter-spacing: 0.14em;
+}
+
+.part4-elevator-floor {
+  position: absolute;
+  opacity: 0;
+  text-shadow: 0 0 12px rgba(183, 225, 188, 0.34);
+}
+
+.floor-t {
+  animation: part4-floor-t 1.5s linear both;
+}
+
+.floor-13 {
+  animation: part4-floor-13 1.5s linear both;
+}
+
+.floor-b1 {
+  animation: part4-floor-b1 1.5s linear both;
+}
+
+@keyframes part4-floor-t {
+  0%, 18% { opacity: 1; }
+  24%, 100% { opacity: 0; }
+}
+
+@keyframes part4-floor-13 {
+  0%, 28% { opacity: 0; }
+  32%, 65% { opacity: 1; }
+  69%, 100% { opacity: 0; }
+}
+
+@keyframes part4-floor-b1 {
+  0%, 72% { opacity: 0; }
+  78%, 100% { opacity: 1; }
+}
+
 .part4-prelude-continue {
   position: absolute;
   inset: 0;
