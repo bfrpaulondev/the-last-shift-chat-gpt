@@ -1,7 +1,12 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
-import { DESCENT_FLOOR_DROP, DESCENT_TOP_Z, descentBaseY } from './descentGeometry'
+import {
+  DESCENT_FLOOR_DROP,
+  DESCENT_TOP_Z,
+  descentBaseY,
+  descentReversed,
+} from './descentGeometry'
 
 const STEP_COUNT = 18
 
@@ -43,6 +48,7 @@ function EmergencyPulse() {
 
 export function DescentStairwellScene({ floor }: { floor: number }) {
   const baseY = descentBaseY(floor)
+  const reversed = descentReversed(floor)
   const floorTexture = useMemo(() => makeFloorTexture(floor), [floor])
   const steps = useMemo(() => Array.from({ length: STEP_COUNT }, (_, index) => index), [])
 
@@ -54,7 +60,7 @@ export function DescentStairwellScene({ floor }: { floor: number }) {
       <fog attach="fog" args={['#050709', 4, 18]} />
       <ambientLight color="#6d7479" intensity={0.055} />
 
-      <group position={[0, baseY, 0]}>
+      <group position={[0, baseY, 0]} rotation={[0, reversed ? Math.PI : 0, 0]}>
         <EmergencyPulse />
         <pointLight position={[-1.5, 1.8, -2.7]} color="#73828a" intensity={0.18} distance={6} decay={2} />
 
