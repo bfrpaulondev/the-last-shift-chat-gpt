@@ -108,7 +108,7 @@ if (
   !files.sequence.includes("setFlag('nascimento_notebook_push')") ||
   !files.sequence.includes("setFlag('nascimento_wrist_grab')") ||
   !files.sequence.includes("setFlag('nascimento_camera_gaze')") ||
-  !files.lobby.includes('0.42 ? 1 : 0.18') ||
+  !files.lobby.includes('elapsed < 420 ? 1 : 0.18') ||
   !files.sequence.includes("setFlag('nascimento_dead')")
 ) {
   throw new Error('Nascimento physical performance/BPM/camera gaze sequence is incomplete')
