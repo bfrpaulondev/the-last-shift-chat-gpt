@@ -78,7 +78,7 @@ interface GameState {
   flashlightOn: boolean
   setFlag: (flag: string) => void
   hydrateFlags: (flags: Record<string, boolean>) => void
-  hydrateProgress: (flags: Record<string, boolean>, location?: GameLocationSnapshot, phoneBattery?: number) => void
+  hydrateProgress: (flags: Record<string, boolean>, location?: GameLocationSnapshot) => void
   hasFlag: (flag: string) => boolean
   setCheckpoint: (checkpoint: string, spawn?: PlayerSpawn) => void
   requestAreaTransition: (
@@ -162,25 +162,16 @@ function objectiveForProgress(flags: Record<string, boolean>, location: GameLoca
   }
 
   switch (location.area) {
-    case 'street':
-      return 'Vá até o ponto e pegue o ônibus 214 para a Meridian Tower.'
-    case 'bus-214':
-      return 'Siga para a Meridian Tower.'
-    case 'meridian-plaza':
-      return 'Entre na Meridian Tower.'
-    case 'lobby':
-      return 'Passe pela portaria e siga para o vestiário.'
-    case 'locker-b1':
-      return 'Vista o uniforme e confirme sua rota de trabalho.'
-    case 'service-elevator':
-      return 'Use o elevador de serviço para seguir a rota.'
+    case 'street': return 'Vá até o ponto e pegue o ônibus 214 para a Meridian Tower.'
+    case 'bus-214': return 'Siga para a Meridian Tower.'
+    case 'meridian-plaza': return 'Entre na Meridian Tower.'
+    case 'lobby': return 'Passe pela portaria e siga para o vestiário.'
+    case 'locker-b1': return 'Vista o uniforme e confirme sua rota de trabalho.'
+    case 'service-elevator': return 'Use o elevador de serviço para seguir a rota.'
     case 'work-floor-22':
-    case 'work-floor-30':
-      return 'Complete a rotina de limpeza do andar.'
-    case 'cafeteria':
-      return 'Faça a pausa e continue o turno.'
-    case 'floor-37':
-      return 'Limpe o 37.º andar.'
+    case 'work-floor-30': return 'Complete a rotina de limpeza do andar.'
+    case 'cafeteria': return 'Faça a pausa e continue o turno.'
+    case 'floor-37': return 'Limpe o 37.º andar.'
     case 'blackout':
       if (flags.door37_locked) return 'Siga pelo corredor de emergência até a escada.'
       if (flags.note_read) return 'Tente sair do 37.º andar.'
@@ -250,7 +241,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     const location = get().location
     set({ flags: { ...flags }, objective: objectiveForProgress(flags, location), progressSaved: true })
   },
-  hydrateProgress: (flags, location = INITIAL_LOCATION, phoneBattery = 3) => {
+  hydrateProgress: (flags, location = INITIAL_LOCATION) => {
     const canonicalLocation = canonicalizeLocation(location)
     const part3Bpm = flags.note_read ? 112 : 128
     const hydratedBpm = canonicalLocation.part === 'part-4' ? 105 : canonicalLocation.part === 'part-3' ? part3Bpm : 72
@@ -263,8 +254,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       blackout: canonicalLocation.area === 'blackout' && !flags.blackout_vision_returned,
       demoEnded: false,
       bpm: hydratedBpm,
-      phoneBattery: clampBattery(phoneBattery),
-      flashlightOn: canonicalLocation.area === 'basement' && phoneBattery > 0,
+      flashlightOn: false,
       progressSaved: true,
     })
   },
@@ -278,25 +268,16 @@ export const useGameStore = create<GameState>((set, get) => ({
   requestAreaTransition: (area, checkpoint, spawn, durationMs = 900) => {
     if (areaSwapTimer !== null) window.clearTimeout(areaSwapTimer)
     if (areaTransitionTimer !== null) window.clearTimeout(areaTransitionTimer)
-
     const current = get()
     const target = locationForArea(area, checkpoint, spawn)
     const startedAt = performance.now()
     const duration = Math.max(400, durationMs)
-
     set({
-      areaTransition: {
-        from: current.location.area,
-        to: area,
-        checkpoint: target.checkpoint,
-        startedAt,
-        durationMs: duration,
-      },
+      areaTransition: { from: current.location.area, to: area, checkpoint: target.checkpoint, startedAt, durationMs: duration },
       cinematic: true,
       interactPrompt: null,
       handAction: null,
     })
-
     areaSwapTimer = window.setTimeout(() => {
       set((state) => ({
         location: target,
@@ -307,7 +288,6 @@ export const useGameStore = create<GameState>((set, get) => ({
       }))
       areaSwapTimer = null
     }, Math.round(duration * 0.48))
-
     areaTransitionTimer = window.setTimeout(() => {
       set({ areaTransition: null, cinematic: false })
       areaTransitionTimer = null
@@ -316,9 +296,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   say: (text, _seconds) => {
     const current = get()
     if (current.subtitle) {
-      if (current.subtitle !== text && !current.subtitleQueue.includes(text)) {
-        set({ subtitleQueue: [...current.subtitleQueue, text] })
-      }
+      if (current.subtitle !== text && !current.subtitleQueue.includes(text)) set({ subtitleQueue: [...current.subtitleQueue, text] })
       return
     }
     audioEngine.playDialogueBlip()
@@ -352,18 +330,15 @@ export const useGameStore = create<GameState>((set, get) => ({
   setBlackout: (blackout) => set({ blackout }),
   setBpm: (bpm) => set({ bpm: clampBpm(bpm) }),
   adjustBpm: (delta) => set((state) => ({ bpm: clampBpm(state.bpm + delta) })),
-  setPhoneBattery: (phoneBattery) => set({ phoneBattery: clampBattery(phoneBattery), progressSaved: false }),
+  setPhoneBattery: (phoneBattery) => set((state) => {
+    const nextBattery = clampBattery(phoneBattery)
+    return { phoneBattery: nextBattery, flashlightOn: nextBattery <= 0 ? false : state.flashlightOn, progressSaved: false }
+  }),
   adjustPhoneBattery: (delta) => set((state) => {
     const phoneBattery = clampBattery(state.phoneBattery + delta)
-    return {
-      phoneBattery,
-      flashlightOn: phoneBattery <= 0 ? false : state.flashlightOn,
-      progressSaved: false,
-    }
+    return { phoneBattery, flashlightOn: phoneBattery <= 0 ? false : state.flashlightOn, progressSaved: false }
   }),
-  setFlashlightOn: (flashlightOn) => set((state) => ({
-    flashlightOn: state.phoneBattery <= 0 ? false : flashlightOn,
-  })),
+  setFlashlightOn: (flashlightOn) => set((state) => ({ flashlightOn: state.phoneBattery <= 0 ? false : flashlightOn })),
   triggerHandAction: (kind, durationMs = 650, target, objectId, variant = 'generic') => {
     if (handActionTimer !== null) window.clearTimeout(handActionTimer)
     const action: HandActionState = { kind, startedAt: performance.now(), durationMs, target, objectId, variant }
@@ -394,15 +369,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       get().requestAreaTransition('street', 'street-arrival', undefined, 1100)
       return
     }
-    set({
-      demoEnded: true,
-      interactPrompt: null,
-      subtitle: null,
-      subtitleQueue: [],
-      scareActive: false,
-      handAction: null,
-      areaTransition: null,
-    })
+    set({ demoEnded: true, interactPrompt: null, subtitle: null, subtitleQueue: [], scareActive: false, handAction: null, areaTransition: null })
   },
   logEvent: (event) => set((state) => ({ telemetry: [...state.telemetry, event] })),
   acknowledgeTelemetry: (count) => {
