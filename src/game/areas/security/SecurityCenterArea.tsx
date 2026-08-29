@@ -7,9 +7,11 @@ import { PbrEnvironment } from '../../render/PbrEnvironment'
 import { PostEffects } from '../../render/PostEffects'
 import { useGameStore } from '../../state/gameStore'
 import { SECURITY_CENTER_COLLIDERS } from './securityCenterColliders'
+import { SecurityCameraFeed } from './SecurityCameraFeed'
 import { SecurityCenterAudio } from './SecurityCenterAudio'
 import { SecurityCenterInteractionSystem } from './SecurityCenterInteractionSystem'
 import { SecurityCenterScene } from './SecurityCenterScene'
+import { SecurityObservationMonitor } from './SecurityObservationMonitor'
 
 type SecurityCenterAreaProps = {
   gameStarted: boolean
@@ -29,6 +31,7 @@ export function SecurityCenterArea({ gameStarted, isPointerLocked, onLockChange 
     const state = useGameStore.getState()
     if (!state.flags.security_center_entered) {
       state.setFlag('security_center_entered')
+      state.setFlag('operator_gone')
       state.setCheckpoint('security-center-entry', state.location.spawn)
       state.setObjective('Examine a Central de Segurança e descubra o que aconteceu.')
       window.setTimeout(() => {
@@ -50,6 +53,8 @@ export function SecurityCenterArea({ gameStarted, isPointerLocked, onLockChange 
     <>
       <PbrEnvironment />
       <SecurityCenterScene />
+      <SecurityCameraFeed />
+      <SecurityObservationMonitor />
       <SecurityCenterAudio />
       {gameStarted && <SecurityCenterInteractionSystem />}
       <CameraPolish enabled={enabled} />
