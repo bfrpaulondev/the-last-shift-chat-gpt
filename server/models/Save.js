@@ -12,7 +12,7 @@ const spawnSchema = new mongoose.Schema(
 
 const locationSchema = new mongoose.Schema(
   {
-    part: { type: String, required: true, enum: ['part-1', 'part-2'] },
+    part: { type: String, required: true, enum: ['part-1', 'part-2', 'part-3'] },
     area: {
       type: String,
       required: true,
@@ -29,6 +29,7 @@ const locationSchema = new mongoose.Schema(
         'cafeteria',
         'floor-37',
         'blackout',
+        'emergency-stairwell',
       ],
     },
     checkpoint: { type: String, required: true, trim: true },
