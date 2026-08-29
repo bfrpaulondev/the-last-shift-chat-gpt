@@ -103,7 +103,7 @@ export function BasementArea({ gameStarted, isPointerLocked, onLockChange }: Bas
       {gameStarted && <BasementInteractionSystem />}
       <CameraPolish enabled={enabled} />
       <TrueFirstPersonBody enabled={gameStarted && !demoEnded} />
-      <PlayerController colliders={BASEMENT_COLLIDERS} enabled={enabled} />
+      <PlayerController colliders={BASEMENT_COLLIDERS} enabled={enabled} crouchEnabled />
 
       {gameStarted && !demoEnded && (
         <PointerLockControls
