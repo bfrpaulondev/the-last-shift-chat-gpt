@@ -12,6 +12,7 @@ import { BasementAudio } from './BasementAudio'
 import { BasementInteractionSystem } from './BasementInteractionSystem'
 import { BasementScene } from './BasementScene'
 import { BasementSystems } from './BasementSystems'
+import { BasementVisualPolish } from './BasementVisualPolish'
 import { BASEMENT_COLLIDERS } from './basementColliders'
 import { DirectRouteRecovery } from './DirectRouteRecovery'
 
@@ -96,6 +97,7 @@ export function BasementArea({ gameStarted, isPointerLocked, onLockChange }: Bas
     <>
       <PbrEnvironment />
       <BasementScene />
+      <BasementVisualPolish />
       <BasementFlashlight />
       <BasementAudio />
       <BasementSystems />
