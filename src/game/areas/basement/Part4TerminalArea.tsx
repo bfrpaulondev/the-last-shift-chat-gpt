@@ -10,6 +10,7 @@ import { SecurityCenterAudio } from '../security/SecurityCenterAudio'
 import { SecurityCenterScene } from '../security/SecurityCenterScene'
 import { SentinelHardware } from '../security/SentinelHardware'
 import { Part4Terminal } from './Part4Terminal'
+import { Part4TerminalAudio } from './Part4TerminalAudio'
 
 type Part4TerminalAreaProps = {
   gameStarted: boolean
@@ -41,6 +42,7 @@ export function Part4TerminalArea({ gameStarted, isPointerLocked, onLockChange }
       <SecurityCenterScene />
       <SentinelHardware />
       <SecurityCenterAudio />
+      <Part4TerminalAudio />
       {gameStarted && <Part4Terminal />}
       <CameraPolish enabled={enabled} />
       <TrueFirstPersonBody enabled={gameStarted && !demoEnded} />
