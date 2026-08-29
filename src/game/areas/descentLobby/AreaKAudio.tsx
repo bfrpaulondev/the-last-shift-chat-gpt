@@ -28,6 +28,7 @@ export function AreaKAudio() {
   const stairHumGainRef = useRef<GainNode | null>(null)
   const keys = useRef(new Set<string>())
   const silenceUntil = useRef(0)
+  const silenceRestoreUntil = useRef(0)
 
   useEffect(() => {
     const AudioContextCtor = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
@@ -63,7 +64,7 @@ export function AreaKAudio() {
     rain.start()
 
     const playBreath = () => {
-      if (audioEngine.isMuted() || performance.now() < silenceUntil.current) return
+      if (audioEngine.isMuted() || performance.now() < silenceRestoreUntil.current) return
       const game = useGameStore.getState()
       if (game.location.area !== 'descent-lobby' || game.flags.descent_complete || game.cinematic) return
       const moving = keys.current.has('KeyW') || keys.current.has('KeyA') || keys.current.has('KeyS') || keys.current.has('KeyD')
@@ -170,6 +171,7 @@ export function AreaKAudio() {
       const detail = (event as CustomEvent<{ durationMs?: number }>).detail
       const durationMs = detail?.durationMs ?? 4000
       silenceUntil.current = performance.now() + durationMs
+      silenceRestoreUntil.current = silenceUntil.current + 2000
       const now = context.currentTime
       master.gain.cancelScheduledValues(now)
       master.gain.setValueAtTime(master.gain.value, now)
@@ -225,7 +227,7 @@ export function AreaKAudio() {
     rainGain.gain.setTargetAtTime(inLobby ? 0.28 : 0.018, context.currentTime, 0.35)
     stairHumGain.gain.setTargetAtTime(inLobby ? 0.012 : 0.045, context.currentTime, 0.25)
 
-    if (performance.now() >= silenceUntil.current) {
+    if (performance.now() >= silenceRestoreUntil.current) {
       master.gain.setTargetAtTime(audioEngine.isMuted() ? 0 : 0.18, context.currentTime, 0.08)
     }
   })
