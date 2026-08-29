@@ -10,6 +10,7 @@ import { BlackoutAudio } from './BlackoutAudio'
 import { BlackoutInteractionSystem } from './BlackoutInteractionSystem'
 import { BlackoutRecoveryController } from './BlackoutRecoveryController'
 import { BlackoutScene } from './BlackoutScene'
+import { WristBpmReadout } from './WristBpmReadout'
 
 type BlackoutAreaProps = {
   gameStarted: boolean
@@ -43,6 +44,7 @@ export function BlackoutArea({ gameStarted, isPointerLocked, onLockChange }: Bla
       <BlackoutScene />
       <BlackoutAudio />
       <BlackoutRecoveryController />
+      <WristBpmReadout />
       {gameStarted && <BlackoutInteractionSystem />}
       <CameraPolish enabled={enabled} />
       <TrueFirstPersonBody enabled={gameStarted && !demoEnded && !blackout} />
